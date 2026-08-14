@@ -229,6 +229,17 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     }
   };
 
+  // --- ORDER STATUS UPDATE ---
+  const handleUpdateAdminOrderStatus = async (orderId, newStatus) => {
+    try {
+      await api.put(`/admin/orders/${orderId}/status`, { status: newStatus });
+      showSuccess(`Đã cập nhật trạng thái đơn hàng sang ${newStatus}`);
+      fetchAdminData();
+    } catch (err) {
+      showError(err.message || 'Lỗi khi cập nhật trạng thái đơn hàng');
+    }
+  };
+
   // --- USER ROLE MANAGEMENT ---
   const handleUpdateUserRole = async (userId, newRole) => {
     try {
@@ -554,16 +565,39 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     <td style={{ padding: '10px' }}>{ord.orderType}</td>
                     <td style={{ padding: '10px', fontWeight: '800', color: '#e60012' }}>{formatPrice(ord.finalAmount)}</td>
                     <td style={{ padding: '10px' }}>
-                      <span className="badge-uq black">{ord.status}</span>
+                      <select
+                        value={ord.status}
+                        onChange={(e) => handleUpdateAdminOrderStatus(ord.id, e.target.value)}
+                        style={{
+                          padding: '6px 8px',
+                          fontSize: '0.75rem',
+                          fontWeight: '800',
+                          border: ord.status === 'CANCELLED' ? '1px solid #ffcdd2' : '1px solid #ccc',
+                          backgroundColor: ord.status === 'CANCELLED' ? '#fff0f0' : '#ffffff',
+                          color: ord.status === 'CANCELLED' ? '#e60012' : '#111',
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="PENDING">PENDING (Chờ xác nhận)</option>
+                        <option value="CONFIRMED">CONFIRMED (Đã xác nhận)</option>
+                        <option value="PACKING">PACKING (Đang đóng gói)</option>
+                        <option value="SHIPPING">SHIPPING (Đang giao hàng)</option>
+                        <option value="DELIVERED">DELIVERED (Đã giao thành công)</option>
+                        <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
+                        <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
+                      </select>
                     </td>
                     <td style={{ padding: '10px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => setReceiptOrder(ord)}
-                        className="btn-uq btn-uq-outline-gray"
-                        style={{ padding: '4px 10px', fontSize: '0.75rem' }}
-                      >
-                        <Printer size={12} /> Hóa đơn
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={() => setReceiptOrder(ord)}
+                          className="btn-uq btn-uq-outline-gray"
+                          style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                        >
+                          <Printer size={12} /> Hóa đơn
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

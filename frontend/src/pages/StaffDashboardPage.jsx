@@ -397,7 +397,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                     </div>
 
                     {/* Transition buttons */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {order.status === 'PENDING' && (
                         <button
                           onClick={() => handleUpdateOrderStatus(order.id, 'PACKING')}
@@ -423,6 +423,22 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                           style={{ padding: '6px 12px', fontSize: '0.75rem' }}
                         >
                           Xác nhận Đã giao thành công
+                        </button>
+                      )}
+                      {order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && order.status !== 'COMPLETED' && (
+                        <button
+                          onClick={() => handleUpdateOrderStatus(order.id, 'CANCELLED')}
+                          className="btn-uq"
+                          style={{
+                            padding: '6px 12px',
+                            fontSize: '0.75rem',
+                            backgroundColor: '#fff0f0',
+                            color: '#e60012',
+                            border: '1px solid #ffcdd2',
+                            fontWeight: '700'
+                          }}
+                        >
+                          Hủy Đơn Hàng
                         </button>
                       )}
                       <button

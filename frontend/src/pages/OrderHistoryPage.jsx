@@ -1,37 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Package, Calendar, Clock, Printer, ChevronRight, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ShoppingBag, Package, Calendar, Clock, Printer, ChevronRight, AlertCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useToast } from '../contexts/ToastContext';
 import { ReceiptModal } from '../components/ReceiptModal';
+import { ConfirmModal } from '../components/ConfirmModal';
 import api from '../services/api';
 
 export const OrderHistoryPage = ({ onNavigate }) => {
   const { user } = useAuth();
   const { formatPrice } = useLanguage();
+  const { showSuccess, showError } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrderForReceipt, setSelectedOrderForReceipt] = useState(null);
+  const [cancelModalOrder, setCancelModalOrder] = useState(null);
+
+  const fetchOrders = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await api.get('/orders/my-orders');
+      if (res.data) {
+        setOrders(res.data);
+      }
+    } catch (err) {
+      console.error('Error fetching order history:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const res = await api.get('/orders/my-orders');
-        if (res.data) {
-          setOrders(res.data);
-        }
-      } catch (err) {
-        console.error('Error fetching order history:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
-  }, [user]);
+  }, [fetchOrders]);
+
+  const handleConfirmCancel = async () => {
+    if (!cancelModalOrder) return;
+    try {
+      await api.put(`/orders/${cancelModalOrder.id}/cancel`, null, {
+        params: { reason: 'Khách hàng hủy đơn qua lịch sử mua hàng' }
+      });
+      showSuccess(`Đã hủy đơn hàng ${cancelModalOrder.orderNumber} thành công!`);
+      setCancelModalOrder(null);
+      fetchOrders();
+    } catch (err) {
+      showError(err.message || 'Lỗi khi hủy đơn hàng');
+      setCancelModalOrder(null);
+    }
+  };
 
   if (!user) {
     return (
@@ -161,7 +180,26 @@ export const OrderHistoryPage = ({ onNavigate }) => {
                   Địa chỉ giao: <strong>{order.shippingAddress}</strong>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  {/* Cancel button if order is not yet packed/shipped */}
+                  {(order.status === 'PENDING' || order.status === 'CONFIRMED' || order.status === 'AWAITING_PAYMENT') && (
+                    <button
+                      onClick={() => setCancelModalOrder(order)}
+                      className="btn-uq"
+                      style={{
+                        padding: '8px 14px',
+                        fontSize: '0.8rem',
+                        backgroundColor: '#fff0f0',
+                        color: '#e60012',
+                        border: '1px solid #ffcccc',
+                        fontWeight: '700'
+                      }}
+                    >
+                      <XCircle size={14} />
+                      <span>Hủy Đơn</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={() => setSelectedOrderForReceipt(order)}
                     className="btn-uq btn-uq-outline-gray"
@@ -191,6 +229,18 @@ export const OrderHistoryPage = ({ onNavigate }) => {
         isOpen={!!selectedOrderForReceipt}
         onClose={() => setSelectedOrderForReceipt(null)}
         order={selectedOrderForReceipt}
+      />
+
+      {/* Confirm Cancel Modal */}
+      <ConfirmModal
+        isOpen={!!cancelModalOrder}
+        title="Xác Nhận Hủy Đơn Hàng"
+        message={`Bạn có chắc chắn muốn hủy đơn hàng ${cancelModalOrder?.orderNumber}? Sau khi hủy, toàn bộ sản phẩm sẽ được tự động hoàn lại vào kho.`}
+        confirmText="Xác Nhận Hủy Đơn"
+        cancelText="Đóng"
+        type="danger"
+        onConfirm={handleConfirmCancel}
+        onClose={() => setCancelModalOrder(null)}
       />
     </div>
   );

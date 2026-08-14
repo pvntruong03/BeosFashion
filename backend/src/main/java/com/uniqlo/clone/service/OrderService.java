@@ -214,7 +214,19 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
-        order.setStatus(request.getStatus());
+        OrderStatus oldStatus = order.getStatus();
+        OrderStatus newStatus = request.getStatus();
+
+        if (oldStatus == OrderStatus.CANCELLED) {
+            throw new BadRequestException("Đơn hàng đã hủy, không thể thay đổi trạng thái!");
+        }
+
+        // If cancelling order, restore inventory
+        if (newStatus == OrderStatus.CANCELLED && oldStatus != OrderStatus.CANCELLED) {
+            restoreOrderInventory(order);
+        }
+
+        order.setStatus(newStatus);
         if (request.getTrackingNumber() != null && !request.getTrackingNumber().isBlank()) {
             order.setTrackingNumber(request.getTrackingNumber());
         }
@@ -222,15 +234,75 @@ public class OrderService {
             order.setNotes(order.getNotes() != null ? order.getNotes() + "\n" + request.getNotes() : request.getNotes());
         }
 
-        if (request.getStatus() == OrderStatus.DELIVERED || request.getStatus() == OrderStatus.COMPLETED) {
+        if (newStatus == OrderStatus.DELIVERED || newStatus == OrderStatus.COMPLETED) {
             if (order.getPayment() != null && order.getPayment().getPaymentStatus() == PaymentStatus.PENDING) {
                 order.getPayment().setPaymentStatus(PaymentStatus.SUCCESS);
                 order.getPayment().setPaymentTime(LocalDateTime.now());
                 paymentRepository.save(order.getPayment());
             }
+        } else if (newStatus == OrderStatus.CANCELLED) {
+            if (order.getPayment() != null && order.getPayment().getPaymentStatus() == PaymentStatus.PENDING) {
+                order.getPayment().setPaymentStatus(PaymentStatus.FAILED);
+                paymentRepository.save(order.getPayment());
+            }
         }
 
         return mapToDto(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderDto cancelOrder(Long orderId, Long userId, boolean isStaffOrAdmin, String cancelReason) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+        // Security check: if not staff/admin, customer can only cancel their own order
+        if (!isStaffOrAdmin) {
+            if (order.getUser() == null || !order.getUser().getId().equals(userId)) {
+                throw new BadRequestException("Bạn không có quyền hủy đơn hàng này!");
+            }
+        }
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new BadRequestException("Đơn hàng này đã được hủy trước đó!");
+        }
+
+        if (order.getStatus() == OrderStatus.SHIPPING || order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.COMPLETED) {
+            throw new BadRequestException("Đơn hàng đang giao hoặc đã hoàn thành, không thể hủy!");
+        }
+
+        // Restore inventory
+        restoreOrderInventory(order);
+
+        order.setStatus(OrderStatus.CANCELLED);
+        String reason = cancelReason != null && !cancelReason.isBlank() ? cancelReason : "Khách hàng yêu cầu hủy đơn";
+        order.setNotes(order.getNotes() != null ? order.getNotes() + "\n[ĐÃ HỦY]: " + reason : "[ĐÃ HỦY]: " + reason);
+
+        if (order.getPayment() != null && order.getPayment().getPaymentStatus() == PaymentStatus.PENDING) {
+            order.getPayment().setPaymentStatus(PaymentStatus.FAILED);
+            paymentRepository.save(order.getPayment());
+        }
+
+        return mapToDto(orderRepository.save(order));
+    }
+
+    private void restoreOrderInventory(Order order) {
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                if (item.getVariant() != null) {
+                    ProductVariant variant = item.getVariant();
+                    variant.setTotalStock(variant.getTotalStock() + item.getQuantity());
+                    variantRepository.save(variant);
+
+                    if (order.getStore() != null) {
+                        inventoryRepository.findByStoreIdAndProductVariantId(order.getStore().getId(), variant.getId())
+                                .ifPresent(inv -> {
+                                    inv.setQuantity(inv.getQuantity() + item.getQuantity());
+                                    inventoryRepository.save(inv);
+                                });
+                    }
+                }
+            }
+        }
     }
 
     @Transactional(readOnly = true)

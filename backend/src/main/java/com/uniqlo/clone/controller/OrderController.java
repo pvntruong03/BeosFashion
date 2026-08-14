@@ -54,4 +54,17 @@ public class OrderController {
         OrderDto order = orderService.getOrderById(id);
         return ResponseEntity.ok(ApiResponse.ok(order));
     }
+
+    @PutMapping("/{id}/cancel")
+    @Operation(summary = "Cancel an order (if not shipped) and restore inventory")
+    public ResponseEntity<ApiResponse<OrderDto>> cancelOrder(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason) {
+        Long userId = principal != null ? principal.getId() : null;
+        boolean isStaffOrAdmin = principal != null && principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF_MANAGER"));
+        OrderDto order = orderService.cancelOrder(id, userId, isStaffOrAdmin, reason);
+        return ResponseEntity.ok(ApiResponse.ok("Đã hủy đơn hàng và hoàn lại tồn kho thành công", order));
+    }
 }

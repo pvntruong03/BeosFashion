@@ -130,6 +130,21 @@ public class AdminController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Create a new coupon code")
     public ResponseEntity<ApiResponse<CouponDto>> createCoupon(@RequestBody Coupon coupon) {
-        return ResponseEntity.ok(ApiResponse.ok("Coupon created", couponService.createCoupon(coupon)));
+        return ResponseEntity.ok(ApiResponse.ok("Tạo mã khuyến mãi thành công", couponService.createCoupon(coupon)));
+    }
+
+    @PutMapping("/coupons/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Update an existing coupon")
+    public ResponseEntity<ApiResponse<CouponDto>> updateCoupon(@PathVariable Long id, @RequestBody CouponDto dto) {
+        return ResponseEntity.ok(ApiResponse.ok("Cập nhật mã khuyến mãi thành công", couponService.updateCoupon(id, dto)));
+    }
+
+    @DeleteMapping("/coupons/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Delete a coupon")
+    public ResponseEntity<ApiResponse<Void>> deleteCoupon(@PathVariable Long id) {
+        couponService.deleteCoupon(id);
+        return ResponseEntity.ok(ApiResponse.ok("Đã xóa mã khuyến mãi thành công", null));
     }
 }

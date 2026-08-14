@@ -74,6 +74,18 @@ public class CouponService {
         }
     }
 
+    @Transactional
+    public void decrementUsedCount(String code) {
+        if (code != null && !code.isBlank()) {
+            couponRepository.findByCodeIgnoreCase(code.trim()).ifPresent(coupon -> {
+                if (coupon.getUsedCount() != null && coupon.getUsedCount() > 0) {
+                    coupon.setUsedCount(coupon.getUsedCount() - 1);
+                    couponRepository.save(coupon);
+                }
+            });
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<CouponDto> getAllCoupons() {
         return couponRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
@@ -84,7 +96,47 @@ public class CouponService {
         if (couponRepository.findByCodeIgnoreCase(coupon.getCode()).isPresent()) {
             throw new BadRequestException("Coupon code already exists: " + coupon.getCode());
         }
+        if (coupon.getUsageLimit() == null || coupon.getUsageLimit() <= 0) {
+            coupon.setUsageLimit(100);
+        }
+        if (coupon.getUsedCount() == null) {
+            coupon.setUsedCount(0);
+        }
         return mapToDto(couponRepository.save(coupon));
+    }
+
+    @Transactional
+    public CouponDto updateCoupon(Long id, CouponDto dto) {
+        Coupon coupon = couponRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with id: " + id));
+
+        if (dto.getCode() != null && !dto.getCode().equalsIgnoreCase(coupon.getCode())) {
+            couponRepository.findByCodeIgnoreCase(dto.getCode().trim()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new BadRequestException("Coupon code already exists: " + dto.getCode());
+                }
+            });
+            coupon.setCode(dto.getCode().trim().toUpperCase());
+        }
+
+        if (dto.getDescription() != null) coupon.setDescription(dto.getDescription());
+        if (dto.getDiscountType() != null) coupon.setDiscountType(dto.getDiscountType());
+        if (dto.getDiscountValue() != null) coupon.setDiscountValue(dto.getDiscountValue());
+        if (dto.getMinOrderAmount() != null) coupon.setMinOrderAmount(dto.getMinOrderAmount());
+        if (dto.getMaxDiscountAmount() != null) coupon.setMaxDiscountAmount(dto.getMaxDiscountAmount());
+        if (dto.getStartDate() != null) coupon.setStartDate(dto.getStartDate());
+        if (dto.getEndDate() != null) coupon.setEndDate(dto.getEndDate());
+        if (dto.getUsageLimit() != null) coupon.setUsageLimit(dto.getUsageLimit());
+        coupon.setActive(dto.isActive());
+
+        return mapToDto(couponRepository.save(coupon));
+    }
+
+    @Transactional
+    public void deleteCoupon(Long id) {
+        Coupon coupon = couponRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with id: " + id));
+        couponRepository.delete(coupon);
     }
 
     public CouponDto mapToDto(Coupon coupon) {

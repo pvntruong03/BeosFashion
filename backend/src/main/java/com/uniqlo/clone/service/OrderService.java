@@ -303,6 +303,11 @@ public class OrderService {
                 }
             }
         }
+
+        // Restore coupon usage quota if coupon was used
+        if (order.getCouponCode() != null && !order.getCouponCode().isBlank()) {
+            couponService.decrementUsedCount(order.getCouponCode());
+        }
     }
 
     @Transactional(readOnly = true)

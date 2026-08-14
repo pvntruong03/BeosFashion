@@ -55,14 +55,17 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const [selectedColorsForMatrix, setSelectedColorsForMatrix] = useState(['09 BLACK', '00 WHITE']);
   const [selectedSizesForMatrix, setSelectedSizesForMatrix] = useState(['S', 'M', 'L', 'XL']);
 
-  // Coupon Create Modal
+  // Coupon Modal & State
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState(null);
+  const [deleteCouponId, setDeleteCouponId] = useState(null);
   const [coupCode, setCoupCode] = useState('');
   const [coupDesc, setCoupDesc] = useState('');
   const [coupType, setCoupType] = useState('PERCENT');
   const [coupVal, setCoupVal] = useState(10);
   const [coupMin, setCoupMin] = useState(300000);
   const [coupMax, setCoupMax] = useState(100000);
+  const [coupLimit, setCoupLimit] = useState(500);
 
   const [receiptOrder, setReceiptOrder] = useState(null);
 
@@ -251,25 +254,69 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     }
   };
 
-  // --- COUPON CREATE ---
-  const handleCreateCoupon = async (e) => {
+  // --- COUPON CRUD OPERATIONS ---
+  const handleOpenCreateCoupon = () => {
+    setEditingCoupon(null);
+    setCoupCode('');
+    setCoupDesc('');
+    setCoupType('PERCENT');
+    setCoupVal(10);
+    setCoupMin(300000);
+    setCoupMax(100000);
+    setCoupLimit(500);
+    setIsCouponModalOpen(true);
+  };
+
+  const handleOpenEditCoupon = (coupon) => {
+    setEditingCoupon(coupon);
+    setCoupCode(coupon.code);
+    setCoupDesc(coupon.description || '');
+    setCoupType(coupon.discountType);
+    setCoupVal(coupon.discountValue);
+    setCoupMin(coupon.minOrderAmount || 0);
+    setCoupMax(coupon.maxDiscountAmount || 0);
+    setCoupLimit(coupon.usageLimit || 500);
+    setIsCouponModalOpen(true);
+  };
+
+  const handleSaveCoupon = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/admin/coupons', {
-        code: coupCode.toUpperCase(),
+      const payload = {
+        code: coupCode.toUpperCase().trim(),
         description: coupDesc,
         discountType: coupType,
         discountValue: Number(coupVal),
         minOrderAmount: Number(coupMin),
-        maxDiscountAmount: Number(coupMax),
-        usageLimit: 1000,
+        maxDiscountAmount: coupType === 'PERCENT' ? Number(coupMax) : null,
+        usageLimit: Number(coupLimit),
         active: true
-      });
-      showSuccess('Tạo mã khuyến mãi thành công!');
+      };
+
+      if (editingCoupon) {
+        await api.put(`/admin/coupons/${editingCoupon.id}`, payload);
+        showSuccess(`Cập nhật mã khuyến mãi ${payload.code} thành công!`);
+      } else {
+        await api.post('/admin/coupons', payload);
+        showSuccess(`Tạo mã khuyến mãi ${payload.code} thành công!`);
+      }
+
       setIsCouponModalOpen(false);
+      setEditingCoupon(null);
       fetchAdminData();
     } catch (err) {
-      showError(err.message || 'Lỗi khi tạo coupon');
+      showError(err.message || 'Lỗi khi lưu mã khuyến mãi');
+    }
+  };
+
+  const handleDeleteCoupon = async (id) => {
+    try {
+      await api.delete(`/admin/coupons/${id}`);
+      showSuccess('Đã xóa mã khuyến mãi thành công');
+      setDeleteCouponId(null);
+      fetchAdminData();
+    } catch (err) {
+      showError(err.message || 'Lỗi khi xóa mã khuyến mãi');
     }
   };
 
@@ -745,11 +792,16 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         {/* ================= TAB 5: COUPONS ================= */}
         {activeTab === 'coupons' && (
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>
-                Danh Sách Mã Giảm Giá & Khuyến Mãi
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>
+                  Quản Lý Mã Giảm Giá & Số Lượng Khuyến Mãi
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '2px' }}>
+                  Thiết lập giới hạn số lượng mã, theo dõi tỷ lệ đã sử dụng và số lượng còn lại
+                </div>
               </div>
-              <button onClick={() => setIsCouponModalOpen(true)} className="btn-uq btn-uq-red">
+              <button onClick={handleOpenCreateCoupon} className="btn-uq btn-uq-red">
                 <Plus size={16} />
                 <span>Tạo Mã Mới</span>
               </button>
@@ -760,29 +812,105 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
                   <th style={{ padding: '10px' }}>MÃ VOUCHER</th>
                   <th style={{ padding: '10px' }}>MÔ TẢ</th>
-                  <th style={{ padding: '10px' }}>LOẠI GIẢM</th>
-                  <th style={{ padding: '10px' }}>GIÁ TRỊ GIẢM</th>
+                  <th style={{ padding: '10px' }}>MỨC GIẢM</th>
                   <th style={{ padding: '10px' }}>ĐƠN TỐI THIỂU</th>
-                  <th style={{ padding: '10px' }}>ĐÃ DÙNG</th>
-                  <th style={{ padding: '10px' }}>TRẠNG THÁI</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>TỔNG SỐ LƯỢNG</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>ĐÃ DÙNG</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>SỐ LƯỢNG CÒN LẠI</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>TRẠNG THÁI</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>THAO TÁC</th>
                 </tr>
               </thead>
               <tbody>
-                {coupons.map((c) => (
-                  <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '10px', fontWeight: '900', color: '#e60012' }}>{c.code}</td>
-                    <td style={{ padding: '10px' }}>{c.description}</td>
-                    <td style={{ padding: '10px' }}>{c.discountType}</td>
-                    <td style={{ padding: '10px', fontWeight: '700' }}>
-                      {c.discountType === 'PERCENT' ? `${c.discountValue}%` : formatPrice(c.discountValue)}
-                    </td>
-                    <td style={{ padding: '10px' }}>{formatPrice(c.minOrderAmount || 0)}</td>
-                    <td style={{ padding: '10px' }}>{c.usedCount} lượt</td>
-                    <td style={{ padding: '10px' }}>
-                      <span className="badge-uq gray" style={{ color: '#00875a' }}>Đang hoạt động</span>
-                    </td>
-                  </tr>
-                ))}
+                {coupons.map((c) => {
+                  const limit = c.usageLimit || 1000;
+                  const used = c.usedCount || 0;
+                  const remaining = Math.max(limit - used, 0);
+                  const usagePercent = Math.min(Math.round((used / limit) * 100), 100);
+                  const isOutOfStock = remaining === 0;
+
+                  return (
+                    <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '10px' }}>
+                        <span style={{
+                          fontFamily: 'monospace',
+                          fontWeight: '900',
+                          color: isOutOfStock ? '#888' : '#e60012',
+                          backgroundColor: isOutOfStock ? '#f0f0f0' : '#fff0f0',
+                          padding: '3px 8px',
+                          border: isOutOfStock ? '1px solid #ccc' : '1px solid #ffcccc',
+                          borderRadius: '3px'
+                        }}>
+                          {c.code}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px' }}>{c.description}</td>
+                      <td style={{ padding: '10px', fontWeight: '700' }}>
+                        {c.discountType === 'PERCENT' ? `${c.discountValue}% (Tối đa ${formatPrice(c.maxDiscountAmount || 100000)})` : formatPrice(c.discountValue)}
+                      </td>
+                      <td style={{ padding: '10px' }}>{formatPrice(c.minOrderAmount || 0)}</td>
+                      
+                      {/* Total Usage Limit */}
+                      <td style={{ padding: '10px', textAlign: 'center', fontWeight: '800', fontSize: '0.95rem' }}>
+                        {limit.toLocaleString('vi-VN')} mã
+                      </td>
+
+                      {/* Used Count with Mini Progress */}
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        <div style={{ fontWeight: '700' }}>{used.toLocaleString('vi-VN')} lượt</div>
+                        <div style={{ width: '80px', height: '4px', backgroundColor: '#e0e0e0', margin: '4px auto 0', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ width: `${usagePercent}%`, height: '100%', backgroundColor: usagePercent > 90 ? '#e60012' : '#0052cc' }} />
+                        </div>
+                      </td>
+
+                      {/* Remaining Count */}
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        {isOutOfStock ? (
+                          <span className="badge-uq red" style={{ fontWeight: '800' }}>HẾT MÃ (0)</span>
+                        ) : remaining <= 10 ? (
+                          <span className="badge-uq red" style={{ fontWeight: '800' }}>Sắp hết ({remaining})</span>
+                        ) : (
+                          <span className="badge-uq gray" style={{ color: '#00875a', fontWeight: '800' }}>
+                            {remaining.toLocaleString('vi-VN')} mã
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Status */}
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                        {isOutOfStock ? (
+                          <span style={{ fontSize: '0.75rem', color: '#999', fontWeight: '600' }}>Hết lượt dùng</span>
+                        ) : c.active ? (
+                          <span className="badge-uq gray" style={{ color: '#00875a' }}>Đang mở</span>
+                        ) : (
+                          <span className="badge-uq red">Đã tắt</span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ padding: '10px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => handleOpenEditCoupon(c)}
+                            className="btn-uq btn-uq-outline-gray"
+                            style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            title="Chỉnh sửa số lượng / mã"
+                          >
+                            <Edit2 size={12} />
+                            <span>Sửa</span>
+                          </button>
+                          <button
+                            onClick={() => setDeleteCouponId(c.id)}
+                            style={{ color: '#d9383a', padding: '4px 8px', cursor: 'pointer', border: '1px solid #ffcdd2', backgroundColor: '#fff5f5' }}
+                            title="Xóa mã khuyến mãi"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -1118,7 +1246,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* Modal: Create Coupon */}
+        {/* Modal: Create / Edit Coupon */}
         {isCouponModalOpen && (
           <div style={{
             position: 'fixed',
@@ -1130,22 +1258,26 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             justifyContent: 'center',
             padding: '16px'
           }}>
-            <div style={{ width: '100%', maxWidth: '460px', backgroundColor: '#fff', padding: '24px', boxShadow: 'var(--shadow-lg)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>Tạo Mã Giảm Giá Mới</div>
-                <button onClick={() => setIsCouponModalOpen(false)}><X size={20} /></button>
+            <div style={{ width: '100%', maxWidth: '520px', backgroundColor: '#fff', padding: '24px', boxShadow: 'var(--shadow-lg)', borderRadius: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
+                <div style={{ fontWeight: '800', fontSize: '1.15rem', color: '#111', textTransform: 'uppercase' }}>
+                  {editingCoupon ? `Chỉnh Sửa Mã: ${editingCoupon.code}` : 'Tạo Mã Giảm Giá Mới'}
+                </div>
+                <button onClick={() => setIsCouponModalOpen(false)} style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
+                  <X size={20} />
+                </button>
               </div>
 
-              <form onSubmit={handleCreateCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <form onSubmit={handleSaveCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Mã Voucher *</label>
                   <input
                     type="text"
                     required
-                    placeholder="VD: FLASH50"
+                    placeholder="VD: BEO20, SUMMER50K..."
                     value={coupCode}
                     onChange={(e) => setCoupCode(e.target.value.toUpperCase())}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', outline: 'none' }}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontWeight: '700', letterSpacing: '1px' }}
                   />
                 </div>
 
@@ -1157,40 +1289,91 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     placeholder="Giảm giá 10% đơn từ 300.000đ"
                     value={coupDesc}
                     onChange={(e) => setCoupDesc(e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', outline: 'none' }}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.85rem' }}
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Loại giảm</label>
                     <select
                       value={coupType}
                       onChange={(e) => setCoupType(e.target.value)}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', outline: 'none' }}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.85rem', fontWeight: '600' }}
                     >
                       <option value="PERCENT">Phần trăm (%)</option>
                       <option value="FIXED_AMOUNT">Số tiền cố định (VND)</option>
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Giá trị giảm *</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {coupType === 'PERCENT' ? 'Giá trị giảm (%) *' : 'Số tiền giảm (VND) *'}
+                    </label>
                     <input
                       type="number"
                       required
+                      min="1"
                       value={coupVal}
                       onChange={(e) => setCoupVal(e.target.value)}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', outline: 'none' }}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontWeight: '700' }}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '12px' }}>
-                  <button type="button" onClick={() => setIsCouponModalOpen(false)} className="btn-uq btn-uq-outline-gray" style={{ padding: '8px 14px' }}>
-                    Hủy
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Đơn hàng tối thiểu (VND)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="10000"
+                      value={coupMin}
+                      onChange={(e) => setCoupMin(e.target.value)}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Giảm tối đa (VND)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="10000"
+                      placeholder="Không giới hạn"
+                      value={coupMax}
+                      onChange={(e) => setCoupMax(e.target.value)}
+                      disabled={coupType !== 'PERCENT'}
+                      style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', backgroundColor: coupType !== 'PERCENT' ? '#f5f5f5' : '#fff' }}
+                    />
+                  </div>
+                </div>
+
+                {/* QUANTITY / USAGE LIMIT */}
+                <div style={{ padding: '12px', backgroundColor: '#fcf8e3', border: '1px solid #faebcc', borderRadius: '4px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '800', color: '#8a6d3b', marginBottom: '4px' }}>
+                    🏷️ SỐ LƯỢNG MÃ KHUYẾN MÃI (LƯỢT SỬ DỤNG TỐI ĐA) *
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      placeholder="VD: 100, 500, 1000..."
+                      value={coupLimit}
+                      onChange={(e) => setCoupLimit(e.target.value)}
+                      style={{ width: '160px', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontWeight: '800', fontSize: '1rem', color: '#111' }}
+                    />
+                    <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                      {editingCoupon ? `Đã sử dụng: ${editingCoupon.usedCount || 0} lượt` : 'Số lượng mã phát hành cho khách hàng'}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '14px' }}>
+                  <button type="button" onClick={() => setIsCouponModalOpen(false)} className="btn-uq btn-uq-outline-gray" style={{ padding: '9px 18px' }}>
+                    Hủy Bỏ
                   </button>
-                  <button type="submit" className="btn-uq btn-uq-red" style={{ padding: '8px 18px' }}>
-                    Tạo Coupon
+                  <button type="submit" className="btn-uq btn-uq-red" style={{ padding: '9px 24px', fontWeight: '800' }}>
+                    {editingCoupon ? 'Cập Nhật Mã Giảm Giá' : 'Tạo Mã Khuyến Mãi'}
                   </button>
                 </div>
               </form>
@@ -1215,6 +1398,18 @@ export const AdminDashboardPage = ({ onNavigate }) => {
           isDanger={true}
           onConfirm={confirmDeleteProduct}
           onCancel={() => setDeleteConfirmId(null)}
+        />
+
+        {/* Delete Coupon Confirm Modal */}
+        <ConfirmModal
+          isOpen={!!deleteCouponId}
+          title="Xóa Mã Khuyến Mãi"
+          message="Bạn có chắc chắn muốn xóa mã giảm giá này? Mã sẽ không còn hiệu lực đối với các đơn hàng tiếp theo."
+          confirmText="Đồng ý xóa"
+          cancelText="Hủy bỏ"
+          isDanger={true}
+          onConfirm={() => handleDeleteCoupon(deleteCouponId)}
+          onCancel={() => setDeleteCouponId(null)}
         />
       </div>
     </div>

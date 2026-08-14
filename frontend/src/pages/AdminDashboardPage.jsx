@@ -1367,7 +1367,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     >
                       <option value="MEN">Nam (MEN)</option>
                       <option value="WOMEN">Nữ (WOMEN)</option>
-                      <option value="KIDS">Trẻ em (KIDS)</option>
+                      <option value="UNISEX">Unisex (Nam & Nữ)</option>
                     </select>
                   </div>
                   <div>

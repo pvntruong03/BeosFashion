@@ -207,7 +207,6 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
                   { label: 'Tất cả giới tính', val: '' },
                   { label: 'Nam (Men)', val: 'MEN' },
                   { label: 'Nữ (Women)', val: 'WOMEN' },
-                  { label: 'Trẻ em (Kids)', val: 'KIDS' },
                 ].map((g) => (
                   <label key={g.val} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input

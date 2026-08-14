@@ -117,10 +117,10 @@ export const HomePage = ({ onNavigate }) => {
                 gender: 'WOMEN'
               },
               {
-                title: 'TRẺ EM (KIDS)',
-                sub: 'UT Graphic, Quần co giãn linh hoạt',
-                img: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80',
-                gender: 'KIDS'
+                title: 'BEO LIFEWEAR ESSENTIALS',
+                sub: 'Chất liệu AIRism, Dry-EX, Vải dệt 3D cao cấp',
+                img: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80',
+                collection: 'AIRism'
               },
               {
                 title: 'UT GRAPHIC COLLECTION',

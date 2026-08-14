@@ -79,7 +79,6 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
   const navCategories = [
     { key: 'women', label: t('women'), gender: 'WOMEN' },
     { key: 'men', label: t('men'), gender: 'MEN' },
-    { key: 'kids', label: t('kids'), gender: 'KIDS' },
     { key: 'lifewear', label: t('lifewear'), collection: 'LifeWear' },
     { key: 'lookbook', label: 'LOOKBOOK', view: 'lookbook' },
   ];

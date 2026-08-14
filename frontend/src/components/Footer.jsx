@@ -99,7 +99,7 @@ export const Footer = ({ onNavigate }) => {
             <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: '#555', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <li><button onClick={() => onNavigate('products', { gender: 'MEN' })} style={{ color: '#555' }}>Trang phục Nam</button></li>
               <li><button onClick={() => onNavigate('products', { gender: 'WOMEN' })} style={{ color: '#555' }}>Trang phục Nữ</button></li>
-              <li><button onClick={() => onNavigate('products', { gender: 'KIDS' })} style={{ color: '#555' }}>Trang phục Trẻ em</button></li>
+              <li><button onClick={() => onNavigate('products', { collection: 'LifeWear' })} style={{ color: '#555' }}>Bộ sưu tập LifeWear</button></li>
               <li><button onClick={() => onNavigate('products', { collection: 'AIRism' })} style={{ color: '#555' }}>Dòng sản phẩm AIRism</button></li>
               <li><button onClick={() => onNavigate('products', { collection: 'HEATTECH' })} style={{ color: '#555' }}>Dòng sản phẩm HEATTECH</button></li>
               <li><button onClick={() => onNavigate('lookbook')} style={{ color: '#555' }}>LifeWear Lookbook</button></li>

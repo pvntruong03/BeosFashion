@@ -30,7 +30,29 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const { formatPrice } = useLanguage();
   const { showSuccess, showError } = useToast();
 
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'products', 'orders', 'users', 'coupons'
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const hash = window.location.hash || '';
+      if (hash.includes('tab=')) {
+        const queryPart = hash.split('?')[1];
+        const params = new URLSearchParams(queryPart);
+        const tab = params.get('tab');
+        if (tab) return tab;
+      }
+      return localStorage.getItem('beo_admin_active_tab') || 'overview';
+    } catch (e) {
+      return 'overview';
+    }
+  });
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    localStorage.setItem('beo_admin_active_tab', tabId);
+    const newHash = `#/admin?tab=${tabId}`;
+    if (window.location.hash !== newHash) {
+      window.history.replaceState(null, '', newHash);
+    }
+  };
   const [stats, setStats] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -387,7 +409,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               style={{
                 display: 'flex',
                 alignItems: 'center',

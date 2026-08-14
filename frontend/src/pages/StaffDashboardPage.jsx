@@ -30,7 +30,29 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const { formatPrice } = useLanguage();
   const { showSuccess, showError, showInfo } = useToast();
 
-  const [activeTab, setActiveTab] = useState('products'); // 'products', 'fulfillment', 'inventory', 'transfers', 'report'
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const hash = window.location.hash || '';
+      if (hash.includes('tab=')) {
+        const queryPart = hash.split('?')[1];
+        const params = new URLSearchParams(queryPart);
+        const tab = params.get('tab');
+        if (tab) return tab;
+      }
+      return localStorage.getItem('beo_staff_active_tab') || 'products';
+    } catch (e) {
+      return 'products';
+    }
+  });
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    localStorage.setItem('beo_staff_active_tab', tabId);
+    const newHash = `#/staff?tab=${tabId}`;
+    if (window.location.hash !== newHash) {
+      window.history.replaceState(null, '', newHash);
+    }
+  };
   const [storeInfo, setStoreInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -342,7 +364,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               style={{
                 display: 'flex',
                 alignItems: 'center',

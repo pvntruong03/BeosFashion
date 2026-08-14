@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastProvider } from './contexts/ToastContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -26,16 +26,94 @@ import { ProfilePage } from './pages/ProfilePage';
 import { StaffDashboardPage } from './pages/StaffDashboardPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
+// --- ROUTER UTILITIES ---
+const parseLocation = () => {
+  try {
+    const hash = window.location.hash || '';
+    if (!hash || hash === '#' || hash === '#/') {
+      const savedView = localStorage.getItem('beo_current_view');
+      const savedParams = localStorage.getItem('beo_view_params');
+      if (savedView && savedView !== 'home') {
+        return {
+          view: savedView,
+          params: savedParams ? JSON.parse(savedParams) : {}
+        };
+      }
+      return { view: 'home', params: {} };
+    }
+
+    const cleanHash = hash.replace(/^#\/?/, '');
+    const [pathPart, queryPart] = cleanHash.split('?');
+    const view = pathPart || 'home';
+    const params = {};
+
+    if (queryPart) {
+      const searchParams = new URLSearchParams(queryPart);
+      for (const [key, value] of searchParams.entries()) {
+        if (key === 'id' && !isNaN(value)) {
+          params[key] = Number(value);
+        } else {
+          params[key] = value;
+        }
+      }
+    }
+
+    return { view, params };
+  } catch (e) {
+    return { view: 'home', params: {} };
+  }
+};
+
+const serializeToHash = (view, params = {}) => {
+  if (view === 'home' && (!params || Object.keys(params).length === 0)) {
+    return '#/';
+  }
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && typeof value !== 'object') {
+      searchParams.append(key, String(value));
+    }
+  }
+  const queryStr = searchParams.toString();
+  return `#/${view}${queryStr ? `?${queryStr}` : ''}`;
+};
+
 const AppContent = () => {
   const { user, isAdmin, isStaff } = useAuth();
 
-  const [currentView, setCurrentView] = useState('home');
-  const [viewParams, setViewParams] = useState({});
+  const [currentView, setCurrentView] = useState(() => parseLocation().view);
+  const [viewParams, setViewParams] = useState(() => parseLocation().params);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [authModalRole, setAuthModalRole] = useState(null);
 
+  // Sync state on hash change / browser Back & Forward buttons
+  useEffect(() => {
+    const handleHashOrPopState = () => {
+      const loc = parseLocation();
+      setCurrentView(loc.view);
+      setViewParams(loc.params);
+    };
+
+    window.addEventListener('hashchange', handleHashOrPopState);
+    window.addEventListener('popstate', handleHashOrPopState);
+
+    // Initial hash synchronization if hash was empty but state existed
+    const initialLoc = parseLocation();
+    const targetHash = serializeToHash(initialLoc.view, initialLoc.params);
+    if (window.location.hash !== targetHash) {
+      window.history.replaceState(null, '', targetHash);
+    }
+    localStorage.setItem('beo_current_view', initialLoc.view);
+    localStorage.setItem('beo_view_params', JSON.stringify(initialLoc.params));
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashOrPopState);
+      window.removeEventListener('popstate', handleHashOrPopState);
+    };
+  }, []);
+
   const handleNavigate = (view, params = {}) => {
-    // Elegant route guard checks with custom modal dialog
+    // Route guard checks with custom modal dialog
     if (view === 'admin' && !isAdmin) {
       setAuthModalRole('ADMIN');
       return;
@@ -48,6 +126,15 @@ const AppContent = () => {
 
     setCurrentView(view);
     setViewParams(params);
+
+    // Update URL hash and localStorage
+    const newHash = serializeToHash(view, params);
+    if (window.location.hash !== newHash) {
+      window.history.pushState(null, '', newHash);
+    }
+    localStorage.setItem('beo_current_view', view);
+    localStorage.setItem('beo_view_params', JSON.stringify(params));
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

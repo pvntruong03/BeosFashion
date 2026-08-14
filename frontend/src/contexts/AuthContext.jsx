@@ -5,9 +5,16 @@ import { useToast } from './ToastContext';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('uq_token') || null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem('uq_user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [token, setToken] = useState(() => localStorage.getItem('uq_token') || null);
+  const [loading, setLoading] = useState(false);
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {

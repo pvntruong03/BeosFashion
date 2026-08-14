@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
@@ -39,8 +40,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (userRepository.count() > 0) {
-            log.info("Database already seeded. Skipping initial data load.");
+        if (userRepository.count() > 0 && orderRepository.count() >= 50) {
+            log.info("Database already seeded with {} orders. Skipping initial data load.", orderRepository.count());
             return;
         }
 
@@ -773,48 +774,169 @@ public class DataInitializer implements CommandLineRunner {
                 .approved(true)
                 .build());
 
-        // 7. SAMPLE ORDERS (For dashboard testing)
-        ProductVariant sampleVariant = p1.getVariants().get(0);
-        Order sampleOrder = orderRepository.save(Order.builder()
-                .orderNumber("UQ-260814-1001")
-                .user(customerUser)
-                .store(storeBeo)
-                .orderType(OrderType.ONLINE_DELIVERY)
-                .status(OrderStatus.CONFIRMED)
-                .customerName(customerUser.getFullName())
-                .customerPhone(customerUser.getPhone())
-                .customerEmail(customerUser.getEmail())
-                .shippingAddress("123 Nguyễn Huệ, Quận 1")
-                .shippingCity("TP. Hồ Chí Minh")
-                .subTotal(new BigDecimal("798000"))
-                .discountAmount(BigDecimal.ZERO)
-                .shippingFee(BigDecimal.ZERO)
-                .finalAmount(new BigDecimal("798000"))
-                .build());
+        // 7. SEED 50 REALISTIC RANDOM ORDERS
+        List<Product> allProducts = List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20);
+        seed50RandomOrders(allProducts, customerUser, storeBeo);
 
-        OrderItem sampleItem = orderItemRepository.save(OrderItem.builder()
-                .order(sampleOrder)
-                .variant(sampleVariant)
-                .productName(p1.getName())
-                .productCode(p1.getCode())
-                .color(sampleVariant.getColorName())
-                .size(sampleVariant.getSize())
-                .imageUrl(sampleVariant.getImageUrl())
-                .unitPrice(p1.getBasePrice())
-                .quantity(2)
-                .subTotal(new BigDecimal("798000"))
-                .build());
+        log.info("BEO Fashion database seeding completed successfully with 20 products and 50 realistic orders!");
+    }
 
-        paymentRepository.save(Payment.builder()
-                .order(sampleOrder)
-                .paymentMethod(PaymentMethod.VNPAY)
-                .paymentStatus(PaymentStatus.SUCCESS)
-                .transactionId("VNPAY-260814-8899")
-                .amount(new BigDecimal("798000"))
-                .paymentTime(LocalDateTime.now().minusHours(2))
-                .build());
+    private void seed50RandomOrders(List<Product> allProducts, User defaultUser, Store store) {
+        log.info("Generating 50 realistic fashion orders for BEO Modern Fashion...");
 
-        log.info("Uniqlo Clone database seeding completed successfully!");
+        String[] customerNames = {
+                "Nguyễn Văn An", "Trần Thị Bích Ngọc", "Lê Hoàng Long", "Phạm Thùy Linh",
+                "Võ Minh Trí", "Đặng Thu Hà", "Bùi Quốc Cường", "Hoàng Kim Oanh",
+                "Ngô Đức Thắng", "Đỗ Quỳnh Như", "Huỳnh Thanh Tùng", "Trương Mỹ Duyên",
+                "Phan Gia Hưng", "Vũ Mai Phương", "Lý Thanh Bình", "Đinh Ngọc Hân",
+                "Dương Quốc Anh", "Tạ Bích Phượng", "Cao Văn Hậu", "Lâm Mỹ Lan"
+        };
+
+        String[] streets = {
+                "209 Đường 30/4, P. Xuân Khánh, Q. Ninh Kiều",
+                "45 Cách Mạng Tháng 8, P. Cái Khế, Q. Ninh Kiều",
+                "128 Nguyễn Trãi, P. Thới Bình, Q. Ninh Kiều",
+                "KDC 91B, P. An Khánh, Q. Ninh Kiều",
+                "88 Trần Văn Khéo, P. Cái Khế, Q. Ninh Kiều",
+                "15 Mậu Thân, P. An Hòa, Q. Ninh Kiều",
+                "60 Đại lộ Hòa Bình, P. Tân An, Q. Ninh Kiều",
+                "22 Lê Hồng Phong, P. Trà An, Q. Bình Thủy",
+                "99 Đường 3/2, P. Hưng Lợi, Q. Ninh Kiều",
+                "12 Võ Văn Kiệt, P. An Thới, Q. Bình Thủy",
+                "33 Trần Hưng Đạo, P. An Phú, Q. Ninh Kiều",
+                "KDC Hưng Phú 1, P. Hưng Phú, Q. Cái Răng",
+                "120 Hùng Vương, P. Thới Bình, Q. Ninh Kiều",
+                "54 Nam Kỳ Khởi Nghĩa, P. Tân An, Q. Ninh Kiều",
+                "76 Lý Tự Trọng, P. An Cư, Q. Ninh Kiều"
+        };
+
+        Random random = new Random(42);
+
+        PaymentMethod[] paymentMethods = {
+                PaymentMethod.COD, PaymentMethod.BANK_TRANSFER, PaymentMethod.VNPAY, PaymentMethod.MOMO
+        };
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (int i = 1; i <= 50; i++) {
+            String name = customerNames[i % customerNames.length];
+            String phone = "09" + (10000000 + random.nextInt(89999999));
+            String email = "customer" + i + "@gmail.com";
+            String street = streets[i % streets.length];
+            String city = "Cần Thơ";
+
+            // Spread dates over past 30 days
+            int daysAgo = random.nextInt(30);
+            int hoursAgo = random.nextInt(24);
+            LocalDateTime orderDate = now.minusDays(daysAgo).minusHours(hoursAgo);
+
+            String orderNumber = String.format("UQ-2608%02d-%05d", ((i * 7) % 28) + 1, 1000 + i);
+
+            // Realistic status distribution
+            OrderStatus status;
+            if (daysAgo > 6) {
+                status = (i % 15 == 0) ? OrderStatus.CANCELLED : OrderStatus.COMPLETED;
+            } else if (daysAgo > 3) {
+                status = OrderStatus.DELIVERED;
+            } else if (daysAgo > 1) {
+                status = OrderStatus.SHIPPING;
+            } else if (hoursAgo > 6) {
+                status = OrderStatus.PACKING;
+            } else if (hoursAgo > 2) {
+                status = OrderStatus.CONFIRMED;
+            } else {
+                status = OrderStatus.PENDING;
+            }
+
+            OrderType orderType = (i % 4 == 0) ? OrderType.IN_STORE_PICKUP : OrderType.ONLINE_DELIVERY;
+            PaymentMethod paymentMethod = paymentMethods[i % paymentMethods.length];
+
+            // Pick 1 to 3 random products
+            int itemCount = 1 + random.nextInt(3);
+            List<OrderItem> items = new ArrayList<>();
+            BigDecimal subTotal = BigDecimal.ZERO;
+
+            for (int k = 0; k < itemCount; k++) {
+                Product prod = allProducts.get((i * 3 + k) % allProducts.size());
+                if (prod.getVariants() == null || prod.getVariants().isEmpty()) continue;
+                ProductVariant variant = prod.getVariants().get(random.nextInt(prod.getVariants().size()));
+
+                int qty = 1 + random.nextInt(2);
+                BigDecimal price = prod.getSalePrice() != null ? prod.getSalePrice() : prod.getBasePrice();
+                BigDecimal itemSubTotal = price.multiply(BigDecimal.valueOf(qty));
+                subTotal = subTotal.add(itemSubTotal);
+
+                items.add(OrderItem.builder()
+                        .variant(variant)
+                        .productName(prod.getName())
+                        .productCode(prod.getCode())
+                        .color(variant.getColorName())
+                        .size(variant.getSize())
+                        .imageUrl(variant.getImageUrl())
+                        .unitPrice(price)
+                        .quantity(qty)
+                        .subTotal(itemSubTotal)
+                        .build());
+            }
+
+            boolean useCoupon = (i % 3 == 0);
+            BigDecimal discount = BigDecimal.ZERO;
+            String couponCode = null;
+            if (useCoupon && subTotal.compareTo(new BigDecimal("300000")) >= 0) {
+                discount = subTotal.multiply(new BigDecimal("0.10")).min(new BigDecimal("100000"));
+                couponCode = "BEO10";
+            }
+
+            BigDecimal shippingFee = (orderType == OrderType.IN_STORE_PICKUP || subTotal.compareTo(new BigDecimal("500000")) >= 0) 
+                    ? BigDecimal.ZERO 
+                    : new BigDecimal("30000");
+
+            BigDecimal finalAmount = subTotal.subtract(discount).add(shippingFee);
+
+            Order order = Order.builder()
+                    .orderNumber(orderNumber)
+                    .user((i % 2 == 0) ? defaultUser : null)
+                    .store(store)
+                    .orderType(orderType)
+                    .status(status)
+                    .customerName(name)
+                    .customerPhone(phone)
+                    .customerEmail(email)
+                    .shippingAddress(street)
+                    .shippingCity(city)
+                    .trackingNumber(status == OrderStatus.SHIPPING || status == OrderStatus.DELIVERED || status == OrderStatus.COMPLETED ? "VNPOST-" + (7000000 + i * 137) : null)
+                    .subTotal(subTotal)
+                    .discountAmount(discount)
+                    .shippingFee(shippingFee)
+                    .finalAmount(finalAmount)
+                    .couponCode(couponCode)
+                    .notes(orderType == OrderType.IN_STORE_PICKUP ? "Nhận hàng trực tiếp tại Showroom Cần Thơ" : "Giao hàng giờ hành chính")
+                    .createdAt(orderDate)
+                    .updatedAt(orderDate.plusHours(1))
+                    .build();
+
+            Order savedOrder = orderRepository.save(order);
+
+            for (OrderItem it : items) {
+                it.setOrder(savedOrder);
+                orderItemRepository.save(it);
+            }
+
+            PaymentStatus payStatus = (status == OrderStatus.COMPLETED || status == OrderStatus.DELIVERED || paymentMethod == PaymentMethod.BANK_TRANSFER) 
+                    ? PaymentStatus.SUCCESS 
+                    : (status == OrderStatus.CANCELLED ? PaymentStatus.FAILED : PaymentStatus.PENDING);
+
+            paymentRepository.save(Payment.builder()
+                    .order(savedOrder)
+                    .paymentMethod(paymentMethod)
+                    .paymentStatus(payStatus)
+                    .transactionId("TXN-" + savedOrder.getOrderNumber())
+                    .amount(finalAmount)
+                    .paymentTime(payStatus == PaymentStatus.SUCCESS ? orderDate : null)
+                    .build());
+        }
+
+        log.info("50 realistic fashion orders generated successfully!");
     }
 
     private Product createProductWithVariants(

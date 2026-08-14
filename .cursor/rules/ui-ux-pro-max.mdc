@@ -1,0 +1,13 @@
+---
+description: Automatically apply UI/UX Pro Max design system, styles, color palettes, and UX guidelines on all frontend files
+globs: frontend/**/*.{jsx,js,tsx,ts,css,html}
+---
+
+# UI/UX PRO MAX SKILL PROTOCOL
+Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+
+Whenever you touch or create frontend files in this project:
+1. Always apply curated UI Styles, Harmonic Color Palettes, and Accessibility Rules from `.agents/skills/ui-ux-pro-max/SKILL.md`.
+2. Adhere to BEO Modern Fashion brand identity (Japanese minimalist aesthetic, `#e60012` accent, `#111111` typography, clean grid layout).
+3. Ensure all interactive touch targets are >= 44x44px, contrast ratio >= 4.5:1, and mobile-first responsive.
+4. Execute `node .agents/skills/ui-ux-pro-max/scripts/search.js "<topic>"` if you need specific design tokens or font pairings.

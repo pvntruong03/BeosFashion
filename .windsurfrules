@@ -1,0 +1,7 @@
+# UI/UX PRO MAX SKILL - WINDSURF PROTOCOL
+# Repository: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+
+When generating or refactoring UI code:
+1. Always load and apply `.agents/skills/ui-ux-pro-max/SKILL.md`.
+2. Follow state-of-the-art responsive design, touch target >= 44x44px, contrast >= 4.5:1.
+3. Query skill intelligence anytime via: `node .agents/skills/ui-ux-pro-max/scripts/search.js "<query>"`.

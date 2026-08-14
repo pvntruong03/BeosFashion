@@ -7,12 +7,14 @@ Whenever interacting with this codebase or assisting the user, Antigravity **MUS
 ---
 
 ### 1. 🎨 UI/UX PRO MAX SKILL SUITE (Luôn Tự Động Kích Hoạt Cho Mọi Tác Vụ Giao Diện)
+- **Repository**: `https://github.com/nextlevelbuilder/ui-ux-pro-max-skill` (Đã cài đặt tại `.agents/skills/ui-ux-pro-max/`)
 - **Scope**: Tất cả các yêu cầu liên quan đến Frontend, React components, CSS, thiết kế giao diện, màu sắc, bố cục (layout), typography, micro-animations, UX, form input, responsive và accessibility.
 - **Skills áp dụng**:
   - `ui-ux-pro-max`: Áp dụng 84 UI styles, 192 bảng màu chuẩn, 74 bộ font chữ, 119 quy chuẩn UX (touch target >= 44x44px, tương phản >= 4.5:1, mobile-first responsive).
   - `design-system`: Thiết kế tokens kiến trúc (colors, spacing, shadows, radii).
   - `ui-styling`: Tailwind CSS & Vanilla CSS tinh chỉnh thẩm mỹ cao cấp.
-  - `brand`: Nhất quán nhận diện thương hiệu BEO Modern Fashion (Logo, bảng màu, typography, tone giọng).
+  - `brand`: Nhất quán nhận diện thương hiệu BEO Modern Fashion (Logo BEO STORE, bảng màu, typography, tone giọng).
+- **Tra cứu nhanh tri thức Design**: Chạy lệnh `node .agents/skills/ui-ux-pro-max/scripts/search.js "<chủ đề>"` bất kỳ lúc nào.
 - **Nguyên tắc thẩm mỹ bắt buộc**: Thiết kế phải đạt chuẩn **Premium & State of the art**, có micro-interactions mượt mà, hover effects tinh tế, tuyệt đối không dùng giao diện thô sơ/cũ kỹ.
 
 ---

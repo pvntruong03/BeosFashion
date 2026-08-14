@@ -66,7 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/**").permitAll()
 
                         // Staff Portal APIs (Role check)
-                        .requestMatchers("/api/staff/**").hasAnyAuthority("ROLE_STAFF_MANAGER", "ROLE_STAFF_SALES", "ROLE_STAFF_WAREHOUSE", "ROLE_ADMIN")
+                        .requestMatchers("/api/staff/**").hasAnyAuthority("ROLE_STAFF_MANAGER", "ROLE_ADMIN")
 
                         // Admin CMS APIs (Role check)
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")

@@ -18,8 +18,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/staff")
 @RequiredArgsConstructor
-@Tag(name = "Staff Portal", description = "Store operations, Order Fulfillment, POS Cashier, and Branch Inventory")
-@PreAuthorize("hasAnyAuthority('ROLE_STAFF_MANAGER', 'ROLE_STAFF_SALES', 'ROLE_STAFF_WAREHOUSE', 'ROLE_ADMIN')")
+@Tag(name = "Store Manager Portal", description = "Store operations, Order Fulfillment, Stock Transfers, and Branch Inventory")
+@PreAuthorize("hasAnyAuthority('ROLE_STAFF_MANAGER', 'ROLE_ADMIN')")
 public class StaffController {
 
     private final StaffService staffService;
@@ -46,18 +46,6 @@ public class StaffController {
             @Valid @RequestBody OrderStatusUpdateRequest request) {
         OrderDto updated = orderService.updateOrderStatus(id, request);
         return ResponseEntity.ok(ApiResponse.ok("Order status updated to " + request.getStatus(), updated));
-    }
-
-    @PostMapping("/pos/orders")
-    @Operation(summary = "Create in-store POS sales order with instant receipt")
-    public ResponseEntity<ApiResponse<OrderDto>> createPosOrder(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @Valid @RequestBody PosOrderRequest request) {
-        if (request.getStoreId() == null && principal.getStoreId() != null) {
-            request.setStoreId(principal.getStoreId());
-        }
-        OrderDto order = orderService.createPosOrder(principal.getId(), request);
-        return ResponseEntity.ok(ApiResponse.ok("POS Order created successfully", order));
     }
 
     @GetMapping("/inventory")

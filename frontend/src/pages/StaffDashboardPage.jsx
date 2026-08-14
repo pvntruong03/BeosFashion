@@ -1,28 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Store,
-  ShoppingBag,
   Package,
   Boxes,
   Truck,
   FileText,
-  Scan,
-  Printer,
   Plus,
-  Minus,
   Trash2,
   CheckCircle2,
   AlertTriangle,
   Search,
-  CreditCard,
-  QrCode,
-  DollarSign,
   ArrowRightLeft,
-  RotateCcw,
   Edit2,
   X,
   Tag,
-  Save
+  Save,
+  Printer
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -40,16 +33,8 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const [storeInfo, setStoreInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // POS State
+  // Store Products State
   const [posProducts, setPosProducts] = useState([]);
-  const [posSearch, setPosSearch] = useState('');
-  const [posCart, setPosCart] = useState([]);
-  const [posCustomerPhone, setPosCustomerPhone] = useState('');
-  const [posCustomerName, setPosCustomerName] = useState('');
-  const [posCouponCode, setPosCouponCode] = useState('');
-  const [posPaymentMethod, setPosPaymentMethod] = useState('CASH_POS');
-  const [posCashTendered, setPosCashTendered] = useState('');
-  const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState(null);
 
   // Fulfillment State
@@ -232,100 +217,6 @@ export const StaffDashboardPage = ({ onNavigate }) => {
     } catch (err) {
       showError(err.message || 'Lỗi khi xóa/ngừng bán sản phẩm');
       setDeleteConfirmId(null);
-    }
-  };
-
-  // --- POS TERMINAL LOGIC ---
-  const handlePosAddToCart = (variant, product) => {
-    const existing = posCart.find((it) => it.variantId === variant.id);
-    const unitPrice = (product.salePrice || product.basePrice) + (variant.priceAdjustment || 0);
-
-    if (existing) {
-      setPosCart(posCart.map((it) =>
-        it.variantId === variant.id ? { ...it, quantity: it.quantity + 1, subTotal: (it.quantity + 1) * unitPrice } : it
-      ));
-    } else {
-      setPosCart([
-        ...posCart,
-        {
-          variantId: variant.id,
-          productId: product.id,
-          productName: product.name,
-          color: variant.colorName,
-          size: variant.size,
-          barcode: variant.barcode,
-          unitPrice,
-          quantity: 1,
-          subTotal: unitPrice,
-          imageUrl: variant.imageUrl || product.primaryImageUrl
-        }
-      ]);
-    }
-    showSuccess(`Đã thêm ${product.name} (${variant.size})`);
-  };
-
-  const handleBarcodeScanned = (barcode) => {
-    let found = false;
-    for (const p of posProducts) {
-      const v = p.variants?.find((varItem) => varItem.barcode === barcode || varItem.sku === barcode);
-      if (v) {
-        handlePosAddToCart(v, p);
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      showError(`Không tìm thấy sản phẩm với mã vạch: ${barcode}`);
-    }
-  };
-
-  const updatePosQty = (variantId, delta) => {
-    setPosCart(posCart.map((it) => {
-      if (it.variantId === variantId) {
-        const newQty = it.quantity + delta;
-        return newQty > 0 ? { ...it, quantity: newQty, subTotal: newQty * it.unitPrice } : null;
-      }
-      return it;
-    }).filter(Boolean));
-  };
-
-  const removePosItem = (variantId) => {
-    setPosCart(posCart.filter((it) => it.variantId !== variantId));
-  };
-
-  const posSubTotal = posCart.reduce((sum, it) => sum + it.subTotal, 0);
-  const posDiscount = (posCouponCode === 'BEO10' || posCouponCode === 'UNIQLO10') ? Math.min(posSubTotal * 0.1, 100000) : 0;
-  const posFinalAmount = Math.max(posSubTotal - posDiscount, 0);
-  const cashChange = posCashTendered ? Math.max(Number(posCashTendered) - posFinalAmount, 0) : 0;
-
-  const handlePosCheckout = async () => {
-    if (posCart.length === 0) {
-      showError('Giỏ hàng POS đang trống');
-      return;
-    }
-
-    try {
-      const payload = {
-        storeId: storeInfo?.id,
-        customerName: posCustomerName || 'Khách mua tại quầy',
-        customerPhone: posCustomerPhone,
-        couponCode: posCouponCode,
-        paymentMethod: posPaymentMethod,
-        cashTendered: posPaymentMethod === 'CASH_POS' && posCashTendered ? Number(posCashTendered) : null,
-        items: posCart.map((it) => ({ variantId: it.variantId, quantity: it.quantity }))
-      };
-
-      const res = await api.post('/staff/pos/orders', payload);
-      showSuccess('Thanh toán POS thành công!');
-      setReceiptOrder(res.data);
-      setPosCart([]);
-      setPosCustomerName('');
-      setPosCustomerPhone('');
-      setPosCouponCode('');
-      setPosCashTendered('');
-      fetchStaffData();
-    } catch (err) {
-      showError(err.message || 'Lỗi khi xử lý đơn POS');
     }
   };
 

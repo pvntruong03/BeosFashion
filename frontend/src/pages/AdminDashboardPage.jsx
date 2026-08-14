@@ -586,11 +586,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                         onChange={(e) => handleUpdateUserRole(u.id, e.target.value)}
                         style={{ padding: '4px 8px', border: '1px solid #ccc', fontSize: '0.8rem', outline: 'none' }}
                       >
-                        <option value="ROLE_CUSTOMER">ROLE_CUSTOMER (Khách mua)</option>
-                        <option value="ROLE_STAFF_MANAGER">ROLE_STAFF_MANAGER (Quản lý)</option>
-                        <option value="ROLE_STAFF_SALES">ROLE_STAFF_SALES (Thu ngân POS)</option>
-                        <option value="ROLE_STAFF_WAREHOUSE">ROLE_STAFF_WAREHOUSE (Kho)</option>
-                        <option value="ROLE_ADMIN">ROLE_ADMIN (Toàn quyền)</option>
+                        <option value="ROLE_CUSTOMER">ROLE_CUSTOMER (Khách hàng)</option>
+                        <option value="ROLE_STAFF_MANAGER">ROLE_STAFF_MANAGER (Quản lý chi nhánh)</option>
+                        <option value="ROLE_ADMIN">ROLE_ADMIN (Quản trị viên Admin)</option>
                       </select>
                     </td>
                   </tr>

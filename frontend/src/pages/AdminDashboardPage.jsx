@@ -391,27 +391,119 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             {/* 7-Day Revenue Trend & Store Sales Breakdown */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
               {/* 7-Day Trend */}
-              <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
-                <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '20px' }}>
-                  Biểu Đồ Doanh Thu 7 Ngày Gần Nhất
+              <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', color: '#111' }}>
+                      Biểu Đồ Doanh Thu 7 Ngày Gần Nhất
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>
+                      Thống kê doanh thu bán hàng & số lượng đơn qua từng ngày
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '700', backgroundColor: '#fff0f0', color: '#e60012', padding: '3px 8px', borderRadius: '3px', border: '1px solid #ffd0d0' }}>
+                      Tổng 7 ngày: {formatPrice(stats?.revenueLast7Days?.reduce((s, d) => s + (Number(d.revenue) || 0), 0) || 0)}
+                    </span>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', paddingTop: '20px', borderBottom: '1px solid #eee' }}>
-                  {stats?.revenueLast7Days?.map((d, idx) => (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', width: '40px' }}>
-                      <div
-                        style={{
-                          width: '28px',
-                          height: `${Math.max((d.revenue / 5000000) * 120, 20)}px`,
-                          backgroundColor: idx === 6 ? '#e60012' : '#111',
-                          transition: 'height 0.3s'
-                        }}
-                        title={`${d.date}: ${formatPrice(d.revenue)}`}
-                      />
-                      <span style={{ fontSize: '0.75rem', fontWeight: '700' }}>{d.date}</span>
+                {/* Bars Visualization Container */}
+                {(() => {
+                  const max7DayRevenue = Math.max(...(stats?.revenueLast7Days?.map((d) => Number(d.revenue) || 0) || [1]), 1000000);
+                  return (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'space-between',
+                      height: '210px',
+                      padding: '24px 8px 10px',
+                      borderBottom: '2px solid #e5e5e5',
+                      backgroundColor: '#fafafa',
+                      borderRadius: '4px',
+                      position: 'relative'
+                    }}>
+                      {/* Subtle background guides */}
+                      <div style={{ position: 'absolute', top: '25%', left: 0, right: 0, height: '1px', borderTop: '1px dashed #e0e0e0', pointerEvents: 'none' }} />
+                      <div style={{ position: 'absolute', top: '60%', left: 0, right: 0, height: '1px', borderTop: '1px dashed #e0e0e0', pointerEvents: 'none' }} />
+
+                      {stats?.revenueLast7Days?.map((d, idx) => {
+                        const isToday = idx === (stats.revenueLast7Days.length - 1);
+                        const rev = Number(d.revenue) || 0;
+                        const barHeight = Math.max(Math.round((rev / max7DayRevenue) * 115), 10);
+                        const formattedShortRev = rev >= 1000000 ? `${(rev / 1000000).toFixed(1)}Tr` : `${Math.round(rev / 1000)}k`;
+
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              flex: 1,
+                              height: '100%',
+                              zIndex: 1,
+                              cursor: 'pointer'
+                            }}
+                            title={`📅 Ngày ${d.date}\n💰 Doanh thu: ${formatPrice(rev)}\n📦 Số đơn: ${d.orderCount || 0} đơn`}
+                          >
+                            {/* Value label on top of bar */}
+                            <span style={{
+                              fontSize: '0.7rem',
+                              fontWeight: '800',
+                              color: isToday ? '#e60012' : '#444',
+                              marginBottom: '6px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {formattedShortRev}
+                            </span>
+
+                            {/* Bar Column */}
+                            <div
+                              style={{
+                                width: '32px',
+                                maxWidth: '80%',
+                                height: `${barHeight}px`,
+                                backgroundColor: isToday ? '#e60012' : '#1e293b',
+                                borderRadius: '4px 4px 0 0',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                boxShadow: isToday ? '0 4px 10px rgba(230,0,18,0.25)' : 'none'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scaleY(1.05)';
+                                e.currentTarget.style.backgroundColor = '#e60012';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scaleY(1)';
+                                e.currentTarget.style.backgroundColor = isToday ? '#e60012' : '#1e293b';
+                              }}
+                            />
+
+                            {/* Date label below bar */}
+                            <div style={{ marginTop: '8px', textAlign: 'center' }}>
+                              <span style={{
+                                fontSize: '0.72rem',
+                                fontWeight: isToday ? '900' : '700',
+                                color: isToday ? '#e60012' : '#111',
+                                display: 'block'
+                              }}>
+                                {d.date}
+                              </span>
+                              <span style={{
+                                fontSize: '0.65rem',
+                                color: '#767676',
+                                fontWeight: '600'
+                              }}>
+                                {d.orderCount || 0} đơn
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
 
               {/* Single Central Store Information & Operations */}

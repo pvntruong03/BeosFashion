@@ -44,6 +44,13 @@ public class Payment {
     @Column(length = 500)
     private String paymentDetails; // QR payload, card last 4 digits, VNPay response code
 
-    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
 }

@@ -816,7 +816,7 @@ public class DataInitializer implements CommandLineRunner {
                 PaymentMethod.COD, PaymentMethod.BANK_TRANSFER, PaymentMethod.VNPAY, PaymentMethod.MOMO
         };
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = LocalDate.now();
 
         for (int i = 1; i <= 50; i++) {
             String name = customerNames[i % customerNames.length];
@@ -825,27 +825,44 @@ public class DataInitializer implements CommandLineRunner {
             String street = streets[i % streets.length];
             String city = "Cần Thơ";
 
-            // Spread dates over past 30 days
-            int daysAgo = random.nextInt(30);
-            int hoursAgo = random.nextInt(24);
-            LocalDateTime orderDate = now.minusDays(daysAgo).minusHours(hoursAgo);
+            int daysAgo;
+            int hour;
+            int minute;
 
-            String orderNumber = String.format("UQ-2608%02d-%05d", ((i * 7) % 28) + 1, 1000 + i);
-
-            // Realistic status distribution
-            OrderStatus status;
-            if (daysAgo > 6) {
-                status = (i % 15 == 0) ? OrderStatus.CANCELLED : OrderStatus.COMPLETED;
-            } else if (daysAgo > 3) {
-                status = OrderStatus.DELIVERED;
-            } else if (daysAgo > 1) {
-                status = OrderStatus.SHIPPING;
-            } else if (hoursAgo > 6) {
-                status = OrderStatus.PACKING;
-            } else if (hoursAgo > 2) {
-                status = OrderStatus.CONFIRMED;
+            if (i <= 42) {
+                // Exactly 6 orders for each of the last 7 days (daysAgo: 0 to 6)
+                daysAgo = (i - 1) % 7;
+                hour = 8 + (((i * 7) + 3) % 13); // 8:00 to 20:00
+                minute = (i * 13) % 60;
             } else {
-                status = OrderStatus.PENDING;
+                // Remaining 8 orders for older days (8 to 28 days ago)
+                daysAgo = 8 + (i - 43) * 2;
+                hour = 9 + (i % 10);
+                minute = (i * 17) % 60;
+            }
+
+            LocalDateTime orderDate = today.minusDays(daysAgo).atTime(hour, minute);
+            String orderNumber = String.format("UQ-2608%02d-%05d", orderDate.getDayOfMonth(), 1000 + i);
+
+            // Status distribution based on daysAgo
+            OrderStatus status;
+            if (daysAgo >= 4) {
+                status = (i % 20 == 0) ? OrderStatus.CANCELLED : OrderStatus.COMPLETED;
+            } else if (daysAgo >= 2) {
+                status = OrderStatus.DELIVERED;
+            } else if (daysAgo == 1) {
+                status = (i % 2 == 0) ? OrderStatus.DELIVERED : OrderStatus.SHIPPING;
+            } else {
+                // Today (daysAgo == 0)
+                if (hour >= 18) {
+                    status = OrderStatus.PENDING;
+                } else if (hour >= 14) {
+                    status = OrderStatus.CONFIRMED;
+                } else if (hour >= 11) {
+                    status = OrderStatus.PACKING;
+                } else {
+                    status = OrderStatus.SHIPPING;
+                }
             }
 
             OrderType orderType = (i % 4 == 0) ? OrderType.IN_STORE_PICKUP : OrderType.ONLINE_DELIVERY;
@@ -915,25 +932,27 @@ public class DataInitializer implements CommandLineRunner {
                     .updatedAt(orderDate.plusHours(1))
                     .build();
 
-            Order savedOrder = orderRepository.save(order);
-
             for (OrderItem it : items) {
-                it.setOrder(savedOrder);
-                orderItemRepository.save(it);
+                it.setOrder(order);
             }
+            order.setItems(items);
+
+            Order savedOrder = orderRepository.save(order);
 
             PaymentStatus payStatus = (status == OrderStatus.COMPLETED || status == OrderStatus.DELIVERED || paymentMethod == PaymentMethod.BANK_TRANSFER) 
                     ? PaymentStatus.SUCCESS 
                     : (status == OrderStatus.CANCELLED ? PaymentStatus.FAILED : PaymentStatus.PENDING);
 
-            paymentRepository.save(Payment.builder()
+            Payment payment = Payment.builder()
                     .order(savedOrder)
                     .paymentMethod(paymentMethod)
                     .paymentStatus(payStatus)
                     .transactionId("TXN-" + savedOrder.getOrderNumber())
                     .amount(finalAmount)
                     .paymentTime(payStatus == PaymentStatus.SUCCESS ? orderDate : null)
-                    .build());
+                    .createdAt(orderDate)
+                    .build();
+            paymentRepository.save(payment);
         }
 
         log.info("50 realistic fashion orders generated successfully!");

@@ -89,9 +89,23 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Payment payment;
 
-    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = this.createdAt;
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

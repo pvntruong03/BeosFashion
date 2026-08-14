@@ -149,7 +149,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              BEO<br />SHOP
+              BEO<br />STORE
             </div>
             <div style={{
               height: '42px',

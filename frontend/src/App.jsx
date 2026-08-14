@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ToastProvider } from './contexts/ToastContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -9,6 +9,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
 import { VisualSearchModal } from './components/VisualSearchModal';
+import { AuthRequiredModal } from './components/AuthRequiredModal';
 
 import { HomePage } from './pages/HomePage';
 import { ProductListingPage } from './pages/ProductListingPage';
@@ -29,18 +30,17 @@ const AppContent = () => {
   const [currentView, setCurrentView] = useState('home');
   const [viewParams, setViewParams] = useState({});
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
+  const [authModalRole, setAuthModalRole] = useState(null);
 
   const handleNavigate = (view, params = {}) => {
-    // Route guard checks
+    // Elegant route guard checks with custom modal dialog
     if (view === 'admin' && !isAdmin) {
-      alert('Bạn cần đăng nhập bằng tài khoản Quản trị viên (ROLE_ADMIN) để truy cập trang này.');
-      setCurrentView('login');
+      setAuthModalRole('ADMIN');
       return;
     }
 
     if (view === 'staff' && !isStaff && !isAdmin) {
-      alert('Bạn cần đăng nhập bằng tài khoản Nhân viên (ROLE_STAFF_*) để truy cập trang này.');
-      setCurrentView('login');
+      setAuthModalRole('STAFF');
       return;
     }
 
@@ -107,7 +107,19 @@ const AppContent = () => {
         }}
       />
 
-      {/* Global Footer (hidden on POS / Staff full screen view if desired, or visible across site) */}
+      {/* Modern Role Access Permission Dialog */}
+      <AuthRequiredModal
+        isOpen={!!authModalRole}
+        requiredRole={authModalRole}
+        onClose={() => setAuthModalRole(null)}
+        onGoToLogin={() => {
+          setAuthModalRole(null);
+          setCurrentView('login');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
+
+      {/* Global Footer */}
       <Footer onNavigate={handleNavigate} />
     </div>
   );

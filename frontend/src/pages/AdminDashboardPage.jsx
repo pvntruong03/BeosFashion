@@ -21,6 +21,7 @@ import {
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 import { ReceiptModal } from '../components/ReceiptModal';
+import { ConfirmModal } from '../components/ConfirmModal';
 import api from '../services/api';
 
 export const AdminDashboardPage = ({ onNavigate }) => {
@@ -213,15 +214,18 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     }
   };
 
-  const handleDeleteProduct = async (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn ngưng kinh doanh sản phẩm này?')) {
-      try {
-        await api.delete(`/admin/products/${id}`);
-        showSuccess('Đã chuyển sản phẩm sang trạng thái ngừng kinh doanh');
-        fetchAdminData();
-      } catch (err) {
-        showError(err.message || 'Lỗi khi xóa sản phẩm');
-      }
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const confirmDeleteProduct = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      await api.delete(`/admin/products/${deleteConfirmId}`);
+      showSuccess('Đã chuyển sản phẩm sang trạng thái ngừng kinh doanh');
+      setDeleteConfirmId(null);
+      fetchAdminData();
+    } catch (err) {
+      showError(err.message || 'Lỗi khi xóa sản phẩm');
+      setDeleteConfirmId(null);
     }
   };
 
@@ -486,7 +490,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                           <span>Sửa</span>
                         </button>
                         <button
-                          onClick={() => handleDeleteProduct(prod.id)}
+                          onClick={() => setDeleteConfirmId(prod.id)}
                           style={{ color: '#d9383a', padding: '4px 8px', cursor: 'pointer', border: '1px solid #ffcdd2', backgroundColor: '#fff5f5' }}
                           title="Ngừng bán / Xóa"
                         >
@@ -1057,6 +1061,18 @@ export const AdminDashboardPage = ({ onNavigate }) => {
           isOpen={!!receiptOrder}
           onClose={() => setReceiptOrder(null)}
           order={receiptOrder}
+        />
+
+        {/* Delete / Deactivate Confirm Modal */}
+        <ConfirmModal
+          isOpen={!!deleteConfirmId}
+          title="Ngừng kinh doanh sản phẩm"
+          message="Bạn có chắc chắn muốn ngưng kinh doanh sản phẩm này? Sản phẩm sẽ bị ẩn khỏi trang bán hàng trực tuyến của khách hàng."
+          confirmText="Đồng ý ngưng bán"
+          cancelText="Hủy bỏ"
+          isDanger={true}
+          onConfirm={confirmDeleteProduct}
+          onCancel={() => setDeleteConfirmId(null)}
         />
       </div>
     </div>

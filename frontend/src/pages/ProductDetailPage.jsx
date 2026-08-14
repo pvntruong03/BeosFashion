@@ -249,7 +249,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           {/* Tag & Code */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#e60012', textTransform: 'uppercase' }}>
-              {product.collection || 'UNIQLO LIFEWEAR'}
+              {product.collection || 'BEO LIFEWEAR'}
             </span>
             <span style={{ fontSize: '0.8rem', color: '#888' }}>Mã SP: {product.code}</span>
           </div>
@@ -558,12 +558,12 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                       fontWeight: '700',
                       fontSize: '0.85rem'
                     }}>
-                      {rev.userName ? rev.userName.charAt(0).toUpperCase() : 'U'}
+                      {rev.userName ? rev.userName.charAt(0).toUpperCase() : 'B'}
                     </div>
                     <div>
-                      <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>{rev.userName || 'Khách hàng Uniqlo'}</div>
+                      <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>{rev.userName || 'Khách hàng BEO'}</div>
                       {rev.verifiedPurchase && (
-                        <div style={{ fontSize: '0.72rem', color: '#00875a', fontWeight: '700' }}>✓ Đã mua hàng tại Uniqlo</div>
+                        <div style={{ fontSize: '0.72rem', color: '#00875a', fontWeight: '700' }}>✓ Đã mua hàng tại BEO</div>
                       )}
                     </div>
                   </div>

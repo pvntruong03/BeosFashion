@@ -18,10 +18,10 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
     bankId: 'vietinbank',
     bankName: 'VietinBank (Ngân hàng TMCP Công Thương Việt Nam)',
     accountNo: '113366668888',
-    accountName: 'UNIQLO VIETNAM CO LTD',
+    accountName: 'BEO FASHION VIETNAM',
     amount: order?.finalAmount || 0,
     transferContent: `Thanh toan don hang ${order?.orderNumber}`,
-    qrImageUrl: `https://img.vietqr.io/image/vietinbank-113366668888-compact2.png?amount=${Math.round(order?.finalAmount || 0)}&addInfo=Thanh+toan+don+hang+${order?.orderNumber}&accountName=UNIQLO+VIETNAM`
+    qrImageUrl: `https://img.vietqr.io/image/vietinbank-113366668888-compact2.png?amount=${Math.round(order?.finalAmount || 0)}&addInfo=Thanh+toan+don+hang+${order?.orderNumber}&accountName=BEO+FASHION+VIETNAM`
   };
 
   const copyToClipboard = (text, fieldName) => {

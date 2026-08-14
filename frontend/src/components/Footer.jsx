@@ -13,7 +13,7 @@ export const Footer = ({ onNavigate }) => {
     e.preventDefault();
     if (email && email.includes('@')) {
       setSubscribed(true);
-      showSuccess('Cảm ơn bạn! Mã giảm giá 10% của bạn là: UNIQLO10');
+      showSuccess('Cảm ơn bạn! Mã giảm giá 10% của bạn là: BEO10');
       setEmail('');
     }
   };
@@ -80,8 +80,8 @@ export const Footer = ({ onNavigate }) => {
           {/* Col 1: Brand & Philosophy */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px' }}>
-              <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '4px 6px', fontWeight: '900', fontSize: '1rem', lineHeight: 1 }}>UNI<br/>QLO</div>
-              <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '4px 6px', fontWeight: '900', fontSize: '0.75rem', lineHeight: 1.1 }}>ユニ<br/>クロ</div>
+              <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '4px 6px', fontWeight: '900', fontSize: '1rem', lineHeight: 1 }}>BEO<br/>SHOP</div>
+              <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '4px 6px', fontWeight: '900', fontSize: '0.75rem', lineHeight: 1.1 }}>ベオ<br/>ファッション</div>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#666', lineHeight: 1.6, marginBottom: '16px' }}>
               {t('lifewear_story_desc')}
@@ -120,13 +120,13 @@ export const Footer = ({ onNavigate }) => {
           <div>
             <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '12px', textTransform: 'uppercase' }}>Đăng ký nhận bản tin</div>
             <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '16px' }}>
-              Đăng ký ngay hôm nay để nhận <strong>Mã giảm giá 10% (UNIQLO10)</strong> cho đơn hàng đầu tiên cùng thông tin BST mới nhất.
+              Đăng ký ngay hôm nay để nhận <strong>Mã giảm giá 10% (BEO10)</strong> cho đơn hàng đầu tiên cùng thông tin BST mới nhất.
             </p>
 
             {subscribed ? (
               <div style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', padding: '12px', borderRadius: '2px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={18} />
-                <span>Mã giảm giá: <strong>UNIQLO10</strong></span>
+                <span>Mã giảm giá: <strong>BEO10</strong></span>
               </div>
             ) : (
               <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -172,7 +172,7 @@ export const Footer = ({ onNavigate }) => {
           color: '#888'
         }}>
           <div>
-            © 2026 UNIQLO CO., LTD. / UNIQLO VIETNAM. All rights reserved. Powered by Java Spring Boot & React.
+            © 2026 BEO FASHION CO., LTD. / BEO VIETNAM. All rights reserved. Powered by Java Spring Boot & React.
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
             <span>Điều khoản sử dụng</span>

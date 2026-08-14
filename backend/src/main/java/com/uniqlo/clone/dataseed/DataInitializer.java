@@ -44,12 +44,12 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        log.info("Starting Uniqlo Clone database initial seeding...");
+        log.info("Starting BEO Fashion Clone database initial seeding...");
 
         // 1. STORES
         Store storeDongKhoi = storeRepository.save(Store.builder()
                 .code("STR-HCM-01")
-                .name("UNIQLO Vincom Đồng Khởi")
+                .name("BEO Vincom Đồng Khởi")
                 .address("Tầng 1-3, Vincom Center Đồng Khởi, 72 Lê Thánh Tôn, Bến Nghé, Quận 1")
                 .city("TP. Hồ Chí Minh")
                 .phone("028 3822 8888")
@@ -61,7 +61,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Store storeLandmark = storeRepository.save(Store.builder()
                 .code("STR-HCM-02")
-                .name("UNIQLO Landmark 81")
+                .name("BEO Landmark 81")
                 .address("Tầng B1, Landmark 81, 720A Điện Biên Phủ, Phường 22, Bình Thạnh")
                 .city("TP. Hồ Chí Minh")
                 .phone("028 3899 9999")
@@ -73,7 +73,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Store storeBaTrieu = storeRepository.save(Store.builder()
                 .code("STR-HAN-01")
-                .name("UNIQLO Vincom Bà Triệu")
+                .name("BEO Vincom Bà Triệu")
                 .address("Tầng 1-2, Vincom Center Bà Triệu, 191 Bà Triệu, Lê Đại Hành, Hai Bà Trưng")
                 .city("Hà Nội")
                 .phone("024 3974 6666")
@@ -85,7 +85,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Store storeCentralWarehouse = storeRepository.save(Store.builder()
                 .code("WH-BD-01")
-                .name("UNIQLO Central Distribution Warehouse")
+                .name("BEO Central Distribution Warehouse")
                 .address("Khu công nghiệp VSIP 1, Thuận An")
                 .city("Bình Dương")
                 .phone("0274 3788 999")
@@ -97,9 +97,9 @@ public class DataInitializer implements CommandLineRunner {
         User adminUser = userRepository.save(User.builder()
                 .email("admin@uniqlo.com")
                 .password(passwordEncoder.encode("admin123"))
-                .fullName("Uniqlo Admin Master")
+                .fullName("BEO Admin Master")
                 .phone("0909111222")
-                .address("Trụ sở Uniqlo Việt Nam, Tòa nhà Bitexco, Q1")
+                .address("Trụ sở BEO Fashion Việt Nam, Tòa nhà Bitexco, Q1")
                 .city("TP. Hồ Chí Minh")
                 .role(Role.ROLE_ADMIN)
                 .avatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80")
@@ -448,6 +448,20 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         // 5. COUPONS
+        couponRepository.save(Coupon.builder()
+                .code("BEO10")
+                .description("Giảm 10% cho toàn bộ đơn hàng BEO Fashion (Tối đa 100,000 VND)")
+                .discountType(DiscountType.PERCENT)
+                .discountValue(new BigDecimal("10"))
+                .minOrderAmount(new BigDecimal("300000"))
+                .maxDiscountAmount(new BigDecimal("100000"))
+                .startDate(LocalDate.now().minusDays(10))
+                .endDate(LocalDate.now().plusMonths(3))
+                .usageLimit(5000)
+                .usedCount(142)
+                .active(true)
+                .build());
+
         couponRepository.save(Coupon.builder()
                 .code("UNIQLO10")
                 .description("Giảm 10% cho toàn bộ đơn hàng (Tối đa 100,000 VND)")

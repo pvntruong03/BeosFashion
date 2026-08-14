@@ -17,7 +17,7 @@ public class VietQrService {
     private String bankId = "vietinbank"; // vietinbank, vcb, mbbank, techcombank, acb, tpbank...
     private String bankName = "VietinBank (Ngân hàng TMCP Công Thương Việt Nam)";
     private String accountNo = "113366668888";
-    private String accountName = "UNIQLO VIETNAM CO LTD";
+    private String accountName = "BEO FASHION VIETNAM";
     private String template = "compact2"; // compact, compact2, qr_only, print
 
     public synchronized BankConfig getBankConfig() {

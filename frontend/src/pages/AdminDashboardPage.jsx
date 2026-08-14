@@ -70,7 +70,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     bankId: 'vietinbank',
     bankName: 'VietinBank (Ngân hàng TMCP Công Thương Việt Nam)',
     accountNo: '113366668888',
-    accountName: 'UNIQLO VIETNAM CO LTD',
+    accountName: 'BEO FASHION VIETNAM',
     template: 'compact2'
   });
   const [savingBankConfig, setSavingBankConfig] = useState(false);

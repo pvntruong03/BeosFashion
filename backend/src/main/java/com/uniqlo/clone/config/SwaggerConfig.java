@@ -18,10 +18,10 @@ public class SwaggerConfig {
         final String securitySchemeName = "BearerAuth";
         return new OpenAPI()
                 .info(new Info()
-                        .title("Uniqlo Clone E-Commerce REST API")
+                        .title("BEO Fashion E-Commerce REST API")
                         .version("1.0.0")
-                        .description("RESTful API backend for Uniqlo Clone E-Commerce platform (Storefront, Staff POS & Portal, Admin CMS)")
-                        .contact(new Contact().name("Uniqlo Dev Team").email("dev@uniqlo.com"))
+                        .description("RESTful API backend for BEO Fashion E-Commerce platform (Storefront, Staff POS & Portal, Admin CMS)")
+                        .contact(new Contact().name("BEO Dev Team").email("dev@beo.com"))
                         .license(new License().name("Apache 2.0")))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()

@@ -79,7 +79,7 @@ export const LookbookPage = ({ onNavigate }) => {
       <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 48px auto' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#e60012', fontWeight: '800', fontSize: '0.85rem', marginBottom: '8px' }}>
           <Sparkles size={16} />
-          <span>UNIQLO STYLE GUIDE SS26</span>
+          <span>BEO STYLE GUIDE SS26</span>
         </div>
         <h1 className="heading-display" style={{ fontSize: '2.4rem', textTransform: 'uppercase', marginBottom: '12px' }}>
           LifeWear Lookbook

@@ -75,11 +75,11 @@ export const LoginPage = ({ onNavigate }) => {
       {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '36px' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '12px' }}>
-          <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '1.2rem', lineHeight: 1 }}>UNI<br/>QLO</div>
-          <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '0.85rem', lineHeight: 1.1 }}>ユニ<br/>クロ</div>
+          <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '1.2rem', lineHeight: 1 }}>BEO<br/>SHOP</div>
+          <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '0.85rem', lineHeight: 1.1 }}>ベオ<br/>ファッション</div>
         </div>
         <h1 className="heading-section" style={{ fontSize: '1.8rem', textTransform: 'uppercase' }}>
-          CỔNG ĐĂNG NHẬP HỆ THỐNG UNIQLO
+          CỔNG ĐĂNG NHẬP HỆ THỐNG BEO
         </h1>
         <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
           Một trang đăng nhập duy nhất cho tất cả Khách hàng, Nhân viên chi nhánh và Quản trị viên

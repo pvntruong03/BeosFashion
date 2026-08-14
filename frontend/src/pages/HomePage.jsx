@@ -253,7 +253,7 @@ export const HomePage = ({ onNavigate }) => {
             alignItems: 'center'
           }}>
             <div>
-              <span className="badge-uq red" style={{ marginBottom: '12px' }}>UNIQLO LIFEWEAR</span>
+              <span className="badge-uq red" style={{ marginBottom: '12px' }}>BEO LIFEWEAR</span>
               <h2 className="heading-display" style={{ fontSize: '2rem', marginBottom: '20px' }}>
                 Trang phục giản đơn cho cuộc sống tốt đẹp hơn.
               </h2>

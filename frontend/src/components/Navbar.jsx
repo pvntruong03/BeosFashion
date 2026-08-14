@@ -127,7 +127,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          {/* Uniqlo Twin Logo */}
+          {/* BEO Twin Logo */}
           <div
             onClick={() => onNavigate('home')}
             style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', userSelect: 'none' }}
@@ -143,7 +143,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               letterSpacing: '-1px',
               textAlign: 'center'
             }}>
-              UNI<br />QLO
+              BEO<br />SHOP
             </div>
             <div style={{
               backgroundColor: '#e60012',
@@ -156,7 +156,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               textAlign: 'center',
               letterSpacing: '1px'
             }}>
-              ユニ<br />クロ
+              ベオ<br />ファッション
             </div>
           </div>
 

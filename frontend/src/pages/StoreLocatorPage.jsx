@@ -37,10 +37,10 @@ export const StoreLocatorPage = ({ onNavigate }) => {
     <div className="container" style={{ padding: '36px 24px' }}>
       <div style={{ marginBottom: '28px' }}>
         <h1 className="heading-section" style={{ fontSize: '1.8rem', textTransform: 'uppercase' }}>
-          Tìm Cửa Hàng UNIQLO Gần Nhất
+          Tìm Cửa Hàng BEO Gần Nhất
         </h1>
         <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
-          Khám phá danh sách các cửa hàng Uniqlo chính hãng tại Việt Nam, giờ mở cửa và địa chỉ
+          Khám phá danh sách các cửa hàng BEO chính hãng tại Việt Nam, giờ mở cửa và địa chỉ
         </p>
       </div>
 

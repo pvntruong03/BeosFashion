@@ -1,10 +1,11 @@
-# UNIQLO E-Commerce Fullstack Platform
-## Xây dựng Website Thương mại điện tử (kiểu Uniqlo) bằng Java Spring Boot & React
 
-Dự án website thương mại điện tử thời trang hoàn chỉnh, lấy cảm hứng từ thương hiệu **UNIQLO LifeWear** với đầy đủ 3 phân hệ:
-1. **Storefront (Khách hàng)**: Mua sắm, danh mục đa cấp, bộ lọc đa năng, tìm kiếm tức thì, gợi ý chọn size thông minh, giỏ hàng, mã giảm giá, checkout đa kênh (COD, VNPay Sandbox, MoMo, VietQR), đánh giá từ người mua thực tế, LifeWear Lookbook và Store Locator.
-2. **Staff Portal & In-Store POS (`/staff/dashboard`)**: Dành riêng cho nhân viên cửa hàng (gắn theo `storeId`), máy POS bán hàng tại quầy hỗ trợ quét mã vạch và in hóa đơn nhiệt, hàng đợi xử lý đơn (Order Fulfillment Queue), kiểm kê tồn kho chi nhánh, yêu cầu điều chuyển hàng và báo cáo doanh thu ca.
-3. **Admin CMS (`/admin/dashboard`)**: Quản trị toàn hệ thống, dashboard phân tích KPI doanh thu và biểu đồ xu hướng 7 ngày, CRUD sản phẩm kèm **Trình tạo ma trận biến thể tự động (Variant Matrix Generator)**, quản lý đơn hàng toàn quốc, phân quyền nhân sự và quản lý mã khuyến mãi.
+# BEO FASHION E-Commerce Fullstack Platform
+## Xây dựng Website Thương mại điện tử BEO Fashion bằng Java Spring Boot & React
+
+Dự án website thương mại điện tử thời trang hoàn chỉnh **BEO Fashion**, lấy cảm hứng từ phong cách **BEO LifeWear** với đầy đủ 3 phân hệ:
+1. **Storefront (Khách hàng)**: Mua sắm, danh mục đa cấp, bộ lọc đa năng, tìm kiếm tức thì, AI Visual Search (tìm kiếm bằng hình ảnh), gợi ý chọn size thông minh, giỏ hàng, mã giảm giá (`BEO10`), checkout đa kênh (COD, VNPay, VietQR động), đánh giá sản phẩm, Lookbook và Store Locator.
+2. **Staff Portal & In-Store POS (`/staff/dashboard`)**: Máy POS bán hàng tại quầy hỗ trợ quét mã vạch và in hóa đơn nhiệt, hàng đợi xử lý đơn (Order Fulfillment Queue), kiểm kê tồn kho chi nhánh, yêu cầu điều chuyển hàng và quản lý sản phẩm cho Store Manager.
+3. **Admin CMS (`/admin/dashboard`)**: Quản trị toàn hệ thống, dashboard KPI doanh thu, CRUD sản phẩm kèm **Trình tạo ma trận biến thể tự động (Variant Matrix Generator)**, quản lý đơn hàng toàn quốc, phân quyền và quản lý coupon.
 4. **Cơ chế Single Login duy nhất (`/login`)**: Tự động phân luồng theo vai trò người dùng (Customer → Storefront, Staff → Staff Portal, Admin → Admin CMS).
 
 ---

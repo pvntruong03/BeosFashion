@@ -66,9 +66,9 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
         }}>
           {/* Store header */}
           <div style={{ textAlign: 'center', borderBottom: '1px dashed #999', paddingBottom: '14px', marginBottom: '14px' }}>
-            <div style={{ fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px' }}>UNIQLO VIETNAM</div>
+            <div style={{ fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px' }}>BEO VIETNAM</div>
             <div style={{ fontWeight: '700', fontSize: '0.9rem', marginTop: '2px' }}>
-              {order.storeName || 'CỬA HÀNG TRỰC TUYẾN UNIQLO'}
+              {order.storeName || 'CỬA HÀNG TRỰC TUYẾN BEO'}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#555', marginTop: '4px' }}>
               {order.shippingAddress || 'TP. Hồ Chí Minh'}
@@ -185,7 +185,7 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
             </div>
             <div style={{ fontSize: '0.75rem', marginTop: '4px' }}>{order.orderNumber}</div>
             <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '8px' }}>
-              Cảm ơn quý khách đã mua sắm tại Uniqlo!<br />
+              Cảm ơn quý khách đã mua sắm tại BEO!<br />
               Đổi trả miễn phí trong vòng 30 ngày kèm hóa đơn này.
             </div>
           </div>

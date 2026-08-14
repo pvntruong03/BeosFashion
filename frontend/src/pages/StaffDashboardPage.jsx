@@ -291,7 +291,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   };
 
   const posSubTotal = posCart.reduce((sum, it) => sum + it.subTotal, 0);
-  const posDiscount = posCouponCode === 'UNIQLO10' ? Math.min(posSubTotal * 0.1, 100000) : 0;
+  const posDiscount = (posCouponCode === 'BEO10' || posCouponCode === 'UNIQLO10') ? Math.min(posSubTotal * 0.1, 100000) : 0;
   const posFinalAmount = Math.max(posSubTotal - posDiscount, 0);
   const cashChange = posCashTendered ? Math.max(Number(posCashTendered) - posFinalAmount, 0) : 0;
 
@@ -402,7 +402,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h1 style={{ fontSize: '1.3rem', fontWeight: '800', margin: 0 }}>
-                  {storeInfo?.name || 'UNIQLO Vincom Đồng Khởi'}
+                  {storeInfo?.name || 'BEO Vincom Đồng Khởi'}
                 </h1>
                 <span className="badge-uq red">{user?.role}</span>
               </div>
@@ -585,7 +585,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                   />
                   <input
                     type="text"
-                    placeholder="Mã Voucher (VD: UNIQLO10)"
+                    placeholder="Mã Voucher (VD: BEO10)"
                     value={posCouponCode}
                     onChange={(e) => setPosCouponCode(e.target.value.toUpperCase())}
                     style={{ padding: '8px', border: '1px solid #ccc', fontSize: '0.8rem', outline: 'none' }}

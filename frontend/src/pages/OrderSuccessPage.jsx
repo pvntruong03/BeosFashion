@@ -77,7 +77,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
 
         <span className="badge-uq red" style={{ marginBottom: '8px' }}>ĐẶT HÀNG THÀNH CÔNG</span>
         <h1 className="heading-display" style={{ fontSize: '2rem', marginTop: '6px', marginBottom: '8px' }}>
-          Cảm ơn bạn đã mua sắm tại UNIQLO!
+          Cảm ơn bạn đã mua sắm tại BEO!
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#666' }}>
           Mã đơn hàng: <strong style={{ color: '#111', fontSize: '1.1rem' }}>{order.orderNumber}</strong>

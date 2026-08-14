@@ -81,7 +81,7 @@ export const OrderHistoryPage = ({ onNavigate }) => {
         <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#fafafa', border: '1px solid #eee' }}>
           <Package size={48} color="#ccc" style={{ marginBottom: '16px' }} />
           <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '6px' }}>Bạn chưa có đơn hàng nào</h3>
-          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '20px' }}>Hãy khám phá các sản phẩm LifeWear mới nhất của Uniqlo!</p>
+          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '20px' }}>Hãy khám phá các sản phẩm LifeWear mới nhất của BEO!</p>
           <button onClick={() => onNavigate('products')} className="btn-uq btn-uq-primary">
             Khám phá mua sắm ngay
           </button>

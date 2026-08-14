@@ -121,11 +121,9 @@ public class OrderService {
                 .finalAmount(finalAmount)
                 .couponCode(request.getCouponCode())
                 .notes(request.getNotes())
+                .items(new ArrayList<>())
                 .build();
 
-        order = orderRepository.save(order);
-
-        List<OrderItem> orderItems = new ArrayList<>();
         for (CartItemDto item : checkoutItems) {
             ProductVariant variant = variantRepository.findById(item.getVariantId())
                     .orElseThrow(() -> new ResourceNotFoundException("Variant not found: " + item.getVariantId()));
@@ -157,10 +155,8 @@ public class OrderService {
                     .subTotal(item.getSubTotal())
                     .build();
 
-            orderItems.add(orderItemRepository.save(orderItem));
+            order.getItems().add(orderItem);
         }
-
-        order.setItems(orderItems);
 
         // Payment record
         PaymentStatus initialPaymentStatus = (request.getPaymentMethod() == PaymentMethod.COD ||
@@ -176,8 +172,9 @@ public class OrderService {
                 .paymentTime(initialPaymentStatus == PaymentStatus.SUCCESS ? LocalDateTime.now() : null)
                 .build();
 
-        payment = paymentRepository.save(payment);
         order.setPayment(payment);
+
+        Order savedOrder = orderRepository.save(order);
 
         // Remove purchased items from cart
         List<Long> purchasedVariantIds = checkoutItems.stream()
@@ -185,7 +182,7 @@ public class OrderService {
                 .collect(Collectors.toList());
         cartService.removePurchasedItems(userId, sessionId, purchasedVariantIds);
 
-        return mapToDto(order);
+        return mapToDto(savedOrder);
     }
 
     @Transactional(readOnly = true)

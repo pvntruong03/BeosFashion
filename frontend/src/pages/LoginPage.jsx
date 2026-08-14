@@ -316,62 +316,6 @@ export const LoginPage = ({ onNavigate }) => {
               <ArrowRight size={16} />
             </div>
 
-            {/* Staff Cashier */}
-            <div
-              onClick={() => handleDemoLoginClick('staff_sales')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e0e0e0',
-                cursor: 'pointer',
-                transition: 'background 0.15s'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>💳 Thu Ngân Bán Hàng Tại Quầy (POS)</span>
-                  <span className="badge-uq black">POS CASHIER</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  pos.dongkhoi@uniqlo.com • Bán hàng & In hóa đơn
-                </div>
-              </div>
-              <ArrowRight size={16} />
-            </div>
-
-            {/* Staff Warehouse */}
-            <div
-              onClick={() => handleDemoLoginClick('staff_warehouse')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e0e0e0',
-                cursor: 'pointer',
-                transition: 'background 0.15s'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>📦 Nhân Viên Kho & Soạn Hàng</span>
-                  <span className="badge-uq black">WAREHOUSE</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  warehouse.dongkhoi@uniqlo.com • Quét mã & Đóng gói
-                </div>
-              </div>
-              <ArrowRight size={16} />
-            </div>
-
             {/* Customer */}
             <div
               onClick={() => handleDemoLoginClick('customer')}

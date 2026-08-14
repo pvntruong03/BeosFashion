@@ -17,7 +17,7 @@ const translations = {
     orders: 'Đơn hàng của tôi',
     logout: 'Đăng xuất',
     admin_panel: 'Trang Quản trị (Admin)',
-    staff_panel: 'Trang Nhân viên (Staff)',
+    staff_panel: 'Quản Lý Cửa Hàng (Store Manager)',
 
     // Home
     hero_title: 'AIRism & LifeWear SS26',

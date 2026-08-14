@@ -29,7 +29,6 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { ConfirmModal } from '../components/ConfirmModal';
-import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 import api from '../services/api';
 
 export const StaffDashboardPage = ({ onNavigate }) => {
@@ -37,7 +36,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const { formatPrice } = useLanguage();
   const { showSuccess, showError, showInfo } = useToast();
 
-  const [activeTab, setActiveTab] = useState('pos'); // 'pos', 'fulfillment', 'inventory', 'transfers', 'report'
+  const [activeTab, setActiveTab] = useState('products'); // 'products', 'fulfillment', 'inventory', 'transfers', 'report'
   const [storeInfo, setStoreInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -418,14 +417,6 @@ export const StaffDashboardPage = ({ onNavigate }) => {
 
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
-              onClick={() => setIsBarcodeModalOpen(true)}
-              className="btn-uq btn-uq-red"
-              style={{ padding: '8px 16px', fontSize: '0.85rem' }}
-            >
-              <Scan size={16} />
-              <span>Quét Barcode</span>
-            </button>
-            <button
               onClick={() => onNavigate('home')}
               className="btn-uq btn-uq-outline-gray"
               style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
@@ -438,12 +429,11 @@ export const StaffDashboardPage = ({ onNavigate }) => {
         {/* Tab Navigation */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '20px' }}>
           {[
-            { id: 'pos', label: '1. Bán Hàng Tại Quầy (POS)', icon: <ShoppingBag size={16} /> },
+            { id: 'products', label: `1. Quản Lý Sản Phẩm (${posProducts.length})`, icon: <Tag size={16} /> },
             { id: 'fulfillment', label: `2. Xử Lý Đơn Hàng (${storeOrders.length})`, icon: <Package size={16} /> },
             { id: 'inventory', label: '3. Tồn Kho Chi Nhánh', icon: <Boxes size={16} /> },
             { id: 'transfers', label: `4. Điều Chuyển Hàng (${transfers.length})`, icon: <ArrowRightLeft size={16} /> },
-            { id: 'report', label: '5. Báo Cáo Doanh Thu Ca', icon: <FileText size={16} /> },
-            { id: 'products', label: `6. Quản Lý Sản Phẩm (${posProducts.length})`, icon: <Tag size={16} /> },
+            { id: 'report', label: '5. Báo Cáo Doanh Thu Chi Nhánh', icon: <FileText size={16} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -467,203 +457,6 @@ export const StaffDashboardPage = ({ onNavigate }) => {
             </button>
           ))}
         </div>
-
-        {/* ================= TAB 1: POS TERMINAL ================= */}
-        {activeTab === 'pos' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
-            {/* Left: Product Picker & Barcode Grid */}
-            <div style={{ backgroundColor: '#ffffff', padding: '20px', border: '1px solid #e0e0e0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase' }}>
-                  Tìm Sản Phẩm & Biến Thể
-                </div>
-                <button
-                  onClick={() => setIsBarcodeModalOpen(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#e60012', fontWeight: '700' }}
-                >
-                  <Scan size={14} /> Mở máy quét
-                </button>
-              </div>
-
-              {/* Search input */}
-              <div style={{ position: 'relative', marginBottom: '16px' }}>
-                <input
-                  type="text"
-                  placeholder="Gõ tên sản phẩm, mã hàng hoặc SKU..."
-                  value={posSearch}
-                  onChange={(e) => setPosSearch(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #ccc', outline: 'none' }}
-                />
-                <Search size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '12px' }} />
-              </div>
-
-              {/* Fast Variant Grid */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '520px', overflowY: 'auto' }}>
-                {posProducts
-                  .filter((p) => !posSearch || p.name.toLowerCase().includes(posSearch.toLowerCase()) || p.code.toLowerCase().includes(posSearch.toLowerCase()))
-                  .map((prod) => (
-                    <div key={prod.id} style={{ border: '1px solid #eee', padding: '12px', borderRadius: '2px', backgroundColor: '#fafafa' }}>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
-                        <img src={prod.primaryImageUrl} alt={prod.name} style={{ width: '36px', height: '44px', objectFit: 'cover' }} />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>{prod.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#666' }}>Mã: {prod.code} | {formatPrice(prod.salePrice || prod.basePrice)}</div>
-                        </div>
-                      </div>
-
-                      {/* Quick Variant Size Pills to add */}
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        {prod.variants?.map((v) => (
-                          <button
-                            key={v.id}
-                            onClick={() => handlePosAddToCart(v, prod)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '4px 8px',
-                              border: '1px solid #111',
-                              backgroundColor: '#fff',
-                              fontSize: '0.75rem',
-                              fontWeight: '700'
-                            }}
-                            title={`Màu: ${v.colorName} | Barcode: ${v.barcode}`}
-                          >
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: v.colorHex }} />
-                            <span>{v.size}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* Right: POS Cashier Cart & Tender Screen */}
-            <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
-                Hóa Đơn Bán Hàng Tại Quầy ({posCart.length} món)
-              </div>
-
-              {/* Items in cart */}
-              <div style={{ flex: 1, minHeight: '220px', maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                {posCart.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '40px 0', color: '#999', fontSize: '0.85rem' }}>
-                    Chưa có sản phẩm nào. Hãy quét mã vạch hoặc chọn sản phẩm bên trái.
-                  </div>
-                ) : (
-                  posCart.map((it) => (
-                    <div key={it.variantId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#fcfcfc', border: '1px solid #eee' }}>
-                      <div style={{ flex: 1, fontSize: '0.82rem' }}>
-                        <div style={{ fontWeight: '700' }}>{it.productName}</div>
-                        <div style={{ color: '#666' }}>{it.color} / Size {it.size} ({formatPrice(it.unitPrice)})</div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #ccc' }}>
-                          <button onClick={() => updatePosQty(it.variantId, -1)} style={{ padding: '2px 6px' }}><Minus size={12} /></button>
-                          <span style={{ padding: '0 6px', fontWeight: '700', fontSize: '0.8rem' }}>{it.quantity}</span>
-                          <button onClick={() => updatePosQty(it.variantId, 1)} style={{ padding: '2px 6px' }}><Plus size={12} /></button>
-                        </div>
-                        <span style={{ fontWeight: '700', fontSize: '0.85rem', minWidth: '70px', textAlign: 'right' }}>
-                          {formatPrice(it.subTotal)}
-                        </span>
-                        <button onClick={() => removePosItem(it.variantId)} style={{ color: '#999', padding: '2px' }}>
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Customer info & discount */}
-              <div style={{ borderTop: '1px solid #eee', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  <input
-                    type="text"
-                    placeholder="SĐT Khách hàng (Tích điểm)"
-                    value={posCustomerPhone}
-                    onChange={(e) => setPosCustomerPhone(e.target.value)}
-                    style={{ padding: '8px', border: '1px solid #ccc', fontSize: '0.8rem', outline: 'none' }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Mã Voucher (VD: BEO10)"
-                    value={posCouponCode}
-                    onChange={(e) => setPosCouponCode(e.target.value.toUpperCase())}
-                    style={{ padding: '8px', border: '1px solid #ccc', fontSize: '0.8rem', outline: 'none' }}
-                  />
-                </div>
-
-                {/* Payment mode */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-                  {[
-                    { id: 'CASH_POS', label: 'Tiền mặt' },
-                    { id: 'CARD_POS', label: 'Quẹt thẻ' },
-                    { id: 'VNPAY', label: 'VNPay QR' },
-                  ].map((pm) => (
-                    <button
-                      key={pm.id}
-                      type="button"
-                      onClick={() => setPosPaymentMethod(pm.id)}
-                      style={{
-                        padding: '8px',
-                        fontSize: '0.8rem',
-                        fontWeight: '700',
-                        border: posPaymentMethod === pm.id ? '2px solid #111' : '1px solid #ddd',
-                        backgroundColor: posPaymentMethod === pm.id ? '#111' : '#fff',
-                        color: posPaymentMethod === pm.id ? '#fff' : '#333'
-                      }}
-                    >
-                      {pm.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Cash Change Calculation */}
-                {posPaymentMethod === 'CASH_POS' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', backgroundColor: '#fcfcfc', padding: '10px', border: '1px solid #eee' }}>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: '#666' }}>Tiền khách đưa:</span>
-                      <input
-                        type="number"
-                        placeholder="VD: 500000"
-                        value={posCashTendered}
-                        onChange={(e) => setPosCashTendered(e.target.value)}
-                        style={{ width: '100%', padding: '6px', border: '1px solid #ccc', outline: 'none', fontWeight: '700' }}
-                      />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: '#666' }}>Tiền thối lại:</span>
-                      <div style={{ fontWeight: '800', color: '#00875a', fontSize: '1rem', marginTop: '6px' }}>
-                        {formatPrice(cashChange)}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Total & Submit Button */}
-              <div style={{ borderTop: '2px solid #111', paddingTop: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: '900', marginBottom: '14px' }}>
-                  <span>TỔNG TIỀN:</span>
-                  <span style={{ color: '#e60012' }}>{formatPrice(posFinalAmount)}</span>
-                </div>
-
-                <button
-                  onClick={handlePosCheckout}
-                  disabled={posCart.length === 0}
-                  className="btn-uq btn-uq-red"
-                  style={{ width: '100%', padding: '14px', fontSize: '1rem' }}
-                >
-                  <Printer size={18} />
-                  <span>Thanh Toán & In Hóa Đơn (F9)</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* ================= TAB 2: ORDER FULFILLMENT ================= */}
         {activeTab === 'fulfillment' && (
@@ -1345,14 +1138,6 @@ export const StaffDashboardPage = ({ onNavigate }) => {
             </div>
           </div>
         )}
-
-        {/* Barcode scanner simulation modal */}
-        <BarcodeScannerModal
-          isOpen={isBarcodeModalOpen}
-          onClose={() => setIsBarcodeModalOpen(false)}
-          onScanned={handleBarcodeScanned}
-          products={posProducts}
-        />
 
         {/* Thermal receipt modal */}
         <ReceiptModal

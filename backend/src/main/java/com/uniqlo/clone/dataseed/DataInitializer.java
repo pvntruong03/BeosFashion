@@ -124,44 +124,6 @@ public class DataInitializer implements CommandLineRunner {
                 .hiredDate(LocalDate.of(2023, 1, 15))
                 .build());
 
-        User salesUser = userRepository.save(User.builder()
-                .email("pos.dongkhoi@uniqlo.com")
-                .password(passwordEncoder.encode("staff123"))
-                .fullName("Trần Thị Thu Ngân")
-                .phone("0908555666")
-                .address("Bình Thạnh, TP.HCM")
-                .city("TP. Hồ Chí Minh")
-                .role(Role.ROLE_STAFF_SALES)
-                .avatar("https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80")
-                .build());
-
-        employeeRepository.save(Employee.builder()
-                .user(salesUser)
-                .employeeCode("EMP-DK-002")
-                .store(storeDongKhoi)
-                .position("POS Cashier & Senior Sales")
-                .hiredDate(LocalDate.of(2023, 3, 20))
-                .build());
-
-        User warehouseUser = userRepository.save(User.builder()
-                .email("warehouse.dongkhoi@uniqlo.com")
-                .password(passwordEncoder.encode("staff123"))
-                .fullName("Lê Văn Kho")
-                .phone("0908777888")
-                .address("Thủ Đức, TP.HCM")
-                .city("TP. Hồ Chí Minh")
-                .role(Role.ROLE_STAFF_WAREHOUSE)
-                .avatar("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80")
-                .build());
-
-        employeeRepository.save(Employee.builder()
-                .user(warehouseUser)
-                .employeeCode("EMP-DK-003")
-                .store(storeDongKhoi)
-                .position("Warehouse & Fulfillment Specialist")
-                .hiredDate(LocalDate.of(2023, 5, 10))
-                .build());
-
         User customerUser = userRepository.save(User.builder()
                 .email("customer@gmail.com")
                 .password(passwordEncoder.encode("customer123"))

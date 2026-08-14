@@ -403,24 +403,42 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Store Sales Comparison */}
+              {/* Single Central Store Information & Operations */}
               <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
                 <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '16px' }}>
-                  Doanh Số Theo Chi Nhánh & Cửa Hàng
+                  Cửa Hàng BEO Modern Fashion & Vận Hành
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  {stats?.storeSalesComparison?.map((st) => (
-                    <div key={st.storeId} style={{ padding: '12px', backgroundColor: '#fafafa', border: '1px solid #eee' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <strong>{st.storeName}</strong>
-                        <span style={{ fontWeight: '800', color: '#e60012' }}>{formatPrice(st.totalRevenue)}</span>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#666' }}>
-                        Mã: {st.storeCode} • Số đơn đã xử lý: {st.orderCount}
+                  <div style={{ padding: '16px', backgroundColor: '#fafafa', border: '1px solid #eee', borderRadius: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <strong style={{ fontSize: '1.05rem', color: '#111' }}>BEO Modern Fashion Showroom</strong>
+                      <span className="badge-uq red">FLAGSHIP STORE</span>
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.5, marginBottom: '8px' }}>
+                      📍 209 Đường 30 Tháng 4, P. Xuân Khánh, Q. Ninh Kiều, TP. Cần Thơ
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#666', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                      <span>📞 Hotline: <strong>1900019199999</strong></span>
+                      <span>💬 Zalo: <strong>0567740000</strong></span>
+                      <span>⏰ Mở cửa: <strong>08:00 - 22:00</strong></span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ padding: '14px', backgroundColor: '#fff0f0', border: '1px solid #ffd0d0', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#e60012', textTransform: 'uppercase' }}>DOANH THU CỬA HÀNG</div>
+                      <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#e60012', marginTop: '4px' }}>
+                        {formatPrice(stats?.totalRevenue || 0)}
                       </div>
                     </div>
-                  ))}
+                    <div style={{ padding: '14px', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '4px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase' }}>ĐƠN HÀNG ĐÃ XỬ LÝ</div>
+                      <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0284c7', marginTop: '4px' }}>
+                        {stats?.totalOrders || 0} Đơn
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

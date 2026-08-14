@@ -1,166 +1,219 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Phone, Clock, Navigation, Search, CheckCircle2 } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  Clock,
+  Navigation,
+  CheckCircle2,
+  Sparkles,
+  MessageCircle,
+  ExternalLink,
+  ShieldCheck,
+  Truck,
+  Scissors
+} from 'lucide-react';
 import api from '../services/api';
 
 export const StoreLocatorPage = ({ onNavigate }) => {
-  const [stores, setStores] = useState([]);
-  const [selectedCity, setSelectedCity] = useState('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeStore, setActiveStore] = useState(null);
+  const [store, setStore] = useState({
+    name: 'BEO Modern Fashion Showroom',
+    address: '209 Đường 30 Tháng 4, Phường Xuân Khánh, Quận Ninh Kiều, TP. Cần Thơ',
+    city: 'Cần Thơ',
+    phone: '1900019199999',
+    openingHours: '08:00 - 22:00',
+    imageUrl: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1200&q=80'
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStores = async () => {
+    const fetchStore = async () => {
       try {
         const res = await api.get('/stores');
-        if (res.data) {
-          const list = res.data.filter((s) => !s.centralWarehouse);
-          setStores(list);
-          if (list.length > 0) setActiveStore(list[0]);
+        if (res.data && res.data.length > 0) {
+          setStore(res.data[0]);
         }
       } catch (err) {
-        console.error('Error fetching stores:', err);
+        console.error('Error fetching store info:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchStores();
+    fetchStore();
   }, []);
 
-  const filteredStores = stores.filter((s) => {
-    const matchCity = selectedCity === 'ALL' || s.city.includes(selectedCity);
-    const matchQuery = !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.address.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCity && matchQuery;
-  });
-
   return (
-    <div className="container" style={{ padding: '36px 24px' }}>
-      <div style={{ marginBottom: '28px' }}>
-        <h1 className="heading-section" style={{ fontSize: '1.8rem', textTransform: 'uppercase' }}>
-          Tìm Cửa Hàng BEO Gần Nhất
+    <div className="container" style={{ padding: '40px 24px', maxWidth: '1200px' }}>
+      {/* Header Banner */}
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#fff0f0', color: '#e60012', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '800', marginBottom: '12px', textTransform: 'uppercase' }}>
+          <Sparkles size={14} /> Trải Nghiệm Thời Trang Trực Tiếp
+        </div>
+        <h1 className="heading-section" style={{ fontSize: '2.2rem', textTransform: 'uppercase', color: '#111', marginBottom: '10px' }}>
+          Showroom BEO Modern Fashion
         </h1>
-        <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
-          Khám phá danh sách các cửa hàng BEO chính hãng tại Việt Nam, giờ mở cửa và địa chỉ
+        <p style={{ fontSize: '0.95rem', color: '#666', maxWidth: '650px', margin: '0 auto', lineHeight: 1.6 }}>
+          Không gian mua sắm thời trang tối giản & cao cấp. Đầy đủ các bộ sưu tập mới nhất cùng dịch vụ chăm sóc khách hàng độc quyền.
         </p>
       </div>
 
-      {/* Filter by City & Search */}
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '28px' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[
-            { id: 'ALL', label: 'Tất cả chi nhánh' },
-            { id: 'Cần Thơ', label: 'Cần Thơ' },
-            { id: 'Hồ Chí Minh', label: 'TP. Hồ Chí Minh' },
-            { id: 'Hà Nội', label: 'Hà Nội' },
-          ].map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setSelectedCity(c.id)}
-              style={{
-                padding: '8px 16px',
-                fontSize: '0.85rem',
-                fontWeight: '700',
-                border: selectedCity === c.id ? '2px solid #111' : '1px solid #ddd',
-                backgroundColor: selectedCity === c.id ? '#111' : '#fff',
-                color: selectedCity === c.id ? '#fff' : '#333'
-              }}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ flex: 1, maxWidth: '360px', position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="Tìm theo tên TTTM hoặc đường..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid #ccc', outline: 'none' }}
-          />
-          <Search size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '10px' }} />
-        </div>
-      </div>
-
-      {/* Store Locator Main Grid: List + Map Preview */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px' }}>
-        {/* Left Store List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '600px', overflowY: 'auto' }}>
-          {filteredStores.map((st) => (
-            <div
-              key={st.id}
-              onClick={() => setActiveStore(st)}
-              style={{
-                padding: '20px',
-                border: activeStore?.id === st.id ? '2px solid #e60012' : '1px solid #e5e5e5',
-                backgroundColor: activeStore?.id === st.id ? '#fcfcfc' : '#ffffff',
-                cursor: 'pointer',
-                transition: 'var(--transition)'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: '#111' }}>{st.name}</h3>
-                <span className="badge-uq gray">{st.city}</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', color: '#555', marginBottom: '6px' }}>
-                <MapPin size={16} color="#e60012" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span>{st.address}</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#555', marginBottom: '6px' }}>
-                <Clock size={16} color="#555" />
-                <span>Giờ mở cửa: <strong>{st.openingHours}</strong></span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#555' }}>
-                <Phone size={16} color="#555" />
-                <span>{st.phone}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Right Store Detail & Simulated Map Card */}
-        {activeStore && (
-          <div style={{ backgroundColor: '#fafafa', border: '1px solid #e5e5e5', padding: '24px' }}>
+      {/* Main Grid: Visual Hero & Store Information */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '40px', alignItems: 'start' }}>
+        {/* Left Column: Store Experience Image & Special Features */}
+        <div>
+          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', border: '1px solid #eee', marginBottom: '24px' }}>
             <img
-              src={activeStore.imageUrl || 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=800&q=80'}
-              alt={activeStore.name}
-              style={{ width: '100%', height: '220px', objectFit: 'cover', marginBottom: '20px' }}
+              src={store.imageUrl || 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1200&q=80'}
+              alt={store.name}
+              style={{ width: '100%', height: '380px', objectFit: 'cover', display: 'block' }}
             />
+            <div style={{ position: 'absolute', bottom: '16px', left: '16px', backgroundColor: 'rgba(0,0,0,0.85)', color: '#fff', padding: '8px 16px', fontSize: '0.85rem', fontWeight: '700', borderRadius: '2px' }}>
+              Showroom BEO Modern Fashion • Cần Thơ
+            </div>
+          </div>
 
-            <h2 className="heading-section" style={{ fontSize: '1.4rem', marginBottom: '8px' }}>
-              {activeStore.name}
-            </h2>
-            <div style={{ fontSize: '0.85rem', color: '#555', marginBottom: '16px', lineHeight: 1.5 }}>
-              {activeStore.address}
+          {/* Premium Services Box */}
+          <div style={{ backgroundColor: '#fcfcfc', border: '1px solid #e5e5e5', padding: '24px', borderRadius: '4px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: '#111', textTransform: 'uppercase', marginBottom: '16px' }}>
+              Dịch Vụ Độc Quyền Tại Showroom
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '0.85rem', color: '#444' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div style={{ padding: '6px', backgroundColor: '#e6f4ea', color: '#00875a', borderRadius: '4px', marginTop: '2px' }}>
+                  <Truck size={16} />
+                </div>
+                <div>
+                  <strong style={{ color: '#111' }}>Click & Collect (Nhận hàng tại quầy):</strong> Đặt online trước trên website và nhận đồ tại showroom chỉ sau 2 giờ.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div style={{ padding: '6px', backgroundColor: '#e6f4ea', color: '#00875a', borderRadius: '4px', marginTop: '2px' }}>
+                  <Scissors size={16} />
+                </div>
+                <div>
+                  <strong style={{ color: '#111' }}>Cắt chỉnh gấu quần miễn phí:</strong> Chỉnh sửa độ dài quần chuẩn form theo số đo của bạn trong 30 phút.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div style={{ padding: '6px', backgroundColor: '#e6f4ea', color: '#00875a', borderRadius: '4px', marginTop: '2px' }}>
+                  <ShieldCheck size={16} />
+                </div>
+                <div>
+                  <strong style={{ color: '#111' }}>Đổi trả miễn phí 30 ngày:</strong> Hỗ trợ đổi size/màu trực tiếp tại showroom nhanh chóng.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Address, Hours, Contact & Direct Navigation */}
+        <div style={{ backgroundColor: '#ffffff', border: '1px solid #e0e0e0', padding: '32px', borderRadius: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#00875a', fontWeight: '800', fontSize: '0.85rem', marginBottom: '8px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00875a', display: 'inline-block' }}></span>
+            ĐANG MỞ CỬA PHỤC VỤ (08:00 - 22:00)
+          </div>
+
+          <h2 style={{ fontSize: '1.6rem', fontWeight: '900', color: '#111', marginBottom: '20px' }}>
+            {store.name}
+          </h2>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <MapPin size={20} color="#e60012" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>Địa Chỉ Showroom</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#111', marginTop: '2px' }}>
+                  {store.address}
+                </div>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.85rem', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={16} color="#00875a" />
-                <span>Đang mở cửa • Đóng cửa lúc {activeStore.openingHours.split('-')[1]?.trim() || '22:00'}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={16} color="#00875a" />
-                <span>Có hỗ trợ dịch vụ Click & Collect (Nhận hàng tại quầy trong 2h)</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={16} color="#00875a" />
-                <span>Hỗ trợ dịch vụ cắt gấu quần miễn phí</span>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <Clock size={20} color="#111" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>Thời Gian Mở Cửa</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#111', marginTop: '2px' }}>
+                  {store.openingHours} • Mở cửa tất cả các ngày trong tuần
+                </div>
               </div>
             </div>
 
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <Phone size={20} color="#111" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>Tổng Đài Hotline</div>
+                <a href="tel:1900019199999" style={{ fontSize: '1.1rem', fontWeight: '900', color: '#e60012', marginTop: '2px', display: 'inline-block', textDecoration: 'none' }}>
+                  1900019199999
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Channels Quick Connect */}
+          <div style={{ borderTop: '1px solid #eee', paddingTop: '24px', marginBottom: '32px' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#666', textTransform: 'uppercase', marginBottom: '14px' }}>
+              Kênh Liên Hệ & Hỗ Trợ Nhanh
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <a
+                href="https://zalo.me/0567740000"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '12px',
+                  backgroundColor: '#0068ff',
+                  color: '#fff',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  textDecoration: 'none',
+                  borderRadius: '4px'
+                }}
+              >
+                <MessageCircle size={16} /> Zalo 0567740000
+              </a>
+
+              <a
+                href="https://www.facebook.com/beofashionstorecantho/"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '12px',
+                  backgroundColor: '#1877f2',
+                  color: '#fff',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  textDecoration: 'none',
+                  borderRadius: '4px'
+                }}
+              >
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+                Fanpage Facebook
+              </a>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <button
               onClick={() => onNavigate('products')}
               className="btn-uq btn-uq-primary"
-              style={{ width: '100%' }}
+              style={{ width: '100%', padding: '14px', fontSize: '0.95rem' }}
             >
-              <span>Xem Sản Phẩm Có Sẵn Tại Cửa Hàng Này</span>
+              <span>Khám Phá Toàn Bộ Bộ Sưu Tập Thời Trang</span>
             </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

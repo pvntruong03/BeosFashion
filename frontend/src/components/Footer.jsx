@@ -43,7 +43,7 @@ export const Footer = ({ onNavigate }) => {
             </div>
             <div>
               <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>Đổi hàng trong 30 ngày</div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>Đổi size & mẫu tại mọi chi nhánh</div>
+              <div style={{ fontSize: '0.8rem', color: '#666' }}>Đổi size & màu miễn phí tại showroom</div>
             </div>
           </div>
 
@@ -110,7 +110,7 @@ export const Footer = ({ onNavigate }) => {
           <div>
             <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '16px', textTransform: 'uppercase' }}>Hỗ trợ Khách hàng</div>
             <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: '#555', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <li><button onClick={() => onNavigate('stores')} style={{ color: '#555' }}>Tìm cửa hàng gần nhất</button></li>
+              <li><button onClick={() => onNavigate('stores')} style={{ color: '#555' }}>Showroom BEO (Cần Thơ)</button></li>
               <li><button onClick={() => onNavigate('orders')} style={{ color: '#555' }}>Theo dõi đơn hàng</button></li>
               <li><a href="#" style={{ color: '#555' }}>Chính sách đổi trả & bảo hành</a></li>
               <li><a href="#" style={{ color: '#555' }}>Bảng kích cỡ (Size Guide)</a></li>

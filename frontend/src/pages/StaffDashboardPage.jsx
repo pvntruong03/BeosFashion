@@ -296,12 +296,12 @@ export const StaffDashboardPage = ({ onNavigate }) => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h1 style={{ fontSize: '1.3rem', fontWeight: '800', margin: 0 }}>
-                  {storeInfo?.name || 'BEO Vincom Xuân Khánh Cần Thơ'}
+                  {storeInfo?.name || 'BEO Modern Fashion'}
                 </h1>
                 <span className="badge-uq red">{user?.role}</span>
               </div>
               <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '4px' }}>
-                Mã chi nhánh: <strong>{storeInfo?.code || 'STR-CT-01'}</strong> | Quản lý: <strong>{user?.fullName}</strong> ({user?.email})
+                Cửa hàng: <strong>{storeInfo?.address || '209 Đường 30 Tháng 4, Xuân Khánh, Ninh Kiều, Cần Thơ'}</strong> | Quản lý: <strong>{user?.fullName}</strong>
               </div>
             </div>
           </div>
@@ -322,9 +322,8 @@ export const StaffDashboardPage = ({ onNavigate }) => {
           {[
             { id: 'products', label: `1. Quản Lý Sản Phẩm (${posProducts.length})`, icon: <Tag size={16} /> },
             { id: 'fulfillment', label: `2. Xử Lý Đơn Hàng (${storeOrders.length})`, icon: <Package size={16} /> },
-            { id: 'inventory', label: '3. Tồn Kho Chi Nhánh', icon: <Boxes size={16} /> },
-            { id: 'transfers', label: `4. Điều Chuyển Hàng (${transfers.length})`, icon: <ArrowRightLeft size={16} /> },
-            { id: 'report', label: '5. Báo Cáo Doanh Thu Chi Nhánh', icon: <FileText size={16} /> },
+            { id: 'inventory', label: '3. Quản Lý Kho Hàng', icon: <Boxes size={16} /> },
+            { id: 'report', label: '4. Báo Cáo Doanh Thu', icon: <FileText size={16} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -334,13 +333,14 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '12px 18px',
-                fontWeight: '700',
-                fontSize: '0.88rem',
-                backgroundColor: activeTab === tab.id ? '#ffffff' : '#e8eaed',
-                color: activeTab === tab.id ? '#e60012' : '#333',
-                borderTop: activeTab === tab.id ? '3px solid #e60012' : '3px solid transparent',
-                whiteSpace: 'nowrap',
-                transition: 'var(--transition)'
+                fontSize: '0.85rem',
+                fontWeight: '800',
+                textTransform: 'uppercase',
+                border: activeTab === tab.id ? '2px solid #111' : '1px solid #ddd',
+                backgroundColor: activeTab === tab.id ? '#111' : '#fff',
+                color: activeTab === tab.id ? '#fff' : '#333',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
               }}
             >
               {tab.icon}

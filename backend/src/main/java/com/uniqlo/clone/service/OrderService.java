@@ -40,7 +40,9 @@ public class OrderService {
     @Transactional
     public OrderDto createCheckoutOrder(Long userId, String sessionId, CheckoutRequest request) {
         User user = userId != null ? userRepository.findById(userId).orElse(null) : null;
-        Store store = request.getStoreId() != null ? storeRepository.findById(request.getStoreId()).orElse(null) : null;
+        Store store = request.getStoreId() != null 
+                ? storeRepository.findById(request.getStoreId()).orElse(null) 
+                : storeRepository.findAll().stream().findFirst().orElse(null);
 
         List<CartItemDto> checkoutItems = new ArrayList<>();
 

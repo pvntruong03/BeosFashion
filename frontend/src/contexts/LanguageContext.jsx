@@ -9,7 +9,7 @@ const translations = {
     baby: 'EM BÉ',
     lifewear: 'BỘ SƯU TẬP',
     search_placeholder: 'Tìm kiếm sản phẩm, mã hàng, chất liệu...',
-    store_locator: 'Tìm cửa hàng',
+    store_locator: 'Showroom BEO',
     wishlist: 'Yêu thích',
     cart: 'Giỏ hàng',
     login_register: 'Đăng nhập / Đăng ký',

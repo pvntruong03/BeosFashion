@@ -1,107 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Sparkles,
-  Award,
   ShieldCheck,
-  CheckCircle,
-  Truck,
-  Layers,
-  Palette,
   Scissors,
-  HelpCircle,
-  ArrowRight,
-  Sliders,
-  Check,
-  XCircle
+  Truck
 } from 'lucide-react';
 import { ProductCustomizerStudio } from '../components/ProductCustomizerStudio';
-import { isCustomizerEnabled, setCustomizerEnabled } from '../services/customizerFeatureService';
-import { useToast } from '../contexts/ToastContext';
 
 export const CustomStudioPage = ({ onNavigate }) => {
-  const { showSuccess, showInfo } = useToast();
-  const [featureActive, setFeatureActive] = useState(() => isCustomizerEnabled());
-
-  const handleToggle = (enabled) => {
-    setCustomizerEnabled(enabled);
-    setFeatureActive(enabled);
-    if (enabled) {
-      showSuccess('Đã BẬT và GIỮ LẠI tính năng Tự Custom Sản Phẩm (Hiển thị trên toàn bộ Navbar & Chi tiết sản phẩm)!');
-    } else {
-      showInfo('Đã TẮT tính năng Tự Custom Sản Phẩm (Tính năng sẽ được ẩn khỏi Menu & Trang sản phẩm). Bạn có thể bật lại bất kỳ lúc nào!');
-    }
-  };
-
   return (
     <div style={{ backgroundColor: '#fafafa', minHeight: '100vh', paddingBottom: '60px' }}>
-      {/* Top Client Feedback & Decision Banner */}
-      <div style={{
-        backgroundColor: '#1c1c1c',
-        borderBottom: '1px solid #333',
-        padding: '12px 24px',
-        color: '#ffffff'
-      }}>
-        <div className="container" style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Sliders size={18} color="#ffd700" />
-            <div>
-              <strong style={{ fontSize: '0.88rem', color: '#ffd700' }}>TÙY CHỌN DÀNH CHO BẠN (CHỦ SHOP):</strong>
-              <span style={{ fontSize: '0.82rem', color: '#ccc', marginLeft: '6px' }}>
-                Trạng thái hiện tại: <strong>{featureActive ? '● ĐANG BẬT (HIỂN THỊ)' : '○ ĐANG TẮT (ẨN)'}</strong>
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button
-              onClick={() => handleToggle(true)}
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.8rem',
-                fontWeight: '800',
-                backgroundColor: featureActive ? '#00875a' : '#333',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '2px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <Check size={14} />
-              <span>GIỮ LẠI TÍNH NĂNG NÀY</span>
-            </button>
-
-            <button
-              onClick={() => handleToggle(false)}
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.8rem',
-                fontWeight: '800',
-                backgroundColor: !featureActive ? '#d9383a' : '#333',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '2px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <XCircle size={14} />
-              <span>KHÔNG GIỮ (TẮT ĐI)</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Studio Banner Hero */}
       <div style={{
         backgroundColor: '#111111',

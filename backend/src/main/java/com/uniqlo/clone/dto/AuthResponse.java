@@ -30,6 +30,8 @@ public class AuthResponse {
         private String city;
         private Role role;
         private String avatar;
+        private Integer points;
+        private String membershipTier;
         private Long storeId;
         private String storeName;
         private String storeCode;

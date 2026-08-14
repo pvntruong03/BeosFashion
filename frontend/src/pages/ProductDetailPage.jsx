@@ -17,6 +17,11 @@ import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SizeAdvisorModal } from '../components/SizeAdvisorModal';
+import { AiSizeRecommenderModal } from '../components/AiSizeRecommenderModal';
+import { FittingRoomBookingModal } from '../components/FittingRoomBookingModal';
+import { OutfitRecommender } from '../components/OutfitRecommender';
+import { ProductReviewsSection } from '../components/ProductReviewsSection';
+import { isFeatureEnabled } from '../services/featureToggleService';
 import { ReviewModal } from '../components/ReviewModal';
 import { ProductCard } from '../components/ProductCard';
 import api from '../services/api';
@@ -38,6 +43,8 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
 
   // Modals
   const [isSizeAdvisorOpen, setIsSizeAdvisorOpen] = useState(false);
+  const [isAiSizeModalOpen, setIsAiSizeModalOpen] = useState(false);
+  const [isFittingModalOpen, setIsFittingModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Accordion toggles
@@ -319,13 +326,36 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           <div style={{ marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{ fontSize: '0.9rem' }}>Kích cỡ: <strong>{selectedSize}</strong></span>
-              <button
-                onClick={() => setIsSizeAdvisorOpen(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#e60012', fontWeight: '700' }}
-              >
-                <Ruler size={16} />
-                <span>{t('size_guide')}</span>
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {isFeatureEnabled('aiSizeAssistant') && (
+                  <button
+                    onClick={() => setIsAiSizeModalOpen(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.8rem',
+                      color: '#ffffff',
+                      backgroundColor: '#111111',
+                      padding: '4px 10px',
+                      borderRadius: '2px',
+                      fontWeight: '800',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Sparkles size={14} color="#ffd700" />
+                    <span>AI Gợi Ý Size</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsSizeAdvisorOpen(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#e60012', fontWeight: '700', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                >
+                  <Ruler size={16} />
+                  <span>{t('size_guide')}</span>
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -428,10 +458,32 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
             onClick={handleBuyNow}
             disabled={!selectedVariant || selectedVariant.totalStock <= 0}
             className="btn-uq btn-uq-red"
-            style={{ width: '100%', height: '48px', fontSize: '0.95rem', marginBottom: '24px' }}
+            style={{ width: '100%', height: '48px', fontSize: '0.95rem', marginBottom: '12px' }}
           >
             <span>{t('buy_now')}</span>
           </button>
+
+          {isFeatureEnabled('showroomFittingBooking') && (
+            <button
+              onClick={() => setIsFittingModalOpen(true)}
+              className="btn-uq btn-uq-outline-black"
+              style={{
+                width: '100%',
+                height: '44px',
+                fontSize: '0.85rem',
+                marginBottom: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                border: '1.5px solid #111',
+                fontWeight: '800'
+              }}
+            >
+              <MapPin size={16} color="#e60012" />
+              <span>Hẹn Lịch Thử Đồ Tại Showroom Cần Thơ</span>
+            </button>
+          )}
 
           {/* Accordion Sections: Details, Material, Store Availability */}
           <div style={{ borderTop: '1px solid #e5e5e5' }}>
@@ -502,93 +554,27 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
         </div>
       </div>
 
-      {/* Verified Reviews Section */}
-      <section style={{ borderTop: '2px solid #111', paddingTop: '40px', marginBottom: '60px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <h2 className="heading-section">Đánh Giá & Nhận Xét Từ Khách Hàng</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-              <div style={{ display: 'flex' }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={18} color="#ffab00" fill="#ffab00" />
-                ))}
-              </div>
-              <span style={{ fontWeight: '800', fontSize: '1.1rem' }}>{product.averageRating || 5.0} trên 5</span>
-              <span style={{ color: '#666' }}>({reviews.length} lượt đánh giá)</span>
-            </div>
+      {/* Outfit Mix & Match Stylist Section */}
+      {isFeatureEnabled('outfitStylist') && (
+        <OutfitRecommender currentProduct={product} currentVariant={selectedVariant} />
+      )}
+
+      {/* Verified Customer Reviews Section */}
+      {isFeatureEnabled('productReviews') ? (
+        <ProductReviewsSection productId={product.id} productName={product.name} />
+      ) : (
+        <section style={{ borderTop: '2px solid #111', paddingTop: '40px', marginBottom: '60px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h2 className="heading-section">Đánh Giá & Nhận Xét</h2>
+            <button onClick={() => setIsReviewModalOpen(true)} className="btn-uq btn-uq-primary">
+              <span>{t('write_review')}</span>
+            </button>
           </div>
-
-          <button
-            onClick={() => setIsReviewModalOpen(true)}
-            className="btn-uq btn-uq-primary"
-          >
-            <span>{t('write_review')}</span>
-          </button>
-        </div>
-
-        {reviews.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: '#fafafa', color: '#666' }}>
-            Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên nhận xét!
+          <div style={{ textAlign: 'center', padding: '30px', color: '#666' }}>
+            Tính năng đánh giá đang tạm tắt.
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-            {reviews.map((rev) => (
-              <div
-                key={rev.id}
-                style={{
-                  padding: '20px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e5e5',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      backgroundColor: '#111',
-                      color: '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: '700',
-                      fontSize: '0.85rem'
-                    }}>
-                      {rev.userName ? rev.userName.charAt(0).toUpperCase() : 'B'}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>{rev.userName || 'Khách hàng BEO'}</div>
-                      {rev.verifiedPurchase && (
-                        <div style={{ fontSize: '0.72rem', color: '#00875a', fontWeight: '700' }}>✓ Đã mua hàng tại BEO</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex' }}>
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} size={14} color="#ffab00" fill={rev.rating >= s ? '#ffab00' : 'none'} />
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ fontSize: '0.8rem', color: '#767676' }}>
-                  Size đã mua: <strong>{rev.purchasedSize || 'L'}</strong> | Độ vừa: <strong>{rev.fitRating === 'TRUE_TO_SIZE' ? 'Vừa vặn chuẩn' : rev.fitRating}</strong>
-                </div>
-
-                <div style={{ fontWeight: '700', fontSize: '0.92rem', color: '#111' }}>{rev.title}</div>
-                <p style={{ fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>{rev.comment}</p>
-                <div style={{ fontSize: '0.75rem', color: '#999', marginTop: 'auto' }}>
-                  {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('vi-VN') : 'Gần đây'}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Related Products Section */}
       {relatedProducts.length > 0 && (
@@ -609,6 +595,21 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
         isOpen={isSizeAdvisorOpen}
         onClose={() => setIsSizeAdvisorOpen(false)}
         onSelectSize={(size) => handleSizeSelect(size)}
+      />
+
+      <AiSizeRecommenderModal
+        isOpen={isAiSizeModalOpen}
+        onClose={() => setIsAiSizeModalOpen(false)}
+        onSelectSize={(size) => handleSizeSelect(size)}
+        currentSelectedSize={selectedSize}
+        productName={product?.name}
+      />
+
+      <FittingRoomBookingModal
+        isOpen={isFittingModalOpen}
+        onClose={() => setIsFittingModalOpen(false)}
+        productName={product?.name}
+        selectedVariant={selectedVariant}
       />
 
       <ReviewModal

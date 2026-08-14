@@ -18,12 +18,19 @@ import {
   Building,
   Save,
   Search,
-  Filter
+  Filter,
+  Download,
+  Sliders,
+  Settings,
+  Sparkles,
+  Award
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { exportOrdersToExcel, exportProductsToExcel } from '../utils/excelExporter';
+import { getFeatureToggles, toggleFeature, resetFeatureTogglesToDefault, isFeatureEnabled } from '../services/featureToggleService';
 import api from '../services/api';
 
 export const AdminDashboardPage = ({ onNavigate }) => {
@@ -106,6 +113,21 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     template: 'compact2'
   });
   const [savingBankConfig, setSavingBankConfig] = useState(false);
+
+  // Feature Toggles state
+  const [featureToggles, setFeatureToggles] = useState(() => getFeatureToggles());
+
+  const handleToggleFeature = (key) => {
+    const newVal = toggleFeature(key);
+    setFeatureToggles({ ...getFeatureToggles() });
+    showSuccess(`Đã ${newVal ? 'BẬT' : 'TẮT'} tính năng thành công!`);
+  };
+
+  const handleResetFeatures = () => {
+    resetFeatureTogglesToDefault();
+    setFeatureToggles({ ...getFeatureToggles() });
+    showSuccess('Đã khôi phục toàn bộ cài đặt tính năng về mặc định!');
+  };
 
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
@@ -406,6 +428,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             { id: 'users', label: `4. Phân Quyền Nhân Sự & User (${usersList.length})`, icon: <Users size={16} /> },
             { id: 'coupons', label: `5. Mã Khuyến Mãi (${coupons.length})`, icon: <Tag size={16} /> },
             { id: 'bank-config', label: '6. Cấu Hình VietQR Nhận Tiền', icon: <QrCode size={16} /> },
+            { id: 'features', label: '7. Bật / Tắt Tính Năng Mở Rộng', icon: <Sliders size={16} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -638,15 +661,27 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         {/* ================= TAB 2: PRODUCTS CRUD ================= */}
         {activeTab === 'products' && (
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>Danh Sách Sản Phẩm</div>
+                <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>Danh Sách Sản Phẩm ({products.length})</div>
                 <div style={{ fontSize: '0.85rem', color: '#666' }}>Quản lý danh mục, giá bán và ma trận biến thể</div>
               </div>
-              <button onClick={handleOpenCreateProduct} className="btn-uq btn-uq-red">
-                <Plus size={16} />
-                <span>Thêm Sản Phẩm Mới</span>
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {isFeatureEnabled('excelExport') && (
+                  <button
+                    onClick={() => exportProductsToExcel(products)}
+                    className="btn-uq btn-uq-outline-black"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}
+                  >
+                    <Download size={15} />
+                    <span>Xuất Excel Sản Phẩm</span>
+                  </button>
+                )}
+                <button onClick={handleOpenCreateProduct} className="btn-uq btn-uq-red">
+                  <Plus size={16} />
+                  <span>Thêm Sản Phẩm Mới</span>
+                </button>
+              </div>
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
@@ -761,6 +796,17 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                   <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
                   <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
                 </select>
+
+                {isFeatureEnabled('excelExport') && (
+                  <button
+                    onClick={() => exportOrdersToExcel(filteredOrders)}
+                    className="btn-uq btn-uq-outline-black"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '9px 14px' }}
+                  >
+                    <Download size={15} />
+                    <span>Xuất Excel ({filteredOrders.length})</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1260,6 +1306,140 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                   <div>• Cú pháp tự động: <code style={{ color: '#0052cc' }}>Thanh toan don hang [MÃ_ĐƠN]</code></div>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= TAB 7: FEATURE TOGGLES MANAGEMENT ================= */}
+        {activeTab === 'features' && (
+          <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <div style={{ fontWeight: '900', fontSize: '1.2rem', textTransform: 'uppercase', color: '#111' }}>
+                  Bảng Điều Khiển Bật / Tắt Tính Năng (Feature Toggles)
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '2px' }}>
+                  Tự do kích hoạt, trải nghiệm thử và lựa chọn giữ lại những tính năng phù hợp nhất cho BEO Modern Fashion
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={handleResetFeatures}
+                  className="btn-uq btn-uq-outline-gray"
+                  style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                >
+                  Khôi Phục Mặc Định
+                </button>
+                <button
+                  onClick={() => onNavigate('home')}
+                  className="btn-uq btn-uq-red"
+                  style={{ padding: '8px 18px', fontSize: '0.85rem' }}
+                >
+                  Trải Nghiệm Tại Storefront
+                </button>
+              </div>
+            </div>
+
+            {/* Feature Cards Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '20px'
+            }}>
+              {Object.values(featureToggles).map((feat) => {
+                const isEnabled = feat.enabled;
+                return (
+                  <div
+                    key={feat.id}
+                    style={{
+                      border: isEnabled ? '2px solid #111' : '1px solid #ddd',
+                      backgroundColor: isEnabled ? '#ffffff' : '#fafafa',
+                      padding: '20px',
+                      borderRadius: '2px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      position: 'relative',
+                      boxShadow: isEnabled ? 'var(--shadow-sm)' : 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div>
+                      {/* Top Bar: Badge and Toggle Switch */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{
+                          fontSize: '0.72rem',
+                          fontWeight: '800',
+                          textTransform: 'uppercase',
+                          padding: '3px 8px',
+                          backgroundColor: isEnabled ? '#e8f5e9' : '#eee',
+                          color: isEnabled ? '#2e7d32' : '#777',
+                          borderRadius: '2px'
+                        }}>
+                          {feat.badge || feat.category}
+                        </span>
+
+                        {/* Interactive Toggle Switch */}
+                        <div
+                          onClick={() => handleToggleFeature(feat.id)}
+                          style={{
+                            width: '52px',
+                            height: '28px',
+                            backgroundColor: isEnabled ? '#2e7d32' : '#ccc',
+                            borderRadius: '14px',
+                            padding: '2px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'background-color 0.2s ease'
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              backgroundColor: '#ffffff',
+                              borderRadius: '50%',
+                              transform: isEnabled ? 'translateX(24px)' : 'translateX(0)',
+                              transition: 'transform 0.2s ease',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Feature Name */}
+                      <h3 style={{ fontSize: '1rem', fontWeight: '800', color: '#111', margin: '0 0 8px 0', lineHeight: 1.3 }}>
+                        {feat.name}
+                      </h3>
+
+                      {/* Description */}
+                      <p style={{ fontSize: '0.82rem', color: '#555', lineHeight: 1.5, margin: 0 }}>
+                        {feat.description}
+                      </p>
+                    </div>
+
+                    {/* Bottom Status Indicator */}
+                    <div style={{
+                      marginTop: '16px',
+                      paddingTop: '12px',
+                      borderTop: '1px solid #eee',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '0.78rem'
+                    }}>
+                      <span style={{ fontWeight: '700', color: isEnabled ? '#2e7d32' : '#d9383a' }}>
+                        {isEnabled ? '● ĐANG HOẠT ĐỘNG' : '○ ĐANG TẠM TẮT'}
+                      </span>
+                      <span style={{ color: '#888' }}>
+                        {feat.category}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

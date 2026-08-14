@@ -16,13 +16,16 @@ import {
   Tag,
   Save,
   Printer,
-  Filter
+  Filter,
+  QrCode
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
+import { isFeatureEnabled } from '../services/featureToggleService';
 import api from '../services/api';
 
 export const StaffDashboardPage = ({ onNavigate }) => {
@@ -59,6 +62,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   // Store Products State
   const [posProducts, setPosProducts] = useState([]);
   const [receiptOrder, setReceiptOrder] = useState(null);
+  const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
 
   // Fulfillment State & Filters
   const [storeOrders, setStoreOrders] = useState([]);
@@ -865,6 +869,16 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                   />
                   <Search size={14} color="#888" style={{ position: 'absolute', left: '10px', top: '10px' }} />
                 </div>
+                {isFeatureEnabled('posBarcode') && (
+                  <button
+                    onClick={() => setIsBarcodeModalOpen(true)}
+                    className="btn-uq btn-uq-outline-black"
+                    style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#fff' }}
+                  >
+                    <QrCode size={16} color="#e60012" />
+                    <span>Quét & In Mã Vạch</span>
+                  </button>
+                )}
                 <button onClick={handleOpenCreateProduct} className="btn-uq btn-uq-red" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                   <Plus size={16} />
                   <span>Thêm Sản Phẩm Mới</span>
@@ -1208,6 +1222,13 @@ export const StaffDashboardPage = ({ onNavigate }) => {
           isDanger={true}
           onConfirm={confirmDeleteProduct}
           onCancel={() => setDeleteConfirmId(null)}
+        />
+
+        {/* Barcode Scanner & Printable Tags Modal */}
+        <BarcodeScannerModal
+          isOpen={isBarcodeModalOpen}
+          onClose={() => setIsBarcodeModalOpen(false)}
+          products={posProducts}
         />
       </div>
     </div>

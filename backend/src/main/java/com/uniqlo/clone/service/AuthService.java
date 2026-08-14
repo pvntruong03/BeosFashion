@@ -150,6 +150,8 @@ public class AuthService {
                 .city(user.getCity())
                 .role(user.getRole())
                 .avatar(user.getAvatar())
+                .points(user.getPoints() != null ? user.getPoints() : 1500)
+                .membershipTier(user.getMembershipTier() != null ? user.getMembershipTier() : "SILVER")
                 .storeId(storeId)
                 .storeName(storeName)
                 .storeCode(storeCode)

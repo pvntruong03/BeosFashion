@@ -45,6 +45,12 @@ public class User {
     private String avatar;
 
     @Builder.Default
+    private Integer points = 1500;
+
+    @Builder.Default
+    private String membershipTier = "SILVER";
+
+    @Builder.Default
     private boolean enabled = true;
 
     @CreationTimestamp

@@ -9,12 +9,15 @@ import {
   CheckCircle2,
   Tag,
   ArrowLeft,
-  Lock
+  Lock,
+  Sparkles,
+  Award
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
+import { isFeatureEnabled } from '../services/featureToggleService';
 import api from '../services/api';
 
 export const CheckoutPage = ({ onNavigate }) => {
@@ -32,19 +35,23 @@ export const CheckoutPage = ({ onNavigate }) => {
   const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
   const [customerEmail, setCustomerEmail] = useState(user?.email || '');
   const [shippingAddress, setShippingAddress] = useState(user?.address || '');
-  const [shippingCity, setShippingCity] = useState(user?.city || 'TP. Hồ Chí Minh');
+  const [shippingCity, setShippingCity] = useState(user?.city || 'Cần Thơ');
   const [selectedStoreId, setSelectedStoreId] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('VNPAY');
+  const [paymentMethod, setPaymentMethod] = useState('VIETQR');
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
   const freeShippingThreshold = 500000;
   const standardShippingFee = 30000;
   const shippingFee = (orderType === 'IN_STORE_PICKUP' || subTotal >= freeShippingThreshold) ? 0 : standardShippingFee;
-  const discountAmount = appliedCoupon?.calculatedDiscount || 0;
-  const finalAmount = Math.max(subTotal - discountAmount + shippingFee, 0);
+  const couponDiscount = appliedCoupon?.calculatedDiscount || 0;
+  const availablePoints = user?.points || 1500;
+  const pointsDiscountValue = (useLoyaltyPoints && isFeatureEnabled('loyaltyPoints')) ? Math.min(availablePoints * 100, subTotal * 0.3) : 0;
+  const totalDiscount = couponDiscount + pointsDiscountValue;
+  const finalAmount = Math.max(subTotal - totalDiscount + shippingFee, 0);
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -409,7 +416,30 @@ export const CheckoutPage = ({ onNavigate }) => {
               {appliedCoupon && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00875a', fontSize: '0.8rem', fontWeight: '700', marginTop: '6px' }}>
                   <Tag size={14} />
-                  <span>Đã giảm {formatPrice(discountAmount)} ({appliedCoupon.code})</span>
+                  <span>Đã giảm {formatPrice(couponDiscount)} ({appliedCoupon.code})</span>
+                </div>
+              )}
+
+              {/* Loyalty Points Redemption */}
+              {isFeatureEnabled('loyaltyPoints') && (
+                <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#ffffff', border: '1px solid #ddd', borderRadius: '2px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '700' }}>
+                    <input
+                      type="checkbox"
+                      checked={useLoyaltyPoints}
+                      onChange={(e) => setUseLoyaltyPoints(e.target.checked)}
+                      style={{ accentColor: '#e60012', width: '16px', height: '16px' }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Award size={16} color="#ffab00" />
+                      <span>Dùng {availablePoints.toLocaleString()} điểm BEO Club</span>
+                    </div>
+                  </label>
+                  {useLoyaltyPoints && (
+                    <div style={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: '700', marginTop: '4px', paddingLeft: '24px' }}>
+                      ✓ Giảm trực tiếp {formatPrice(pointsDiscountValue)} vào đơn hàng
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -421,10 +451,17 @@ export const CheckoutPage = ({ onNavigate }) => {
                 <span style={{ fontWeight: '700' }}>{formatPrice(subTotal)}</span>
               </div>
 
-              {discountAmount > 0 && (
+              {couponDiscount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#e60012' }}>
-                  <span>Giảm giá khuyến mãi:</span>
-                  <span style={{ fontWeight: '700' }}>-{formatPrice(discountAmount)}</span>
+                  <span>Giảm giá mã khuyến mãi:</span>
+                  <span style={{ fontWeight: '700' }}>-{formatPrice(couponDiscount)}</span>
+                </div>
+              )}
+
+              {pointsDiscountValue > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2e7d32' }}>
+                  <span>Giảm điểm thưởng BEO Club:</span>
+                  <span style={{ fontWeight: '700' }}>-{formatPrice(pointsDiscountValue)}</span>
                 </div>
               )}
 

@@ -17,11 +17,7 @@ import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { SizeAdvisorModal } from '../components/SizeAdvisorModal';
-import { AiSizeRecommenderModal } from '../components/AiSizeRecommenderModal';
-import { FittingRoomBookingModal } from '../components/FittingRoomBookingModal';
-import { OutfitRecommender } from '../components/OutfitRecommender';
 import { ProductReviewsSection } from '../components/ProductReviewsSection';
-import { isFeatureEnabled } from '../services/featureToggleService';
 import { ReviewModal } from '../components/ReviewModal';
 import { ProductCard } from '../components/ProductCard';
 import api from '../services/api';
@@ -43,8 +39,6 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
 
   // Modals
   const [isSizeAdvisorOpen, setIsSizeAdvisorOpen] = useState(false);
-  const [isAiSizeModalOpen, setIsAiSizeModalOpen] = useState(false);
-  const [isFittingModalOpen, setIsFittingModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Accordion toggles
@@ -326,36 +320,13 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           <div style={{ marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{ fontSize: '0.9rem' }}>Kích cỡ: <strong>{selectedSize}</strong></span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {isFeatureEnabled('aiSizeAssistant') && (
-                  <button
-                    onClick={() => setIsAiSizeModalOpen(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '0.8rem',
-                      color: '#ffffff',
-                      backgroundColor: '#111111',
-                      padding: '4px 10px',
-                      borderRadius: '2px',
-                      fontWeight: '800',
-                      border: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Sparkles size={14} color="#ffd700" />
-                    <span>AI Gợi Ý Size</span>
-                  </button>
-                )}
-                <button
-                  onClick={() => setIsSizeAdvisorOpen(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#e60012', fontWeight: '700', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                >
-                  <Ruler size={16} />
-                  <span>{t('size_guide')}</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setIsSizeAdvisorOpen(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#e60012', fontWeight: '700', border: 'none', background: 'transparent', cursor: 'pointer' }}
+              >
+                <Ruler size={16} />
+                <span>{t('size_guide')}</span>
+              </button>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -458,32 +429,10 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
             onClick={handleBuyNow}
             disabled={!selectedVariant || selectedVariant.totalStock <= 0}
             className="btn-uq btn-uq-red"
-            style={{ width: '100%', height: '48px', fontSize: '0.95rem', marginBottom: '12px' }}
+            style={{ width: '100%', height: '48px', fontSize: '0.95rem', marginBottom: '24px' }}
           >
             <span>{t('buy_now')}</span>
           </button>
-
-          {isFeatureEnabled('showroomFittingBooking') && (
-            <button
-              onClick={() => setIsFittingModalOpen(true)}
-              className="btn-uq btn-uq-outline-black"
-              style={{
-                width: '100%',
-                height: '44px',
-                fontSize: '0.85rem',
-                marginBottom: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                border: '1.5px solid #111',
-                fontWeight: '800'
-              }}
-            >
-              <MapPin size={16} color="#e60012" />
-              <span>Hẹn Lịch Thử Đồ Tại Showroom Cần Thơ</span>
-            </button>
-          )}
 
           {/* Accordion Sections: Details, Material, Store Availability */}
           <div style={{ borderTop: '1px solid #e5e5e5' }}>
@@ -554,27 +503,8 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
         </div>
       </div>
 
-      {/* Outfit Mix & Match Stylist Section */}
-      {isFeatureEnabled('outfitStylist') && (
-        <OutfitRecommender currentProduct={product} currentVariant={selectedVariant} />
-      )}
-
       {/* Verified Customer Reviews Section */}
-      {isFeatureEnabled('productReviews') ? (
-        <ProductReviewsSection productId={product.id} productName={product.name} />
-      ) : (
-        <section style={{ borderTop: '2px solid #111', paddingTop: '40px', marginBottom: '60px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 className="heading-section">Đánh Giá & Nhận Xét</h2>
-            <button onClick={() => setIsReviewModalOpen(true)} className="btn-uq btn-uq-primary">
-              <span>{t('write_review')}</span>
-            </button>
-          </div>
-          <div style={{ textAlign: 'center', padding: '30px', color: '#666' }}>
-            Tính năng đánh giá đang tạm tắt.
-          </div>
-        </section>
-      )}
+      <ProductReviewsSection productId={product.id} productName={product.name} />
 
       {/* Related Products Section */}
       {relatedProducts.length > 0 && (
@@ -595,21 +525,6 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
         isOpen={isSizeAdvisorOpen}
         onClose={() => setIsSizeAdvisorOpen(false)}
         onSelectSize={(size) => handleSizeSelect(size)}
-      />
-
-      <AiSizeRecommenderModal
-        isOpen={isAiSizeModalOpen}
-        onClose={() => setIsAiSizeModalOpen(false)}
-        onSelectSize={(size) => handleSizeSelect(size)}
-        currentSelectedSize={selectedSize}
-        productName={product?.name}
-      />
-
-      <FittingRoomBookingModal
-        isOpen={isFittingModalOpen}
-        onClose={() => setIsFittingModalOpen(false)}
-        productName={product?.name}
-        selectedVariant={selectedVariant}
       />
 
       <ReviewModal

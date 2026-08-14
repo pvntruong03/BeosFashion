@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles, Flame, Tag, ShieldCheck, ChevronRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
-import { FlashSaleSection } from '../components/FlashSaleSection';
-import { isFeatureEnabled } from '../services/featureToggleService';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 
@@ -96,11 +94,6 @@ export const HomePage = ({ onNavigate }) => {
           </div>
         </div>
       </section>
-
-      {/* 1.5 FLASH SALE COUNTDOWN SECTION */}
-      {isFeatureEnabled('flashSale') && (
-        <FlashSaleSection onNavigate={onNavigate} />
-      )}
 
       {/* 2. CATEGORY TILES (MEN / WOMEN / KIDS / LIFEWEAR) */}
       <section style={{ padding: '48px 0' }}>

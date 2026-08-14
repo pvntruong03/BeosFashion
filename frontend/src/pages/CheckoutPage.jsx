@@ -17,7 +17,6 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
-import { isFeatureEnabled } from '../services/featureToggleService';
 import api from '../services/api';
 
 export const CheckoutPage = ({ onNavigate }) => {
@@ -49,7 +48,7 @@ export const CheckoutPage = ({ onNavigate }) => {
   const shippingFee = (orderType === 'IN_STORE_PICKUP' || subTotal >= freeShippingThreshold) ? 0 : standardShippingFee;
   const couponDiscount = appliedCoupon?.calculatedDiscount || 0;
   const availablePoints = user?.points || 1500;
-  const pointsDiscountValue = (useLoyaltyPoints && isFeatureEnabled('loyaltyPoints')) ? Math.min(availablePoints * 100, subTotal * 0.3) : 0;
+  const pointsDiscountValue = useLoyaltyPoints ? Math.min(availablePoints * 100, subTotal * 0.3) : 0;
   const totalDiscount = couponDiscount + pointsDiscountValue;
   const finalAmount = Math.max(subTotal - totalDiscount + shippingFee, 0);
 
@@ -421,27 +420,25 @@ export const CheckoutPage = ({ onNavigate }) => {
               )}
 
               {/* Loyalty Points Redemption */}
-              {isFeatureEnabled('loyaltyPoints') && (
-                <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#ffffff', border: '1px solid #ddd', borderRadius: '2px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '700' }}>
-                    <input
-                      type="checkbox"
-                      checked={useLoyaltyPoints}
-                      onChange={(e) => setUseLoyaltyPoints(e.target.checked)}
-                      style={{ accentColor: '#e60012', width: '16px', height: '16px' }}
-                    />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Award size={16} color="#ffab00" />
-                      <span>Dùng {availablePoints.toLocaleString()} điểm BEO Club</span>
-                    </div>
-                  </label>
-                  {useLoyaltyPoints && (
-                    <div style={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: '700', marginTop: '4px', paddingLeft: '24px' }}>
-                      ✓ Giảm trực tiếp {formatPrice(pointsDiscountValue)} vào đơn hàng
-                    </div>
-                  )}
-                </div>
-              )}
+              <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#ffffff', border: '1px solid #ddd', borderRadius: '2px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '700' }}>
+                  <input
+                    type="checkbox"
+                    checked={useLoyaltyPoints}
+                    onChange={(e) => setUseLoyaltyPoints(e.target.checked)}
+                    style={{ accentColor: '#e60012', width: '16px', height: '16px' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Award size={16} color="#ffab00" />
+                    <span>Dùng {availablePoints.toLocaleString()} điểm BEO Club</span>
+                  </div>
+                </label>
+                {useLoyaltyPoints && (
+                  <div style={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: '700', marginTop: '4px', paddingLeft: '24px' }}>
+                    ✓ Giảm trực tiếp {formatPrice(pointsDiscountValue)} vào đơn hàng
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Financial breakdown */}

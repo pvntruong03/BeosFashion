@@ -79,9 +79,11 @@ export const Footer = ({ onNavigate }) => {
         }}>
           {/* Col 1: Brand & Philosophy */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
               <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '4px 6px', fontWeight: '900', fontSize: '1rem', lineHeight: 1 }}>BEO<br/>SHOP</div>
-              <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '4px 6px', fontWeight: '900', fontSize: '0.75rem', lineHeight: 1.1 }}>ベオ<br/>ファッション</div>
+              <div style={{ height: '36px', display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', padding: '2px 6px', border: '1px solid #e0e0e0' }}>
+                <img src="/beo-logo.png" alt="BEO Modern Fashion Logo" style={{ height: '30px', width: 'auto', objectFit: 'contain' }} />
+              </div>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#666', lineHeight: 1.6, marginBottom: '16px' }}>
               {t('lifewear_story_desc')}

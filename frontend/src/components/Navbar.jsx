@@ -127,10 +127,10 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          {/* BEO Twin Logo */}
+          {/* BEO Brand Logo */}
           <div
             onClick={() => onNavigate('home')}
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', userSelect: 'none' }}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', userSelect: 'none' }}
           >
             <div style={{
               backgroundColor: '#e60012',
@@ -141,22 +141,28 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               fontSize: '1.25rem',
               lineHeight: 1,
               letterSpacing: '-1px',
-              textAlign: 'center'
+              textAlign: 'center',
+              height: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
               BEO<br />SHOP
             </div>
             <div style={{
-              backgroundColor: '#e60012',
-              color: '#ffffff',
-              padding: '6px 8px',
-              fontFamily: 'sans-serif',
-              fontWeight: '900',
-              fontSize: '0.85rem',
-              lineHeight: 1.1,
-              textAlign: 'center',
-              letterSpacing: '1px'
+              height: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#ffffff',
+              padding: '2px 6px',
+              border: '1px solid #e0e0e0'
             }}>
-              ベオ<br />ファッション
+              <img
+                src="/beo-logo.png"
+                alt="BEO Modern Fashion Logo"
+                style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+              />
             </div>
           </div>
 

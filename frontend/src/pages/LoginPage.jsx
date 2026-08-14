@@ -74,9 +74,11 @@ export const LoginPage = ({ onNavigate }) => {
     <div className="container" style={{ padding: '48px 24px', maxWidth: '960px' }}>
       {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '12px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
           <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '1.2rem', lineHeight: 1 }}>BEO<br/>SHOP</div>
-          <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '0.85rem', lineHeight: 1.1 }}>ベオ<br/>ファッション</div>
+          <div style={{ height: '42px', display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', padding: '2px 8px', border: '1px solid #e0e0e0' }}>
+            <img src="/beo-logo.png" alt="BEO Modern Fashion Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+          </div>
         </div>
         <h1 className="heading-section" style={{ fontSize: '1.8rem', textTransform: 'uppercase' }}>
           CỔNG ĐĂNG NHẬP HỆ THỐNG BEO

@@ -40,8 +40,9 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (userRepository.count() > 0 && orderRepository.count() >= 50) {
-            log.info("Database already seeded with {} orders. Skipping initial data load.", orderRepository.count());
+        if (userRepository.count() > 0) {
+            log.info("Database already seeded with {} users, {} products, {} orders. Skipping initial data load to preserve all user data.",
+                    userRepository.count(), productRepository.count(), orderRepository.count());
             return;
         }
 

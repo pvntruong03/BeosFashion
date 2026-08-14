@@ -2,8 +2,11 @@ package com.uniqlo.clone.controller;
 
 import com.uniqlo.clone.dto.ApiResponse;
 import com.uniqlo.clone.dto.ProductDto;
+import com.uniqlo.clone.dto.VisualSearchRequest;
+import com.uniqlo.clone.dto.VisualSearchResultDto;
 import com.uniqlo.clone.entity.Gender;
 import com.uniqlo.clone.service.ProductService;
+import com.uniqlo.clone.service.VisualSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +20,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
-@Tag(name = "Products", description = "Product catalog, filtering, search, and details")
+@Tag(name = "Products", description = "Product catalog, filtering, search, visual AI search, and details")
 public class ProductController {
 
     private final ProductService productService;
+    private final VisualSearchService visualSearchService;
 
     @GetMapping
     @Operation(summary = "Get filtered products with pagination")
@@ -95,13 +99,11 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.ok(productService.searchProducts(q)));
     }
 
-    private final com.uniqlo.clone.service.VisualSearchService visualSearchService;
-
     @PostMapping("/visual-search")
     @Operation(summary = "Search products by uploaded or referenced image (Visual AI Matching)")
-    public ResponseEntity<ApiResponse<com.uniqlo.clone.dto.VisualSearchResultDto>> visualSearch(
-            @RequestBody com.uniqlo.clone.dto.VisualSearchRequest request) {
-        com.uniqlo.clone.dto.VisualSearchResultDto results = visualSearchService.searchByImage(request);
+    public ResponseEntity<ApiResponse<VisualSearchResultDto>> visualSearch(
+            @RequestBody VisualSearchRequest request) {
+        VisualSearchResultDto results = visualSearchService.searchByImage(request);
         return ResponseEntity.ok(ApiResponse.ok("Visual search completed successfully", results));
     }
 }

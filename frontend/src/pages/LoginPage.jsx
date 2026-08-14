@@ -310,7 +310,7 @@ export const LoginPage = ({ onNavigate }) => {
                   <span className="badge-uq black">MANAGER</span>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  manager.dongkhoi@uniqlo.com • Chi nhánh Đồng Khởi
+                  manager.cantho@uniqlo.com • Chi nhánh Cần Thơ (Vincom Xuân Khánh)
                 </div>
               </div>
               <ArrowRight size={16} />

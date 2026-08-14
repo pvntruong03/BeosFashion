@@ -405,12 +405,12 @@ export const StaffDashboardPage = ({ onNavigate }) => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h1 style={{ fontSize: '1.3rem', fontWeight: '800', margin: 0 }}>
-                  {storeInfo?.name || 'BEO Vincom Đồng Khởi'}
+                  {storeInfo?.name || 'BEO Vincom Xuân Khánh Cần Thơ'}
                 </h1>
                 <span className="badge-uq red">{user?.role}</span>
               </div>
               <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '4px' }}>
-                Mã chi nhánh: <strong>{storeInfo?.code || 'STR-HCM-01'}</strong> | Nhân viên: <strong>{user?.fullName}</strong> ({user?.email})
+                Mã chi nhánh: <strong>{storeInfo?.code || 'STR-CT-01'}</strong> | Quản lý: <strong>{user?.fullName}</strong> ({user?.email})
               </div>
             </div>
           </div>

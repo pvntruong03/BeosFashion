@@ -47,15 +47,15 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Starting BEO Fashion Clone database initial seeding...");
 
         // 1. STORES
-        Store storeDongKhoi = storeRepository.save(Store.builder()
-                .code("STR-HCM-01")
-                .name("BEO Vincom Đồng Khởi")
-                .address("Tầng 1-3, Vincom Center Đồng Khởi, 72 Lê Thánh Tôn, Bến Nghé, Quận 1")
-                .city("TP. Hồ Chí Minh")
-                .phone("028 3822 8888")
-                .openingHours("10:00 - 22:00")
-                .latitude(10.7769)
-                .longitude(106.7009)
+        Store storeCanTho = storeRepository.save(Store.builder()
+                .code("STR-CT-01")
+                .name("BEO Vincom Xuân Khánh Cần Thơ")
+                .address("Tòa tháp Vincom Xuân Khánh, 209 Đường 30 Tháng 4, Phường Xuân Khánh, Quận Ninh Kiều")
+                .city("Cần Thơ")
+                .phone("0292 3788 888")
+                .openingHours("09:30 - 22:00")
+                .latitude(10.0278)
+                .longitude(105.7709)
                 .imageUrl("https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=800&q=80")
                 .build());
 
@@ -106,20 +106,20 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         User managerUser = userRepository.save(User.builder()
-                .email("manager.dongkhoi@uniqlo.com")
+                .email("manager.cantho@uniqlo.com")
                 .password(passwordEncoder.encode("staff123"))
-                .fullName("Nguyễn Văn Quản Lý")
+                .fullName("Nguyễn Văn Quản Lý Cần Thơ")
                 .phone("0908333444")
-                .address("Quận 1, TP.HCM")
-                .city("TP. Hồ Chí Minh")
+                .address("Quận Ninh Kiều, Cần Thơ")
+                .city("Cần Thơ")
                 .role(Role.ROLE_STAFF_MANAGER)
                 .avatar("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80")
                 .build());
 
         employeeRepository.save(Employee.builder()
                 .user(managerUser)
-                .employeeCode("EMP-DK-001")
-                .store(storeDongKhoi)
+                .employeeCode("EMP-CT-001")
+                .store(storeCanTho)
                 .position("Store Manager")
                 .hiredDate(LocalDate.of(2023, 1, 15))
                 .build());
@@ -217,7 +217,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         // 4. PRODUCTS & VARIANTS
-        List<Store> allStores = List.of(storeDongKhoi, storeLandmark, storeBaTrieu, storeCentralWarehouse);
+        List<Store> allStores = List.of(storeCanTho, storeLandmark, storeBaTrieu, storeCentralWarehouse);
 
         // Product 1: AIRism Cotton Oversized T-Shirt (Flagship product)
         Product p1 = createProductWithVariants(
@@ -483,7 +483,7 @@ public class DataInitializer implements CommandLineRunner {
         Order sampleOrder = orderRepository.save(Order.builder()
                 .orderNumber("UQ-260814-1001")
                 .user(customerUser)
-                .store(storeDongKhoi)
+                .store(storeCanTho)
                 .orderType(OrderType.ONLINE_DELIVERY)
                 .status(OrderStatus.CONFIRMED)
                 .customerName(customerUser.getFullName())

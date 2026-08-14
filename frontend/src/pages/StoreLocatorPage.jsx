@@ -49,6 +49,7 @@ export const StoreLocatorPage = ({ onNavigate }) => {
         <div style={{ display: 'flex', gap: '8px' }}>
           {[
             { id: 'ALL', label: 'Tất cả chi nhánh' },
+            { id: 'Cần Thơ', label: 'Cần Thơ' },
             { id: 'Hồ Chí Minh', label: 'TP. Hồ Chí Minh' },
             { id: 'Hà Nội', label: 'Hà Nội' },
           ].map((c) => (

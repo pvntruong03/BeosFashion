@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   const loginAsDemo = async (type) => {
     const credentials = {
       admin: { email: 'admin@uniqlo.com', pass: 'admin123' },
-      staff_manager: { email: 'manager.dongkhoi@uniqlo.com', pass: 'staff123' },
+      staff_manager: { email: 'manager.cantho@uniqlo.com', pass: 'staff123' },
       customer: { email: 'customer@gmail.com', pass: 'customer123' },
     };
 

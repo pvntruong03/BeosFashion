@@ -269,7 +269,7 @@ export const CheckoutPage = ({ onNavigate }) => {
                       onChange={(e) => setSelectedStoreId(Number(e.target.value))}
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none' }}
                     >
-                      <option value={1}>BEO Vincom Đồng Khởi (Quận 1, TP.HCM)</option>
+                      <option value={1}>BEO Vincom Xuân Khánh (Ninh Kiều, Cần Thơ)</option>
                       <option value={2}>BEO Landmark 81 (Bình Thạnh, TP.HCM)</option>
                       <option value={3}>BEO Vincom Bà Triệu (Hai Bà Trưng, Hà Nội)</option>
                     </select>

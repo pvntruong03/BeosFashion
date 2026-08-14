@@ -13,12 +13,14 @@ import {
   LogOut,
   LayoutDashboard,
   Store as StoreIcon,
-  ShoppingBasket
+  ShoppingBasket,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { isCustomizerEnabled } from '../services/customizerFeatureService';
 import api from '../services/api';
 
 export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
@@ -81,6 +83,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
     { key: 'men', label: t('men'), gender: 'MEN' },
     { key: 'lifewear', label: t('lifewear'), collection: 'LifeWear' },
     { key: 'lookbook', label: 'LOOKBOOK', view: 'lookbook' },
+    ...(isCustomizerEnabled() ? [{ key: 'custom-studio', label: '🎨 BEO CUSTOM LAB', view: 'custom-studio', highlight: true }] : []),
   ];
 
   return (
@@ -171,8 +174,8 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               <button
                 key={item.key}
                 onClick={() => {
-                  if (item.view === 'lookbook') {
-                    onNavigate('lookbook');
+                  if (item.view) {
+                    onNavigate(item.view);
                   } else {
                     onNavigate('products', { gender: item.gender, collection: item.collection });
                   }

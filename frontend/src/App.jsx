@@ -21,6 +21,7 @@ import { OrderHistoryPage } from './pages/OrderHistoryPage';
 import { WishlistPage } from './pages/WishlistPage';
 import { StoreLocatorPage } from './pages/StoreLocatorPage';
 import { LookbookPage } from './pages/LookbookPage';
+import { CustomStudioPage } from './pages/CustomStudioPage';
 import { LoginPage } from './pages/LoginPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StaffDashboardPage } from './pages/StaffDashboardPage';
@@ -178,6 +179,7 @@ const AppContent = () => {
         {currentView === 'stores' && <StoreLocatorPage onNavigate={handleNavigate} />}
 
         {currentView === 'lookbook' && <LookbookPage onNavigate={handleNavigate} />}
+        {currentView === 'custom-studio' && <CustomStudioPage onNavigate={handleNavigate} />}
 
         {currentView === 'login' && <LoginPage onNavigate={handleNavigate} />}
 

@@ -20,6 +20,8 @@ import { SizeAdvisorModal } from '../components/SizeAdvisorModal';
 import { ProductReviewsSection } from '../components/ProductReviewsSection';
 import { ReviewModal } from '../components/ReviewModal';
 import { ProductCard } from '../components/ProductCard';
+import { ProductCustomizerStudio } from '../components/ProductCustomizerStudio';
+import { isCustomizerEnabled } from '../services/customizerFeatureService';
 import api from '../services/api';
 
 export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
@@ -40,6 +42,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   // Modals
   const [isSizeAdvisorOpen, setIsSizeAdvisorOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isCustomizerModalOpen, setIsCustomizerModalOpen] = useState(false);
 
   // Accordion toggles
   const [openSection, setOpenSection] = useState('details'); // details, material, care, stores
@@ -429,10 +432,33 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
             onClick={handleBuyNow}
             disabled={!selectedVariant || selectedVariant.totalStock <= 0}
             className="btn-uq btn-uq-red"
-            style={{ width: '100%', height: '48px', fontSize: '0.95rem', marginBottom: '24px' }}
+            style={{ width: '100%', height: '48px', fontSize: '0.95rem', marginBottom: '10px' }}
           >
             <span>{t('buy_now')}</span>
           </button>
+
+          {isCustomizerEnabled() && (
+            <button
+              onClick={() => setIsCustomizerModalOpen(true)}
+              className="btn-uq btn-uq-outline-black"
+              style={{
+                width: '100%',
+                height: '44px',
+                fontSize: '0.88rem',
+                fontWeight: '800',
+                marginBottom: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                border: '1.5px solid #111',
+                backgroundColor: '#ffffff'
+              }}
+            >
+              <Sparkles size={16} color="#e60012" />
+              <span>🎨 TỰ THIẾT KẾ / THÊU TÊN CHO ÁO NÀY (+50.000đ)</span>
+            </button>
+          )}
 
           {/* Accordion Sections: Details, Material, Store Availability */}
           <div style={{ borderTop: '1px solid #e5e5e5' }}>
@@ -533,6 +559,29 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
         product={product}
         onReviewSubmitted={fetchProductData}
       />
+
+      {/* Customizer Studio Modal */}
+      {isCustomizerModalOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(3px)',
+          zIndex: 3000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{ width: '100%', maxWidth: '1200px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <ProductCustomizerStudio
+              initialProduct={product}
+              onClose={() => setIsCustomizerModalOpen(false)}
+              onNavigate={onNavigate}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

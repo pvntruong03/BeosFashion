@@ -416,7 +416,7 @@ export const AiChatWidget = ({ onNavigate }) => {
 
               {/* Zalo Official */}
               <a
-                href="https://zalo.me/0909111222"
+                href="https://zalo.me/0567740000"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -439,7 +439,7 @@ export const AiChatWidget = ({ onNavigate }) => {
                   </div>
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#0052cc' }}>Zalo Chat Official</div>
-                    <div style={{ fontSize: '0.75rem', color: '#666' }}>Chat ngay với tư vấn viên BEO</div>
+                    <div style={{ fontSize: '0.75rem', color: '#666' }}>zalo.me/0567740000</div>
                   </div>
                 </div>
                 <ExternalLink size={16} />
@@ -447,7 +447,7 @@ export const AiChatWidget = ({ onNavigate }) => {
 
               {/* Facebook Messenger */}
               <a
-                href="https://m.me/beofashion"
+                href="https://m.me/beofashionstorecantho"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -470,7 +470,7 @@ export const AiChatWidget = ({ onNavigate }) => {
                   </div>
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#0066cc' }}>Facebook Messenger</div>
-                    <div style={{ fontSize: '0.75rem', color: '#666' }}>Hỗ trợ qua Fanpage BEO Fashion</div>
+                    <div style={{ fontSize: '0.75rem', color: '#666' }}>m.me/beofashionstorecantho</div>
                   </div>
                 </div>
                 <ExternalLink size={16} />
@@ -509,12 +509,12 @@ export const AiChatWidget = ({ onNavigate }) => {
 
               {/* Hotline */}
               <div style={{ padding: '16px', backgroundColor: '#fafafa', border: '1px solid #eee', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '4px' }}>TỔNG ĐÀI CHĂM SÓC KHÁCH HÀNG</div>
-                <a href="tel:18006688" style={{ fontSize: '1.2rem', fontWeight: '900', color: '#e60012', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Phone size={18} /> 1800 6688
+                <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '4px' }}>TỔNG ĐÀI HOTLINE CSKH</div>
+                <a href="tel:1900019199999" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#e60012', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Phone size={18} /> 1900019199999
                 </a>
                 <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '4px' }}>
-                  (Miễn phí cước gọi • 08:00 - 22:00 hàng ngày)
+                  (08:00 - 22:00 hàng ngày)
                 </div>
               </div>
             </div>

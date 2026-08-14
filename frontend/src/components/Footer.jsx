@@ -87,7 +87,7 @@ export const Footer = ({ onNavigate }) => {
               {t('lifewear_story_desc')}
             </p>
             <div style={{ fontSize: '0.85rem', color: '#333', fontWeight: '600' }}>
-              Hotline: 1900 1234 (09:00 - 18:00)
+              Hotline CSKH: 1900019199999 (08:00 - 22:00)
             </div>
           </div>
 

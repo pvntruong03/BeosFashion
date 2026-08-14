@@ -175,12 +175,52 @@ public class DataInitializer implements CommandLineRunner {
                 .displayOrder(3)
                 .build());
 
+        Category catWomenOuterwear = categoryRepository.save(Category.builder()
+                .name("Áo Khoác Nữ")
+                .slug("women-outerwear")
+                .gender(Gender.WOMEN)
+                .parent(catWomen)
+                .displayOrder(4)
+                .build());
+
+        Category catWomenInnerwear = categoryRepository.save(Category.builder()
+                .name("Đồ Lót & Bra Top Nữ")
+                .slug("women-innerwear")
+                .gender(Gender.WOMEN)
+                .parent(catWomen)
+                .displayOrder(5)
+                .build());
+
         Category catKids = categoryRepository.save(Category.builder()
                 .name("Trẻ Em")
                 .slug("kids")
                 .gender(Gender.KIDS)
                 .displayOrder(3)
                 .bannerImage("https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=1200&q=80")
+                .build());
+
+        Category catKidsTops = categoryRepository.save(Category.builder()
+                .name("Áo Trẻ Em")
+                .slug("kids-tops")
+                .gender(Gender.KIDS)
+                .parent(catKids)
+                .displayOrder(1)
+                .build());
+
+        Category catKidsBottoms = categoryRepository.save(Category.builder()
+                .name("Quần Trẻ Em")
+                .slug("kids-bottoms")
+                .gender(Gender.KIDS)
+                .parent(catKids)
+                .displayOrder(2)
+                .build());
+
+        Category catAccessories = categoryRepository.save(Category.builder()
+                .name("Phụ Kiện & Túi")
+                .slug("accessories")
+                .gender(Gender.UNISEX)
+                .displayOrder(4)
+                .bannerImage("https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80")
                 .build());
 
         // 4. PRODUCTS & VARIANTS
@@ -363,7 +403,7 @@ public class DataInitializer implements CommandLineRunner {
                 "Giặt máy nước lạnh",
                 new BigDecimal("599000"),
                 null,
-                catWomenTops,
+                catWomenOuterwear,
                 Gender.WOMEN,
                 "AIRism UV Protection",
                 true, false, true, false,
@@ -372,6 +412,294 @@ public class DataInitializer implements CommandLineRunner {
                         new VariantSeed("01 OFF WHITE", "#FFFFFF", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"),
                         new VariantSeed("61 BLUE", "#AED6F1", List.of("S", "M"), "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=800&q=80"),
                         new VariantSeed("71 PURPLE", "#D7BDE2", List.of("M", "L"), "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 9: Premium Linen Long Sleeve Shirt Men
+        Product p9 = createProductWithVariants(
+                "Áo Sơ Mi Vải Linen Premium Dài Tay Nam",
+                "UQ-465188",
+                "premium-linen-long-sleeve-shirt-men",
+                "Được may từ 100% sợi lanh cao cấp có nguồn gốc từ Tây Âu. Càng giặt chất vải càng mềm mịn và mang nét đẹp tự nhiên mộc mạc.",
+                "Thoáng khí tự nhiên, thấm hút mồ hôi vượt trội.\nPhom dáng suông rộng rãi thoải mái.",
+                "100% Vải Lanh (Linen)",
+                "Giặt máy nước lạnh, phơi trong bóng râm",
+                new BigDecimal("899000"),
+                new BigDecimal("749000"),
+                catMenTops,
+                Gender.MEN,
+                "Premium Linen",
+                true, true, true, true,
+                "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("00 WHITE", "#FFFFFF", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("65 BLUE", "#85C1E9", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("31 BEIGE", "#F5EEF8", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 10: Ultra Stretch Slim Fit Jeans Men
+        Product p10 = createProductWithVariants(
+                "Quần Jeans Co Giãn Siêu Thoải Mái Ultra Stretch Slim Fit Nam",
+                "UQ-463933",
+                "ultra-stretch-slim-fit-jeans-men",
+                "Độ co giãn đột phá lên tới hơn 40% giúp bạn vận động linh hoạt không chút gò bó. Phom dáng ống ôm vừa vặn tôn dáng vẻ nam tính hiện đại.",
+                "Công nghệ dệt denim Kaihara Nhật Bản trứ danh.\nMàu nhuộm chàm tự nhiên bền đẹp.",
+                "93% Bông, 5% Polyeste, 2% Spandex",
+                "Giặt riêng ở lần giặt đầu, lộn trái khi giặt",
+                new BigDecimal("999000"),
+                null,
+                catMenBottoms,
+                Gender.MEN,
+                "Denim Collection",
+                true, true, true, false,
+                "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("68 BLUE", "#2471A3", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 11: DRY-EX Polo Shirt Men
+        Product p11 = createProductWithVariants(
+                "Áo Polo DRY-EX Cổ Bẻ Thể Thao Nam",
+                "UQ-456778",
+                "dry-ex-short-sleeve-polo-shirt-men",
+                "Công nghệ vải DRY-EX khô siêu tốc được các vận động viên hàng đầu tin dùng. Thấm hút mồ hôi và khuếch tán cực nhanh giữ cho cơ thể luôn khô ráo.",
+                "Cổ áo dệt rib tinh xảo chống xù lông.\nCấu trúc mắt lưới thông khí ở các vùng dễ toát mồ hôi.",
+                "100% Polyeste tái chế thân thiện môi trường",
+                "Giặt máy nước lạnh",
+                new BigDecimal("499000"),
+                new BigDecimal("399000"),
+                catMenTops,
+                Gender.MEN,
+                "DRY-EX",
+                true, false, true, true,
+                "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("00 WHITE", "#FFFFFF", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("69 NAVY", "#1A252F", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 12: Extra Fine Merino Cardigan Women
+        Product p12 = createProductWithVariants(
+                "Áo Cardigan Vải Len Cừu Extra Fine Merino Nữ",
+                "UQ-461083",
+                "extra-fine-merino-crew-neck-cardigan-women",
+                "Được dệt từ 100% sợi len cừu Merino siêu mảnh 19.5 micron cực kỳ mềm mại, không gây ngứa hay kích ứng da. Bề mặt có độ bóng mượt sang trọng.",
+                "Công nghệ xử lý chống co rút, có thể giặt máy.\nHàng cúc xà cừ tinh tế.",
+                "100% Len Cừu Merino Cao Cấp",
+                "Giặt máy với lưới giặt, chế độ len",
+                new BigDecimal("899000"),
+                null,
+                catWomenTops,
+                Gender.WOMEN,
+                "Extra Fine Merino",
+                true, true, true, false,
+                "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("01 OFF WHITE", "#FAF9F6", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("12 PINK", "#FADBD8", List.of("XS", "S", "M"), "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 13: Rayon Printed Floral Dress Women
+        Product p13 = createProductWithVariants(
+                "Đầm Rayon Họa Tiết Hoa Nhí Thắt Nơ Eo Nữ",
+                "UQ-466820",
+                "rayon-printed-floral-short-sleeve-dress-women",
+                "Chất liệu Rayon mềm rủ tôn lên nét duyên dáng thướt tha. Họa tiết hoa nhí phong cách vintage trang nhã đi cùng dây thắt eo tạo điểm nhấn hoàn hảo.",
+                "Vải ít nhăn và giữ màu tươi sáng sau khi giặt.\nCổ áo chữ V thanh thoát.",
+                "100% Sợi Rayon cao cấp",
+                "Giặt máy nước lạnh, ủi hơi nước",
+                new BigDecimal("999000"),
+                new BigDecimal("799000"),
+                catWomenDresses,
+                Gender.WOMEN,
+                "LifeWear Dresses",
+                true, true, true, true,
+                "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("69 NAVY", "#1A252F", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("10 PINK", "#FADBD8", List.of("S", "M"), "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("30 NATURAL", "#F5EEF8", List.of("M", "L"), "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 14: Chino Shorts Men
+        Product p14 = createProductWithVariants(
+                "Quần Short Kaki Chino Co Giãn Thoải Mái Nam",
+                "UQ-455490",
+                "stretch-chino-shorts-men",
+                "Chiếc quần short hoàn hảo cho những chuyến du lịch và hoạt động mùa hè. Chất liệu kaki dệt chéo mềm mại có bổ sung sợi co giãn mang lại sự năng động.",
+                "Độ dài ngang gối chuẩn mực thanh lịch.\nTúi sâu tiện lợi đựng điện thoại và ví.",
+                "97% Bông Cotton, 3% Spandex",
+                "Giặt máy nước lạnh",
+                new BigDecimal("499000"),
+                null,
+                catMenBottoms,
+                Gender.MEN,
+                "Chino Shorts",
+                true, false, true, false,
+                "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("32 BEIGE", "#D2B48C", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("57 OLIVE", "#556B2F", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("69 NAVY", "#1A252F", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 15: Tailored Relaxed Blazer Women
+        Product p15 = createProductWithVariants(
+                "Áo Blazer Phom Rộng Phong Cách Thanh Lịch Nữ",
+                "UQ-460855",
+                "tailored-relaxed-blazer-jacket-women",
+                "Item thời thượng mang phong cách menswear sang trọng cho phái đẹp. Cầu vai nhẹ nhàng tạo phom đứng dáng thanh thoát chuẩn quý cô công sở hiện đại.",
+                "Chất vải dệt cao cấp chống nhăn.\nLớp lót lụa mềm êm ái khi cử động.",
+                "68% Polyeste, 28% Rayon, 4% Spandex",
+                "Giặt khô chuyên dụng hoặc giặt tay nhẹ",
+                new BigDecimal("1499000"),
+                new BigDecimal("1299000"),
+                catWomenOuterwear,
+                Gender.WOMEN,
+                "Tailored Jacket",
+                true, true, true, true,
+                "https://images.unsplash.com/photo-1548624149-f9b1859aa7d0?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1548624149-f9b1859aa7d0?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("31 BEIGE", "#E5D3B3", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("08 DARK GRAY", "#2C3E50", List.of("M", "L"), "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 16: Kids Graphic T-Shirt
+        Product p16 = createProductWithVariants(
+                "Áo Thun Cotton Họa Tiết Hoạt Hình Trẻ Em Kids",
+                "UQ-463200",
+                "kids-graphic-short-sleeve-t-shirt",
+                "100% sợi bông cotton tự nhiên an toàn và êm dịu cho làn da nhạy cảm của bé. Hình in ngộ nghĩnh nhiều màu sắc sinh động kích thích sự sáng tạo.",
+                "Đường may bo viền êm ái không cọ xát da bé.\nVải thấm hút mồ hôi cho bé thỏa sức chạy nhảy.",
+                "100% Bông Cotton Tự Nhiên",
+                "Giặt máy nước lạnh",
+                new BigDecimal("199000"),
+                null,
+                catKidsTops,
+                Gender.KIDS,
+                "Kids UT",
+                true, true, true, false,
+                "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("00 WHITE", "#FFFFFF", List.of("110", "120", "130", "140", "150"), "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("52 GREEN", "#2ECC71", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("70 LIGHT PURPLE", "#D7BDE2", List.of("120", "130", "140"), "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 17: Kids Sweat Jogger Pants
+        Product p17 = createProductWithVariants(
+                "Quần Nỉ Bo Gấu Dễ Vận Động Trẻ Em Kids Jogger",
+                "UQ-463211",
+                "kids-sweat-jogger-pants",
+                "Quần nỉ mềm mại có cạp chun co giãn và dây rút điều chỉnh bên trong. Ống quần bo gấu gọn gàng giúp bé vui chơi chạy nhảy an toàn không vấp ngã.",
+                "Lớp nỉ lót bên trong êm mịn và giữ ấm nhẹ nhàng.\nTúi 2 bên tiện lợi.",
+                "100% Bông Cotton mềm",
+                "Giặt máy nước ấm",
+                new BigDecimal("349000"),
+                new BigDecimal("299000"),
+                catKidsBottoms,
+                Gender.KIDS,
+                "Kids Active",
+                true, false, true, true,
+                "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("03 GRAY", "#BDC3C7", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("69 NAVY", "#1A252F", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("09 BLACK", "#111111", List.of("120", "130", "140", "150"), "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 18: Pocketable UV Protection Parka Men
+        Product p18 = createProductWithVariants(
+                "Áo Khoác Gió Kháng Nước Siêu Nhẹ Pocketable Parka Nam",
+                "UQ-453773",
+                "pocketable-uv-protection-parka-men",
+                "Chiếc áo khoác gió mỏng nhẹ gấp gọn tiện lợi, có chỉ số chống nắng UPF50+ và lớp phủ trượt nước bền bỉ bảo vệ bạn trước những cơn mưa bất chợt.",
+                "Trọng lượng siêu nhẹ chỉ 120g.\nKèm túi đựng nhỏ gọn bỏ vừa túi xách.",
+                "100% Polyeste tái chế kháng nước",
+                "Giặt máy nước lạnh, không dùng chất tẩy mạnh",
+                new BigDecimal("799000"),
+                null,
+                catMenOuterwear,
+                Gender.MEN,
+                "Pocketable Parka",
+                true, true, true, false,
+                "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("68 BLUE", "#2980B9", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("56 OLIVE", "#556B2F", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 19: Round Mini Shoulder Bag Unisex
+        Product p19 = createProductWithVariants(
+                "Túi Đeo Chéo Bán Nguyệt Mini Round Shoulder Bag Unisex",
+                "UQ-464484",
+                "round-mini-shoulder-bag-unisex",
+                "Chiếc túi đeo chéo hiện tượng toàn cầu với sức chứa đáng kinh ngạc. Thiết kế ôm trọn cơ thể, chất vải nylon trượt nước cùng trọng lượng siêu nhẹ.",
+                "Bên trong chia ngăn thông minh đựng vừa bình nước 500ml và ví dài.\nDây đeo có thể điều chỉnh độ dài linh hoạt.",
+                "Vải ngoài: 100% Nylon; Lớp lót: 100% Polyeste",
+                "Lau sạch bằng khăn ẩm",
+                new BigDecimal("299000"),
+                null,
+                catAccessories,
+                Gender.UNISEX,
+                "Accessories",
+                true, true, true, false,
+                "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("09 BLACK", "#111111", List.of("FREE"), "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("30 NATURAL", "#EAECEE", List.of("FREE"), "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("12 PINK", "#FADBD8", List.of("FREE"), "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("57 OLIVE", "#556B2F", List.of("FREE"), "https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=800&q=80")
+                ),
+                allStores
+        );
+
+        // Product 20: AIRism Wireless Bra Top Women
+        Product p20 = createProductWithVariants(
+                "Áo Bra Top Không Gọng Vải AIRism Nâng Ngực Nữ",
+                "UQ-464332",
+                "airism-wireless-bra-seamless-women",
+                "Thiết kế 2 trong 1 tích hợp cúp ngực nâng đỡ tự nhiên mà không cần gọng kim loại. Vải AIRism mềm mịn như làn da thứ 2, mát lạnh và thấm hút mồ hôi tối ưu.",
+                "Cúp áo đệm mút 3D định hình vòng 1 chuẩn đẹp.\nĐường viền không đường may (Seamless) không hằn vết dưới trang phục.",
+                "85% Polyeste, 15% Spandex",
+                "Giặt máy với túi giặt đồ lót",
+                new BigDecimal("499000"),
+                new BigDecimal("399000"),
+                catWomenInnerwear,
+                Gender.WOMEN,
+                "AIRism Wireless Bra",
+                true, true, true, true,
+                "https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?auto=format&fit=crop&w=800&q=80",
+                List.of(
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("31 BEIGE", "#F5CBA7", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("01 OFF WHITE", "#FFFFFF", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80")
                 ),
                 allStores
         );

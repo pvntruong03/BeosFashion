@@ -445,9 +445,9 @@ export const AiChatWidget = ({ onNavigate }) => {
                 <ExternalLink size={16} />
               </a>
 
-              {/* Facebook Messenger */}
+              {/* Facebook Fanpage */}
               <a
-                href="https://m.me/beofashionstorecantho"
+                href="https://www.facebook.com/beofashionstorecantho/"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -465,12 +465,12 @@ export const AiChatWidget = ({ onNavigate }) => {
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f6f0ff')}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', backgroundColor: '#0084ff', color: '#fff', fontWeight: '900', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>
-                    M
+                  <div style={{ width: '36px', height: '36px', backgroundColor: '#1877f2', color: '#fff', fontWeight: '900', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>
+                    f
                   </div>
                   <div>
-                    <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#0066cc' }}>Facebook Messenger</div>
-                    <div style={{ fontSize: '0.75rem', color: '#666' }}>m.me/beofashionstorecantho</div>
+                    <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#1877f2' }}>Fanpage Facebook</div>
+                    <div style={{ fontSize: '0.75rem', color: '#666' }}>facebook.com/beofashionstorecantho</div>
                   </div>
                 </div>
                 <ExternalLink size={16} />

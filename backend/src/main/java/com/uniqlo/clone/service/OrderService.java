@@ -257,6 +257,9 @@ public class OrderService {
             if (order.getUser() == null || !order.getUser().getId().equals(userId)) {
                 throw new BadRequestException("Bạn không có quyền hủy đơn hàng này!");
             }
+            if (order.getStatus() != OrderStatus.PENDING) {
+                throw new BadRequestException("Đơn hàng đã được xác nhận thành công (hoặc đang đóng gói/vận chuyển), không thể tự hủy. Quý khách vui lòng liên hệ Hotline BEO 1900019199999 để được hỗ trợ!");
+            }
         }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {

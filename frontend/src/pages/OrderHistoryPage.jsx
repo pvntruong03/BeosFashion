@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Package, Calendar, Clock, Printer, ChevronRight, AlertCircle, XCircle } from 'lucide-react';
+import { ShoppingBag, Package, Calendar, Clock, Printer, ChevronRight, AlertCircle, XCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
@@ -39,6 +39,11 @@ export const OrderHistoryPage = ({ onNavigate }) => {
 
   const handleConfirmCancel = async () => {
     if (!cancelModalOrder) return;
+    if (cancelModalOrder.status !== 'PENDING') {
+      showError('Đơn hàng đã được xác nhận hoặc đang xử lý, không thể hủy!');
+      setCancelModalOrder(null);
+      return;
+    }
     try {
       await api.put(`/orders/${cancelModalOrder.id}/cancel`, null, {
         params: { reason: 'Khách hàng hủy đơn qua lịch sử mua hàng' }
@@ -180,9 +185,9 @@ export const OrderHistoryPage = ({ onNavigate }) => {
                   Địa chỉ giao: <strong>{order.shippingAddress}</strong>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  {/* Cancel button if order is not yet packed/shipped */}
-                  {(order.status === 'PENDING' || order.status === 'CONFIRMED' || order.status === 'AWAITING_PAYMENT') && (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {/* Cancel button: ACTIVE ONLY when order is PENDING (Chờ xác nhận). When CONFIRMED or in progress, hide button and show status badge */}
+                  {order.status === 'PENDING' && (
                     <button
                       onClick={() => setCancelModalOrder(order)}
                       className="btn-uq"
@@ -194,10 +199,53 @@ export const OrderHistoryPage = ({ onNavigate }) => {
                         border: '1px solid #ffcccc',
                         fontWeight: '700'
                       }}
+                      title="Hủy đơn hàng đang chờ xác nhận"
                     >
                       <XCircle size={14} />
                       <span>Hủy Đơn</span>
                     </button>
+                  )}
+
+                  {/* Informative status badge when confirmed / processing (Cancel button is hidden) */}
+                  {order.status === 'CONFIRMED' && (
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        color: '#00875a',
+                        fontWeight: '700',
+                        backgroundColor: '#e8f5e9',
+                        border: '1px solid #c8e6c9',
+                        padding: '6px 12px',
+                        borderRadius: '3px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                      title="Đơn hàng đã được Showroom Cần Thơ tiếp nhận & xác nhận thành công!"
+                    >
+                      <CheckCircle2 size={13} />
+                      <span>Đã Xác Nhận</span>
+                    </span>
+                  )}
+
+                  {order.status === 'PACKING' && (
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        color: '#0052cc',
+                        fontWeight: '700',
+                        backgroundColor: '#deebff',
+                        border: '1px solid #b3d4ff',
+                        padding: '6px 12px',
+                        borderRadius: '3px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      <Package size={13} />
+                      <span>Đang Chuẩn Bị Hàng</span>
+                    </span>
                   )}
 
                   <button

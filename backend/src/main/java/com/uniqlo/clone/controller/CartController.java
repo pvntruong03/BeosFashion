@@ -63,4 +63,14 @@ public class CartController {
         CartDto cart = cartService.removeItemFromCart(userId, sessionId, itemId);
         return ResponseEntity.ok(ApiResponse.ok("Item removed from cart", cart));
     }
+
+    @DeleteMapping
+    @Operation(summary = "Clear entire shopping cart")
+    public ResponseEntity<ApiResponse<CartDto>> clearCart(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) String sessionId) {
+        Long userId = principal != null ? principal.getId() : null;
+        CartDto cart = cartService.clearEntireCart(userId, sessionId);
+        return ResponseEntity.ok(ApiResponse.ok("Cart cleared", cart));
+    }
 }

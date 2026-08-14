@@ -18,7 +18,7 @@ import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
 
 export const CheckoutPage = ({ onNavigate }) => {
-  const { cart, fetchCart } = useCart();
+  const { cart, fetchCart, clearCart } = useCart();
   const { user } = useAuth();
   const { formatPrice, t } = useLanguage();
   const { showSuccess, showError } = useToast();
@@ -97,6 +97,7 @@ export const CheckoutPage = ({ onNavigate }) => {
       };
 
       const res = await api.post('/orders', payload);
+      await clearCart();
       await fetchCart();
       showSuccess('Đặt hàng thành công!');
       onNavigate('order-success', { order: res.data });

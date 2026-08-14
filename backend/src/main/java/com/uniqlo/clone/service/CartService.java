@@ -118,6 +118,31 @@ public class CartService {
     }
 
     @Transactional
+    public CartDto clearEntireCart(Long userId, String sessionId) {
+        Cart cart = findOrCreateCartEntity(userId, sessionId);
+        if (cart.getItems() != null && !cart.getItems().isEmpty()) {
+            cartItemRepository.deleteAll(cart.getItems());
+            cart.getItems().clear();
+        }
+        return mapToDto(cartRepository.save(cart));
+    }
+
+    @Transactional
+    public void removePurchasedItems(Long userId, String sessionId, List<Long> variantIds) {
+        Cart cart = findOrCreateCartEntity(userId, sessionId);
+        if (cart.getItems() != null && !cart.getItems().isEmpty()) {
+            List<CartItem> toRemove = cart.getItems().stream()
+                    .filter(item -> variantIds.contains(item.getVariant().getId()))
+                    .collect(Collectors.toList());
+            if (!toRemove.isEmpty()) {
+                cart.getItems().removeAll(toRemove);
+                cartItemRepository.deleteAll(toRemove);
+                cartRepository.save(cart);
+            }
+        }
+    }
+
+    @Transactional
     public void clearCart(Long cartId) {
         cartItemRepository.deleteByCartId(cartId);
     }

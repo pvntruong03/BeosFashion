@@ -64,6 +64,15 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const clearCart = async () => {
+    try {
+      await api.delete('/cart');
+      setCart({ items: [], subTotal: 0, totalQuantity: 0, estimatedShipping: 0 });
+    } catch (err) {
+      setCart({ items: [], subTotal: 0, totalQuantity: 0, estimatedShipping: 0 });
+    }
+  };
+
   const totalItems = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   return (
@@ -75,6 +84,7 @@ export const CartProvider = ({ children }) => {
         addToCart,
         updateQuantity,
         removeItem,
+        clearCart,
         fetchCart,
         totalItems,
         loading,

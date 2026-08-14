@@ -177,6 +177,12 @@ public class OrderService {
         payment = paymentRepository.save(payment);
         order.setPayment(payment);
 
+        // Remove purchased items from cart
+        List<Long> purchasedVariantIds = checkoutItems.stream()
+                .map(CartItemDto::getVariantId)
+                .collect(Collectors.toList());
+        cartService.removePurchasedItems(userId, sessionId, purchasedVariantIds);
+
         return mapToDto(order);
     }
 

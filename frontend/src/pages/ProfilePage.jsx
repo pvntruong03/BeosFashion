@@ -1,0 +1,604 @@
+import React, { useState, useEffect } from 'react';
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Lock,
+  Camera,
+  Save,
+  ShieldCheck,
+  Award,
+  Sparkles,
+  ShoppingBag,
+  Heart,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useToast } from '../contexts/ToastContext';
+import api from '../services/api';
+
+const PRESET_AVATARS = [
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
+];
+
+export const ProfilePage = ({ onNavigate }) => {
+  const { user, updateUserData } = useAuth();
+  const { t } = useLanguage();
+  const { showSuccess, showError } = useToast();
+
+  const [activeTab, setActiveTab] = useState('general'); // 'general', 'password', 'membership'
+
+  // General profile form state
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('TP. Hồ Chí Minh');
+  const [avatar, setAvatar] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Password form state
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || '');
+      setPhone(user.phone || '');
+      setAddress(user.address || '');
+      setCity(user.city || 'TP. Hồ Chí Minh');
+      setAvatar(user.avatar || '');
+    }
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '12px' }}>
+          Vui lòng đăng nhập
+        </h2>
+        <p style={{ color: '#666', marginBottom: '24px' }}>
+          Bạn cần đăng nhập để quản lý thông tin tài khoản và xem quyền lợi hội viên.
+        </p>
+        <button onClick={() => onNavigate('login')} className="btn-uq btn-uq-primary">
+          Đăng nhập ngay
+        </button>
+      </div>
+    );
+  }
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!fullName.trim()) {
+      showError('Vui lòng nhập họ và tên của bạn');
+      return;
+    }
+
+    setIsSavingProfile(true);
+    try {
+      const res = await api.put('/auth/profile', {
+        fullName: fullName.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        city: city.trim(),
+        avatar: avatar.trim()
+      });
+
+      if (updateUserData) {
+        updateUserData(res.data);
+      }
+      showSuccess('Đã cập nhật thông tin hồ sơ thành công!');
+    } catch (err) {
+      showError(err.message || 'Lỗi khi cập nhật thông tin');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!oldPassword) {
+      showError('Vui lòng nhập mật khẩu hiện tại');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      showError('Mật khẩu mới phải có tối thiểu 6 ký tự');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showError('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      await api.put('/auth/change-password', {
+        oldPassword,
+        newPassword
+      });
+
+      showSuccess('Đã thay đổi mật khẩu thành công!');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      showError(err.message || 'Lỗi khi đổi mật khẩu');
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  return (
+    <div className="container" style={{ padding: '36px 24px 60px 24px' }}>
+      {/* Header Banner */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '20px',
+          padding: '28px',
+          backgroundColor: '#111111',
+          color: '#ffffff',
+          marginBottom: '32px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ position: 'relative' }}>
+            <img
+              src={avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
+              alt={fullName}
+              style={{
+                width: '72px',
+                height: '72px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '2px solid #ffffff',
+                backgroundColor: '#333'
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: '22px',
+                height: '22px',
+                backgroundColor: '#e60012',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid #111'
+              }}
+            >
+              <Sparkles size={12} color="#fff" />
+            </div>
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h1 style={{ fontSize: '1.4rem', fontWeight: '800', margin: 0 }}>
+                {user.fullName || user.email}
+              </h1>
+              <span className="badge-uq red">{user.role}</span>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: '#aaa', margin: '4px 0 0 0' }}>
+              Thành viên BEO LifeWear • Email: <strong>{user.email}</strong>
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => onNavigate('orders')}
+            className="btn-uq btn-uq-outline-gray"
+            style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
+          >
+            <ShoppingBag size={16} />
+            <span>Lịch sử đơn hàng</span>
+          </button>
+          <button
+            onClick={() => onNavigate('wishlist')}
+            className="btn-uq btn-uq-outline-gray"
+            style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
+          >
+            <Heart size={16} />
+            <span>Yêu thích</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', alignItems: 'start' }}>
+        {/* Left Sidebar Navigation */}
+        <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e5e5', overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', fontWeight: '800', fontSize: '0.9rem', textTransform: 'uppercase' }}>
+            Tài Khoản Của Tôi
+          </div>
+
+          <div>
+            {[
+              { id: 'general', label: '1. Thông tin cá nhân & Địa chỉ', icon: <User size={18} /> },
+              { id: 'password', label: '2. Bảo mật & Đổi mật khẩu', icon: <Lock size={18} /> },
+              { id: 'membership', label: '3. Quyền lợi Hội viên BEO Club', icon: <Award size={18} /> },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '14px 20px',
+                  border: 'none',
+                  borderLeft: activeTab === tab.id ? '4px solid #e60012' : '4px solid transparent',
+                  backgroundColor: activeTab === tab.id ? '#fafafa' : '#ffffff',
+                  color: activeTab === tab.id ? '#e60012' : '#333',
+                  fontWeight: activeTab === tab.id ? '800' : '600',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  borderBottom: '1px solid #f5f5f5',
+                  transition: 'var(--transition)'
+                }}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ padding: '20px', backgroundColor: '#fcfcfc', borderTop: '1px solid #eee' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#00875a' }}>
+              <ShieldCheck size={18} />
+              <span style={{ fontWeight: '700', fontSize: '0.85rem' }}>Bảo mật thông tin 100%</span>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: '#666', lineHeight: 1.5, margin: 0 }}>
+              Dữ liệu của bạn được mã hóa an toàn theo tiêu chuẩn bảo mật điện tử của BEO Fashion.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Tab Content Area */}
+        <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e5e5', padding: '28px' }}>
+          {/* ================= TAB 1: GENERAL PROFILE ================= */}
+          {activeTab === 'general' && (
+            <div>
+              <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
+                  Hồ Sơ Cá Nhân & Địa Chỉ Giao Hàng
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
+                  Quản lý thông tin hồ sơ để việc đặt hàng và nhận ưu đãi diễn ra nhanh chóng nhất.
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveProfile}>
+                {/* Avatar Chooser */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '8px' }}>
+                    Ảnh đại diện (Avatar)
+                  </label>
+
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '12px' }}>
+                    <img
+                      src={avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
+                      alt="Preview"
+                      style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #ddd' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <input
+                        type="url"
+                        placeholder="Nhập đường dẫn URL ảnh hoặc chọn mẫu bên dưới..."
+                        value={avatar}
+                        onChange={(e) => setAvatar(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.85rem' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Preset Avatars */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#666' }}>Gợi ý mẫu:</span>
+                    {PRESET_AVATARS.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`Preset ${idx + 1}`}
+                        onClick={() => setAvatar(url)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          cursor: 'pointer',
+                          border: avatar === url ? '2px solid #e60012' : '1px solid #ccc',
+                          transform: avatar === url ? 'scale(1.1)' : 'scale(1)',
+                          transition: 'transform 0.15s'
+                        }}
+                        title="Bấm để chọn"
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                      Họ và tên *
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
+                        placeholder="VD: Nguyễn Văn A"
+                      />
+                      <User size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                      Số điện thoại nhận hàng
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
+                        placeholder="VD: 0912345678"
+                      />
+                      <Phone size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                    Email đăng nhập (Không thể thay đổi)
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="email"
+                      disabled
+                      value={user.email}
+                      style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #e0e0e0', backgroundColor: '#f5f5f5', color: '#666', outline: 'none', fontSize: '0.9rem', cursor: 'not-allowed' }}
+                    />
+                    <Mail size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                      Địa chỉ nhận hàng mặc định
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
+                        placeholder="Số nhà, tên đường, phường/xã..."
+                      />
+                      <MapPin size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                      Tỉnh / Thành phố
+                    </label>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem', backgroundColor: '#fff' }}
+                    >
+                      <option value="Cần Thơ">Cần Thơ</option>
+                      <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                      <option value="Hà Nội">Hà Nội</option>
+                      <option value="Đà Nẵng">Đà Nẵng</option>
+                      <option value="Hải Phòng">Hải Phòng</option>
+                      <option value="Bình Dương">Bình Dương</option>
+                      <option value="Đồng Nai">Đồng Nai</option>
+                      <option value="An Giang">An Giang</option>
+                      <option value="Kiên Giang">Kiên Giang</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid #eee', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="submit"
+                    disabled={isSavingProfile}
+                    className="btn-uq btn-uq-red"
+                    style={{ padding: '12px 28px', fontSize: '0.9rem', fontWeight: '700' }}
+                  >
+                    <Save size={16} />
+                    <span>{isSavingProfile ? 'Đang lưu...' : 'Lưu Thay Đổi'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* ================= TAB 2: PASSWORD CHANGE ================= */}
+          {activeTab === 'password' && (
+            <div>
+              <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
+                  Đổi Mật Khẩu Bảo Mật
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
+                  Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu của bạn cho người khác.
+                </p>
+              </div>
+
+              <form onSubmit={handleChangePassword} style={{ maxWidth: '480px' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                    Mật khẩu hiện tại *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
+                    placeholder="Nhập mật khẩu đang dùng"
+                  />
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                    Mật khẩu mới * (Tối thiểu 6 ký tự)
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
+                    placeholder="Nhập mật khẩu mới"
+                  />
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
+                    Xác nhận mật khẩu mới *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
+                    placeholder="Nhập lại mật khẩu mới"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSavingPassword}
+                  className="btn-uq btn-uq-red"
+                  style={{ padding: '12px 28px', fontSize: '0.9rem', fontWeight: '700' }}
+                >
+                  <Lock size={16} />
+                  <span>{isSavingPassword ? 'Đang cập nhật...' : 'Cập Nhật Mật Khẩu'}</span>
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* ================= TAB 3: MEMBERSHIP & REWARDS ================= */}
+          {activeTab === 'membership' && (
+            <div>
+              <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
+                  Hội Viên BEO Club & Đặc Quyền
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
+                  Thẻ thành viên điện tử BEO LifeWear tích điểm cho mọi đơn hàng trực tuyến và tại cửa hàng.
+                </p>
+              </div>
+
+              {/* Digital Membership Card Preview */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #111111 0%, #333333 100%)',
+                  color: '#ffffff',
+                  padding: '24px',
+                  marginBottom: '24px',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', letterSpacing: '2px', color: '#aaa', textTransform: 'uppercase' }}>
+                      BEO LIFEWEAR MEMBER
+                    </span>
+                    <div style={{ fontSize: '1.3rem', fontWeight: '900', marginTop: '4px', letterSpacing: '1px' }}>
+                      {user.fullName || 'QUÝ KHÁCH'}
+                    </div>
+                  </div>
+                  <span className="badge-uq red" style={{ fontSize: '0.8rem', padding: '4px 10px' }}>
+                    BEO VIP SILVER
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: '#aaa' }}>MÃ THÀNH VIÊN</div>
+                    <div style={{ fontSize: '1rem', fontWeight: '800', letterSpacing: '2px', fontFamily: 'monospace' }}>
+                      BEO-{user.id ? String(user.id).padStart(6, '0') : '888888'}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#aaa' }}>ĐIỂM TÍCH LŨY</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#ffb800' }}>
+                      1,250 PTS
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Benefits Grid */}
+              <h3 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '14px', textTransform: 'uppercase' }}>
+                Đặc Quyền Hội Viên Dành Riêng Cho Bạn
+              </h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+                <div style={{ padding: '16px', border: '1px solid #eee', backgroundColor: '#fafafa' }}>
+                  <div style={{ color: '#e60012', fontWeight: '800', fontSize: '0.9rem', marginBottom: '4px' }}>
+                    🎁 Voucher Sinh Nhật 15%
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                    Nhận mã giảm giá 15% vào tháng sinh nhật của bạn cho mọi sản phẩm LifeWear.
+                  </div>
+                </div>
+
+                <div style={{ padding: '16px', border: '1px solid #eee', backgroundColor: '#fafafa' }}>
+                  <div style={{ color: '#e60012', fontWeight: '800', fontSize: '0.9rem', marginBottom: '4px' }}>
+                    🚚 Miễn Phí Vận Chuyển
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                    Tự động freeship toàn quốc cho tất cả đơn hàng từ 500.000đ.
+                  </div>
+                </div>
+
+                <div style={{ padding: '16px', border: '1px solid #eee', backgroundColor: '#fafafa' }}>
+                  <div style={{ color: '#e60012', fontWeight: '800', fontSize: '0.9rem', marginBottom: '4px' }}>
+                    🔄 30 Ngày Đổi Trả
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                    Chính sách đổi hàng linh hoạt tại toàn bộ hệ thống cửa hàng BEO trên toàn quốc.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

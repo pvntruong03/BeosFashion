@@ -43,4 +43,28 @@ public class AuthController {
         AuthResponse.UserProfileDto profile = authService.getCurrentUserProfile(principal);
         return ResponseEntity.ok(ApiResponse.ok(profile));
     }
+
+    @PutMapping("/profile")
+    @Operation(summary = "Update current user profile information")
+    public ResponseEntity<ApiResponse<AuthResponse.UserProfileDto>> updateProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody com.uniqlo.clone.dto.ProfileUpdateRequest request) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Vui lòng đăng nhập"));
+        }
+        AuthResponse.UserProfileDto updated = authService.updateProfile(principal.getId(), request);
+        return ResponseEntity.ok(ApiResponse.ok("Cập nhật thông tin thành công", updated));
+    }
+
+    @PutMapping("/change-password")
+    @Operation(summary = "Change current user password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody com.uniqlo.clone.dto.ChangePasswordRequest request) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Vui lòng đăng nhập"));
+        }
+        authService.changePassword(principal.getId(), request);
+        return ResponseEntity.ok(ApiResponse.ok("Đổi mật khẩu thành công", null));
+    }
 }

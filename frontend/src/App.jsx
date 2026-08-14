@@ -10,6 +10,7 @@ import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
 import { VisualSearchModal } from './components/VisualSearchModal';
 import { AuthRequiredModal } from './components/AuthRequiredModal';
+import { AiChatWidget } from './components/AiChatWidget';
 
 import { HomePage } from './pages/HomePage';
 import { ProductListingPage } from './pages/ProductListingPage';
@@ -21,6 +22,7 @@ import { WishlistPage } from './pages/WishlistPage';
 import { StoreLocatorPage } from './pages/StoreLocatorPage';
 import { LookbookPage } from './pages/LookbookPage';
 import { LoginPage } from './pages/LoginPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { StaffDashboardPage } from './pages/StaffDashboardPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
@@ -82,6 +84,8 @@ const AppContent = () => {
 
         {currentView === 'orders' && <OrderHistoryPage onNavigate={handleNavigate} />}
 
+        {currentView === 'profile' && <ProfilePage onNavigate={handleNavigate} />}
+
         {currentView === 'wishlist' && <WishlistPage onNavigate={handleNavigate} />}
 
         {currentView === 'stores' && <StoreLocatorPage onNavigate={handleNavigate} />}
@@ -118,6 +122,9 @@ const AppContent = () => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
+
+      {/* Global AI Virtual Assistant & Social Chat Floating Widget */}
+      <AiChatWidget onNavigate={handleNavigate} />
 
       {/* Global Footer */}
       <Footer onNavigate={handleNavigate} />

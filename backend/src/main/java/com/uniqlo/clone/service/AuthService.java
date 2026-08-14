@@ -84,6 +84,34 @@ public class AuthService {
         return buildUserProfile(principal.getId());
     }
 
+    @Transactional
+    public AuthResponse.UserProfileDto updateProfile(Long userId, com.uniqlo.clone.dto.ProfileUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        user.setFullName(request.getFullName());
+        if (request.getPhone() != null) user.setPhone(request.getPhone());
+        if (request.getAddress() != null) user.setAddress(request.getAddress());
+        if (request.getCity() != null) user.setCity(request.getCity());
+        if (request.getAvatar() != null && !request.getAvatar().isBlank()) user.setAvatar(request.getAvatar());
+
+        userRepository.save(user);
+        return buildUserProfile(userId);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, com.uniqlo.clone.dto.ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new BadRequestException("Mật khẩu hiện tại không chính xác");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
     private AuthResponse buildAuthResponse(String jwt, Long userId) {
         return AuthResponse.builder()
                 .token(jwt)

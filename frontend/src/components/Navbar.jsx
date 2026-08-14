@@ -451,6 +451,26 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
                     <button
                       onClick={() => {
                         setUserDropdownOpen(false);
+                        onNavigate('profile');
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '10px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '0.85rem',
+                        color: '#333'
+                      }}
+                    >
+                      <UserIcon size={16} />
+                      {t('my_profile')}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
                         onNavigate('orders');
                       }}
                       style={{

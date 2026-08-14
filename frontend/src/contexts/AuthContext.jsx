@@ -105,6 +105,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserData = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('uq_user', JSON.stringify(updatedUser));
+  };
+
   const isAdmin = user?.role === 'ROLE_ADMIN';
   const isStaff = user?.role && user.role.startsWith('ROLE_STAFF');
   const isCustomer = user?.role === 'ROLE_CUSTOMER';
@@ -119,6 +124,7 @@ export const AuthProvider = ({ children }) => {
         register,
         loginAsDemo,
         logout,
+        updateUserData,
         isAdmin,
         isStaff,
         isCustomer,

@@ -15,7 +15,8 @@ import {
   X,
   Tag,
   Save,
-  Printer
+  Printer,
+  Filter
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -37,8 +38,10 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const [posProducts, setPosProducts] = useState([]);
   const [receiptOrder, setReceiptOrder] = useState(null);
 
-  // Fulfillment State
+  // Fulfillment State & Filters
   const [storeOrders, setStoreOrders] = useState([]);
+  const [staffOrderStatusFilter, setStaffOrderStatusFilter] = useState('ALL');
+  const [staffOrderSearch, setStaffOrderSearch] = useState('');
 
   // Inventory State
   const [inventoryList, setInventoryList] = useState([]);
@@ -274,6 +277,18 @@ export const StaffDashboardPage = ({ onNavigate }) => {
     }
   };
 
+  // Filtered Orders calculation based on status classifier & search query
+  const filteredStoreOrders = storeOrders.filter((ord) => {
+    const matchesStatus = staffOrderStatusFilter === 'ALL' || ord.status === staffOrderStatusFilter;
+    const q = staffOrderSearch.toLowerCase().trim();
+    const matchesSearch = !q ||
+      (ord.orderNumber && ord.orderNumber.toLowerCase().includes(q)) ||
+      (ord.customerName && ord.customerName.toLowerCase().includes(q)) ||
+      (ord.customerPhone && ord.customerPhone.includes(q)) ||
+      (ord.shippingAddress && ord.shippingAddress.toLowerCase().includes(q));
+    return matchesStatus && matchesSearch;
+  });
+
   return (
     <div style={{ backgroundColor: '#f4f5f7', minHeight: 'calc(100vh - 70px)', padding: '24px 0' }}>
       <div className="container">
@@ -352,22 +367,130 @@ export const StaffDashboardPage = ({ onNavigate }) => {
         {/* ================= TAB 2: ORDER FULFILLMENT ================= */}
         {activeTab === 'fulfillment' && (
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>
-                Hàng Đợi Xử Lý Đơn Hàng (Order Fulfillment Queue)
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '1.15rem', textTransform: 'uppercase' }}>
+                  Hàng Đợi Xử Lý Đơn Hàng ({filteredStoreOrders.length} / {storeOrders.length} đơn)
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#666', marginTop: '2px' }}>
+                  Đơn hàng cần tiếp nhận và phân bổ tại showroom {storeInfo?.name}
+                </div>
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                {storeOrders.length} đơn hàng thuộc chi nhánh {storeInfo?.name}
+
+              {/* Status Classifier Dropdown - Exact styling */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Filter size={16} color="#e60012" />
+                  <span style={{ fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', color: '#111' }}>
+                    Phân Loại Trạng Thái:
+                  </span>
+                </div>
+                <select
+                  value={staffOrderStatusFilter}
+                  onChange={(e) => setStaffOrderStatusFilter(e.target.value)}
+                  style={{
+                    padding: '9px 14px',
+                    fontSize: '0.85rem',
+                    fontWeight: '800',
+                    border: '2px solid #111',
+                    backgroundColor: '#ffffff',
+                    color: '#111',
+                    outline: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '2px',
+                    minWidth: '290px',
+                    boxShadow: 'var(--shadow-sm)'
+                  }}
+                >
+                  <option value="ALL">TẤT CẢ TRẠNG THÁI (Toàn bộ {storeOrders.length} đơn)</option>
+                  <option value="PENDING">PENDING (Chờ xác nhận)</option>
+                  <option value="CONFIRMED">CONFIRMED (Đã xác nhận)</option>
+                  <option value="PACKING">PACKING (Đang đóng gói)</option>
+                  <option value="SHIPPING">SHIPPING (Đang giao hàng)</option>
+                  <option value="DELIVERED">DELIVERED (Đã giao thành công)</option>
+                  <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
+                  <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
+                </select>
               </div>
             </div>
 
-            {storeOrders.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-                Hiện không có đơn hàng nào cần xử lý tại chi nhánh này.
+            {/* Quick Status Chips */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '16px', borderBottom: '1px solid #eee' }}>
+              {[
+                { id: 'ALL', label: 'Tất cả', count: storeOrders.length, color: '#111' },
+                { id: 'PENDING', label: 'Chờ xác nhận', count: storeOrders.filter((o) => o.status === 'PENDING').length, color: '#f57c00' },
+                { id: 'CONFIRMED', label: 'Đã xác nhận', count: storeOrders.filter((o) => o.status === 'CONFIRMED').length, color: '#00875a' },
+                { id: 'PACKING', label: 'Đang đóng gói', count: storeOrders.filter((o) => o.status === 'PACKING').length, color: '#0052cc' },
+                { id: 'SHIPPING', label: 'Đang giao hàng', count: storeOrders.filter((o) => o.status === 'SHIPPING').length, color: '#6554c0' },
+                { id: 'DELIVERED', label: 'Đã giao thành công', count: storeOrders.filter((o) => o.status === 'DELIVERED').length, color: '#00875a' },
+                { id: 'COMPLETED', label: 'Hoàn tất', count: storeOrders.filter((o) => o.status === 'COMPLETED').length, color: '#2e7d32' },
+                { id: 'CANCELLED', label: 'Hủy đơn', count: storeOrders.filter((o) => o.status === 'CANCELLED').length, color: '#e60012' }
+              ].map((chip) => {
+                const isSelected = staffOrderStatusFilter === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    onClick={() => setStaffOrderStatusFilter(chip.id)}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '0.78rem',
+                      fontWeight: isSelected ? '800' : '600',
+                      border: isSelected ? `2px solid ${chip.color}` : '1px solid #ddd',
+                      backgroundColor: isSelected ? (chip.id === 'ALL' ? '#111' : '#f0f4ff') : '#ffffff',
+                      color: isSelected ? (chip.id === 'ALL' ? '#fff' : chip.color) : '#555',
+                      cursor: 'pointer',
+                      borderRadius: '3px',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>{chip.label}</span>
+                    <span
+                      style={{
+                        padding: '1px 6px',
+                        borderRadius: '10px',
+                        fontSize: '0.72rem',
+                        fontWeight: '800',
+                        backgroundColor: isSelected ? (chip.id === 'ALL' ? '#e60012' : chip.color) : '#eee',
+                        color: isSelected ? '#fff' : '#333'
+                      }}
+                    >
+                      {chip.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search Input Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', backgroundColor: '#f9f9f9', padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '3px' }}>
+              <Search size={16} color="#888" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mã đơn (UQ-...), tên khách hàng, số điện thoại, địa chỉ..."
+                value={staffOrderSearch}
+                onChange={(e) => setStaffOrderSearch(e.target.value)}
+                style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem' }}
+              />
+              {staffOrderSearch && (
+                <button
+                  onClick={() => setStaffOrderSearch('')}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#999' }}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {filteredStoreOrders.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: '#fafafa', border: '1px dashed #ddd' }}>
+                Không tìm thấy đơn hàng nào thuộc bộ lọc đã chọn.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {storeOrders.map((order) => (
+                {filteredStoreOrders.map((order) => (
                   <div key={order.id} style={{ border: '1px solid #e5e5e5', padding: '16px', backgroundColor: '#fafafa' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

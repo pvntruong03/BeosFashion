@@ -16,7 +16,9 @@ import {
   Printer,
   QrCode,
   Building,
-  Save
+  Save,
+  Search,
+  Filter
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
@@ -66,6 +68,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const [coupMin, setCoupMin] = useState(300000);
   const [coupMax, setCoupMax] = useState(100000);
   const [coupLimit, setCoupLimit] = useState(500);
+
+  // Orders Management Filters
+  const [orderStatusFilter, setOrderStatusFilter] = useState('ALL');
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
 
   const [receiptOrder, setReceiptOrder] = useState(null);
 
@@ -319,6 +325,18 @@ export const AdminDashboardPage = ({ onNavigate }) => {
       showError(err.message || 'Lỗi khi xóa mã khuyến mãi');
     }
   };
+
+  // Filtered Orders calculation based on status classifier & search query
+  const filteredOrders = orders.filter((ord) => {
+    const matchesStatus = orderStatusFilter === 'ALL' || ord.status === orderStatusFilter;
+    const q = orderSearchQuery.toLowerCase().trim();
+    const matchesSearch = !q ||
+      (ord.orderNumber && ord.orderNumber.toLowerCase().includes(q)) ||
+      (ord.customerName && ord.customerName.toLowerCase().includes(q)) ||
+      (ord.customerPhone && ord.customerPhone.includes(q)) ||
+      (ord.shippingCity && ord.shippingCity.toLowerCase().includes(q));
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <div style={{ backgroundColor: '#f4f5f7', minHeight: 'calc(100vh - 70px)', padding: '24px 0' }}>
@@ -676,72 +694,225 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         {/* ================= TAB 3: ORDERS MANAGEMENT ================= */}
         {activeTab === 'orders' && (
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
-            <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '20px' }}>
-              Quản Lý Toàn Bộ Đơn Hàng Hệ Thống
+            {/* Header & Controls */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '1.15rem', textTransform: 'uppercase', color: '#111' }}>
+                  Quản Lý Toàn Bộ Đơn Hàng ({filteredOrders.length} / {orders.length} đơn)
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#666', marginTop: '2px' }}>
+                  Theo dõi, lọc phân loại trạng thái và chuyển bước xử lý đơn hàng toàn hệ thống
+                </div>
+              </div>
+
+              {/* Status Classifier Dropdown - Exact styling matching user requirement */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Filter size={16} color="#e60012" />
+                  <span style={{ fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', color: '#111' }}>
+                    Phân Loại Trạng Thái:
+                  </span>
+                </div>
+                <select
+                  value={orderStatusFilter}
+                  onChange={(e) => setOrderStatusFilter(e.target.value)}
+                  style={{
+                    padding: '9px 14px',
+                    fontSize: '0.85rem',
+                    fontWeight: '800',
+                    border: '2px solid #111',
+                    backgroundColor: '#ffffff',
+                    color: '#111',
+                    outline: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '2px',
+                    minWidth: '290px',
+                    boxShadow: 'var(--shadow-sm)'
+                  }}
+                >
+                  <option value="ALL">TẤT CẢ TRẠNG THÁI (Toàn bộ {orders.length} đơn)</option>
+                  <option value="PENDING">PENDING (Chờ xác nhận)</option>
+                  <option value="CONFIRMED">CONFIRMED (Đã xác nhận)</option>
+                  <option value="PACKING">PACKING (Đang đóng gói)</option>
+                  <option value="SHIPPING">SHIPPING (Đang giao hàng)</option>
+                  <option value="DELIVERED">DELIVERED (Đã giao thành công)</option>
+                  <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
+                  <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
+                </select>
+              </div>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '10px' }}>MÃ ĐƠN</th>
-                  <th style={{ padding: '10px' }}>KHÁCH HÀNG</th>
-                  <th style={{ padding: '10px' }}>CHI NHÁNH</th>
-                  <th style={{ padding: '10px' }}>LOẠI ĐƠN</th>
-                  <th style={{ padding: '10px' }}>TỔNG TIỀN</th>
-                  <th style={{ padding: '10px' }}>TRẠNG THÁI</th>
-                  <th style={{ padding: '10px', textAlign: 'right' }}>THAO TÁC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((ord) => (
-                  <tr key={ord.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '10px', fontWeight: '800' }}>{ord.orderNumber}</td>
-                    <td style={{ padding: '10px' }}>
-                      <div>{ord.customerName}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#666' }}>{ord.customerPhone}</div>
-                    </td>
-                    <td style={{ padding: '10px' }}>{ord.storeName || 'Online'}</td>
-                    <td style={{ padding: '10px' }}>{ord.orderType}</td>
-                    <td style={{ padding: '10px', fontWeight: '800', color: '#e60012' }}>{formatPrice(ord.finalAmount)}</td>
-                    <td style={{ padding: '10px' }}>
-                      <select
-                        value={ord.status}
-                        onChange={(e) => handleUpdateAdminOrderStatus(ord.id, e.target.value)}
-                        style={{
-                          padding: '6px 8px',
-                          fontSize: '0.75rem',
-                          fontWeight: '800',
-                          border: ord.status === 'CANCELLED' ? '1px solid #ffcdd2' : '1px solid #ccc',
-                          backgroundColor: ord.status === 'CANCELLED' ? '#fff0f0' : '#ffffff',
-                          color: ord.status === 'CANCELLED' ? '#e60012' : '#111',
-                          outline: 'none',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <option value="PENDING">PENDING (Chờ xác nhận)</option>
-                        <option value="CONFIRMED">CONFIRMED (Đã xác nhận)</option>
-                        <option value="PACKING">PACKING (Đang đóng gói)</option>
-                        <option value="SHIPPING">SHIPPING (Đang giao hàng)</option>
-                        <option value="DELIVERED">DELIVERED (Đã giao thành công)</option>
-                        <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
-                        <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
-                      </select>
-                    </td>
-                    <td style={{ padding: '10px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                        <button
-                          onClick={() => setReceiptOrder(ord)}
-                          className="btn-uq btn-uq-outline-gray"
-                          style={{ padding: '4px 10px', fontSize: '0.75rem' }}
-                        >
-                          <Printer size={12} /> Hóa đơn
-                        </button>
-                      </div>
-                    </td>
+            {/* Quick Status Chips / Count Pills */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '16px', borderBottom: '1px solid #eee' }}>
+              {[
+                { id: 'ALL', label: 'Tất cả', count: orders.length, color: '#111' },
+                { id: 'PENDING', label: 'Chờ xác nhận', count: orders.filter((o) => o.status === 'PENDING').length, color: '#f57c00' },
+                { id: 'CONFIRMED', label: 'Đã xác nhận', count: orders.filter((o) => o.status === 'CONFIRMED').length, color: '#00875a' },
+                { id: 'PACKING', label: 'Đang đóng gói', count: orders.filter((o) => o.status === 'PACKING').length, color: '#0052cc' },
+                { id: 'SHIPPING', label: 'Đang giao hàng', count: orders.filter((o) => o.status === 'SHIPPING').length, color: '#6554c0' },
+                { id: 'DELIVERED', label: 'Đã giao thành công', count: orders.filter((o) => o.status === 'DELIVERED').length, color: '#00875a' },
+                { id: 'COMPLETED', label: 'Hoàn tất', count: orders.filter((o) => o.status === 'COMPLETED').length, color: '#2e7d32' },
+                { id: 'CANCELLED', label: 'Hủy đơn', count: orders.filter((o) => o.status === 'CANCELLED').length, color: '#e60012' }
+              ].map((chip) => {
+                const isSelected = orderStatusFilter === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    onClick={() => setOrderStatusFilter(chip.id)}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '0.78rem',
+                      fontWeight: isSelected ? '800' : '600',
+                      border: isSelected ? `2px solid ${chip.color}` : '1px solid #ddd',
+                      backgroundColor: isSelected ? (chip.id === 'ALL' ? '#111' : '#f0f4ff') : '#ffffff',
+                      color: isSelected ? (chip.id === 'ALL' ? '#fff' : chip.color) : '#555',
+                      cursor: 'pointer',
+                      borderRadius: '3px',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>{chip.label}</span>
+                    <span
+                      style={{
+                        padding: '1px 6px',
+                        borderRadius: '10px',
+                        fontSize: '0.72rem',
+                        fontWeight: '800',
+                        backgroundColor: isSelected ? (chip.id === 'ALL' ? '#e60012' : chip.color) : '#eee',
+                        color: isSelected ? '#fff' : '#333'
+                      }}
+                    >
+                      {chip.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search Input Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', backgroundColor: '#f9f9f9', padding: '8px 12px', border: '1px solid #e0e0e0', borderRadius: '3px' }}>
+              <Search size={16} color="#888" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mã đơn (UQ-...), tên khách hàng, số điện thoại, tỉnh thành..."
+                value={orderSearchQuery}
+                onChange={(e) => setOrderSearchQuery(e.target.value)}
+                style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem' }}
+              />
+              {orderSearchQuery && (
+                <button
+                  onClick={() => setOrderSearchQuery('')}
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#999' }}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {/* Orders Table */}
+            {filteredOrders.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px 24px', color: '#888', backgroundColor: '#fafafa', border: '1px dashed #ddd' }}>
+                <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '4px' }}>
+                  Không tìm thấy đơn hàng nào phù hợp với bộ lọc
+                </div>
+                <div style={{ fontSize: '0.8rem' }}>
+                  Thử chọn trạng thái "TẤT CẢ TRẠNG THÁI" hoặc xóa từ khóa tìm kiếm.
+                </div>
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
+                    <th style={{ padding: '10px' }}>MÃ ĐƠN</th>
+                    <th style={{ padding: '10px' }}>KHÁCH HÀNG</th>
+                    <th style={{ padding: '10px' }}>CHI NHÁNH</th>
+                    <th style={{ padding: '10px' }}>LOẠI ĐƠN</th>
+                    <th style={{ padding: '10px' }}>TỔNG TIỀN</th>
+                    <th style={{ padding: '10px' }}>TRẠNG THÁI</th>
+                    <th style={{ padding: '10px', textAlign: 'right' }}>THAO TÁC</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((ord) => (
+                    <tr key={ord.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '10px', fontWeight: '800' }}>
+                        <span style={{ fontFamily: 'monospace', color: '#111' }}>{ord.orderNumber}</span>
+                      </td>
+                      <td style={{ padding: '10px' }}>
+                        <div style={{ fontWeight: '700' }}>{ord.customerName}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#666' }}>{ord.customerPhone}</div>
+                      </td>
+                      <td style={{ padding: '10px' }}>{ord.storeName || 'Online'}</td>
+                      <td style={{ padding: '10px' }}>
+                        <span className="badge-uq gray" style={{ fontSize: '0.72rem' }}>{ord.orderType}</span>
+                      </td>
+                      <td style={{ padding: '10px', fontWeight: '800', color: '#e60012' }}>{formatPrice(ord.finalAmount)}</td>
+                      <td style={{ padding: '10px' }}>
+                        <select
+                          value={ord.status}
+                          onChange={(e) => handleUpdateAdminOrderStatus(ord.id, e.target.value)}
+                          style={{
+                            padding: '6px 10px',
+                            fontSize: '0.78rem',
+                            fontWeight: '800',
+                            border:
+                              ord.status === 'CANCELLED'
+                                ? '1px solid #ffcdd2'
+                                : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
+                                ? '1px solid #c8e6c9'
+                                : ord.status === 'PACKING' || ord.status === 'SHIPPING'
+                                ? '1px solid #bbdefb'
+                                : '1px solid #ffe0b2',
+                            backgroundColor:
+                              ord.status === 'CANCELLED'
+                                ? '#fff0f0'
+                                : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
+                                ? '#e8f5e9'
+                                : ord.status === 'PACKING' || ord.status === 'SHIPPING'
+                                ? '#e3f2fd'
+                                : '#fff8e1',
+                            color:
+                              ord.status === 'CANCELLED'
+                                ? '#e60012'
+                                : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
+                                ? '#2e7d32'
+                                : ord.status === 'PACKING' || ord.status === 'SHIPPING'
+                                ? '#1565c0'
+                                : '#e65100',
+                            outline: 'none',
+                            cursor: 'pointer',
+                            borderRadius: '3px'
+                          }}
+                        >
+                          <option value="PENDING">PENDING (Chờ xác nhận)</option>
+                          <option value="CONFIRMED">CONFIRMED (Đã xác nhận)</option>
+                          <option value="PACKING">PACKING (Đang đóng gói)</option>
+                          <option value="SHIPPING">SHIPPING (Đang giao hàng)</option>
+                          <option value="DELIVERED">DELIVERED (Đã giao thành công)</option>
+                          <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
+                          <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '10px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={() => setReceiptOrder(ord)}
+                            className="btn-uq btn-uq-outline-gray"
+                            style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Printer size={12} />
+                            <span>Hóa đơn</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
 

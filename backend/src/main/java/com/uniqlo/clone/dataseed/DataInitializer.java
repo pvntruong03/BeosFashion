@@ -709,7 +709,7 @@ public class DataInitializer implements CommandLineRunner {
         // 5. COUPONS
         couponRepository.save(Coupon.builder()
                 .code("BEO10")
-                .description("Giảm 10% cho toàn bộ đơn hàng BEO Fashion (Tối đa 100,000 VND)")
+                .description("10% OFF all BEO Fashion orders (Max 100,000 VND discount)")
                 .discountType(DiscountType.PERCENT)
                 .discountValue(new BigDecimal("10"))
                 .minOrderAmount(new BigDecimal("300000"))
@@ -723,7 +723,7 @@ public class DataInitializer implements CommandLineRunner {
 
         couponRepository.save(Coupon.builder()
                 .code("UNIQLO10")
-                .description("Giảm 10% cho toàn bộ đơn hàng (Tối đa 100,000 VND)")
+                .description("10% OFF all orders (Max 100,000 VND discount)")
                 .discountType(DiscountType.PERCENT)
                 .discountValue(new BigDecimal("10"))
                 .minOrderAmount(new BigDecimal("300000"))
@@ -737,7 +737,7 @@ public class DataInitializer implements CommandLineRunner {
 
         couponRepository.save(Coupon.builder()
                 .code("LIFEWEAR50K")
-                .description("Giảm ngay 50.000 VND cho đơn từ 400.000 VND")
+                .description("50,000 VND direct discount on orders from 400,000 VND")
                 .discountType(DiscountType.FIXED_AMOUNT)
                 .discountValue(new BigDecimal("50000"))
                 .minOrderAmount(new BigDecimal("400000"))
@@ -928,7 +928,7 @@ public class DataInitializer implements CommandLineRunner {
                     .shippingFee(shippingFee)
                     .finalAmount(finalAmount)
                     .couponCode(couponCode)
-                    .notes(orderType == OrderType.IN_STORE_PICKUP ? "Nhận hàng trực tiếp tại Showroom Cần Thơ" : "Giao hàng giờ hành chính")
+                    .notes(orderType == OrderType.IN_STORE_PICKUP ? "In-store pickup at Can Tho Showroom" : "Standard delivery during business hours")
                     .createdAt(orderDate)
                     .updatedAt(orderDate.plusHours(1))
                     .build();

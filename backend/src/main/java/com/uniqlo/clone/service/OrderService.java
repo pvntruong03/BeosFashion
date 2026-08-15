@@ -215,7 +215,7 @@ public class OrderService {
         OrderStatus newStatus = request.getStatus();
 
         if (oldStatus == OrderStatus.CANCELLED) {
-            throw new BadRequestException("Đơn hàng đã hủy, không thể thay đổi trạng thái!");
+            throw new BadRequestException("Order is already cancelled, status cannot be modified!");
         }
 
         // If cancelling order, restore inventory
@@ -255,19 +255,19 @@ public class OrderService {
         // Security check: if not staff/admin, customer can only cancel their own order
         if (!isStaffOrAdmin) {
             if (order.getUser() == null || !order.getUser().getId().equals(userId)) {
-                throw new BadRequestException("Bạn không có quyền hủy đơn hàng này!");
+                throw new BadRequestException("You do not have permission to cancel this order!");
             }
             if (order.getStatus() != OrderStatus.PENDING) {
-                throw new BadRequestException("Đơn hàng đã được xác nhận thành công (hoặc đang đóng gói/vận chuyển), không thể tự hủy. Quý khách vui lòng liên hệ Hotline BEO 1900019199999 để được hỗ trợ!");
+                throw new BadRequestException("Order is already confirmed (or in packing/shipping) and cannot be cancelled online. Please contact BEO Hotline 1900019199999 for assistance!");
             }
         }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new BadRequestException("Đơn hàng này đã được hủy trước đó!");
+            throw new BadRequestException("This order has already been cancelled!");
         }
 
         if (order.getStatus() == OrderStatus.SHIPPING || order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.COMPLETED) {
-            throw new BadRequestException("Đơn hàng đang giao hoặc đã hoàn thành, không thể hủy!");
+            throw new BadRequestException("Order is currently out for delivery or completed, and cannot be cancelled!");
         }
 
         // Restore inventory

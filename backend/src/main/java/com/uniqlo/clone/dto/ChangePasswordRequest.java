@@ -9,10 +9,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangePasswordRequest {
-    @NotBlank(message = "Vui lòng nhập mật khẩu hiện tại")
+    @NotBlank(message = "Please enter current password")
     private String oldPassword;
 
-    @NotBlank(message = "Vui lòng nhập mật khẩu mới")
-    @Size(min = 6, message = "Mật khẩu mới phải có tối thiểu 6 ký tự")
+    @NotBlank(message = "Please enter new password")
+    @Size(min = 6, message = "New password must be at least 6 characters")
     private String newPassword;
 }

@@ -50,10 +50,10 @@ public class AuthController {
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody com.uniqlo.clone.dto.ProfileUpdateRequest request) {
         if (principal == null) {
-            return ResponseEntity.status(401).body(ApiResponse.error("Vui lòng đăng nhập"));
+            return ResponseEntity.status(401).body(ApiResponse.error("Please log in to continue"));
         }
         AuthResponse.UserProfileDto updated = authService.updateProfile(principal.getId(), request);
-        return ResponseEntity.ok(ApiResponse.ok("Cập nhật thông tin thành công", updated));
+        return ResponseEntity.ok(ApiResponse.ok("Profile updated successfully", updated));
     }
 
     @PutMapping("/change-password")
@@ -62,9 +62,9 @@ public class AuthController {
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody com.uniqlo.clone.dto.ChangePasswordRequest request) {
         if (principal == null) {
-            return ResponseEntity.status(401).body(ApiResponse.error("Vui lòng đăng nhập"));
+            return ResponseEntity.status(401).body(ApiResponse.error("Please log in to continue"));
         }
         authService.changePassword(principal.getId(), request);
-        return ResponseEntity.ok(ApiResponse.ok("Đổi mật khẩu thành công", null));
+        return ResponseEntity.ok(ApiResponse.ok("Password changed successfully", null));
     }
 }

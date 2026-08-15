@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
       const authData = res?.data || res;
 
       if (!authData || !authData.token) {
-        throw new Error(res?.message || 'Không nhận được dữ liệu xác thực từ máy chủ.');
+        throw new Error(res?.message || 'Failed to retrieve authentication data from server.');
       }
 
       localStorage.setItem('uq_token', authData.token);
@@ -65,11 +65,11 @@ export const AuthProvider = ({ children }) => {
       setToken(authData.token);
       setUser(authData.user);
 
-      showSuccess(`Đăng nhập thành công! Chào mừng ${authData.user?.fullName || ''}`);
+      showSuccess(`Login successful! Welcome back, ${authData.user?.fullName || ''}`);
       const redirectPath = getRedirectPathForRole(authData.user?.role);
       return { success: true, redirectPath, user: authData.user };
     } catch (err) {
-      showError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      showError(err.message || 'Login failed. Please check your credentials and try again.');
       return { success: false, error: err.message };
     }
   };
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
       const authData = res?.data || res;
 
       if (!authData || !authData.token) {
-        throw new Error(res?.message || 'Không nhận được dữ liệu xác thực từ máy chủ.');
+        throw new Error(res?.message || 'Failed to retrieve authentication data from server.');
       }
 
       localStorage.setItem('uq_token', authData.token);
@@ -89,10 +89,10 @@ export const AuthProvider = ({ children }) => {
       setToken(authData.token);
       setUser(authData.user);
 
-      showSuccess('Tạo tài khoản thành công!');
+      showSuccess('Account created successfully!');
       return { success: true, redirectPath: '/', user: authData.user };
     } catch (err) {
-      showError(err.message || 'Đăng ký thất bại.');
+      showError(err.message || 'Registration failed. Please try again.');
       return { success: false, error: err.message };
     }
   };
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     if (notify) {
-      showSuccess('Đã đăng xuất thành công.');
+      showSuccess('Logged out successfully.');
     }
   };
 

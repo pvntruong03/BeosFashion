@@ -65,6 +65,6 @@ public class OrderController {
         boolean isStaffOrAdmin = principal != null && principal.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF_MANAGER"));
         OrderDto order = orderService.cancelOrder(id, userId, isStaffOrAdmin, reason);
-        return ResponseEntity.ok(ApiResponse.ok("Đã hủy đơn hàng và hoàn lại tồn kho thành công", order));
+        return ResponseEntity.ok(ApiResponse.ok("Order cancelled and inventory restocked successfully", order));
     }
 }

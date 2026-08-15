@@ -130,14 +130,14 @@ public class AdminController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Create a new coupon code")
     public ResponseEntity<ApiResponse<CouponDto>> createCoupon(@RequestBody Coupon coupon) {
-        return ResponseEntity.ok(ApiResponse.ok("Tạo mã khuyến mãi thành công", couponService.createCoupon(coupon)));
+        return ResponseEntity.ok(ApiResponse.ok("Coupon created successfully", couponService.createCoupon(coupon)));
     }
 
     @PutMapping("/coupons/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Update an existing coupon")
     public ResponseEntity<ApiResponse<CouponDto>> updateCoupon(@PathVariable Long id, @RequestBody CouponDto dto) {
-        return ResponseEntity.ok(ApiResponse.ok("Cập nhật mã khuyến mãi thành công", couponService.updateCoupon(id, dto)));
+        return ResponseEntity.ok(ApiResponse.ok("Coupon updated successfully", couponService.updateCoupon(id, dto)));
     }
 
     @DeleteMapping("/coupons/{id}")
@@ -145,7 +145,7 @@ public class AdminController {
     @Operation(summary = "Delete a coupon")
     public ResponseEntity<ApiResponse<Void>> deleteCoupon(@PathVariable Long id) {
         couponService.deleteCoupon(id);
-        return ResponseEntity.ok(ApiResponse.ok("Đã xóa mã khuyến mãi thành công", null));
+        return ResponseEntity.ok(ApiResponse.ok("Coupon deleted successfully", null));
     }
 
     private final com.uniqlo.clone.service.VietQrService vietQrService;

@@ -1,7 +1,9 @@
 import React from 'react';
 import { ShieldAlert, LogIn, X, Lock, KeyRound } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }) => {
+  const { lang } = useLanguage();
   if (!isOpen) return null;
 
   const isForAdmin = requiredRole === 'ADMIN';
@@ -96,7 +98,7 @@ export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }
                 marginBottom: '10px'
               }}
             >
-              Yêu cầu quyền truy cập
+              {lang === 'vi' ? 'Yêu cầu quyền truy cập' : 'Access Authorization Required'}
             </span>
             <h2
               style={{
@@ -107,7 +109,7 @@ export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }
                 lineHeight: 1.3
               }}
             >
-              {isForAdmin ? 'Cổng Quản Trị Hệ Thống' : 'Cổng Nhân Viên & POS'}
+              {isForAdmin ? (lang === 'vi' ? 'Cổng Quản Trị Hệ Thống' : 'System Admin Portal') : (lang === 'vi' ? 'Cổng Quản Lý Cửa Hàng & POS' : 'Store Manager & POS Gateway')}
             </h2>
           </div>
 
@@ -121,13 +123,25 @@ export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }
             }}
           >
             {isForAdmin ? (
-              <>
-                Bạn cần đăng nhập bằng tài khoản <strong>Quản trị viên (ROLE_ADMIN)</strong> để vào xem phân tích doanh thu và quản lý hệ thống.
-              </>
+              lang === 'vi' ? (
+                <>
+                  Bạn cần đăng nhập bằng tài khoản <strong>Quản trị viên (ROLE_ADMIN)</strong> để vào xem phân tích doanh thu và quản lý hệ thống.
+                </>
+              ) : (
+                <>
+                  You must be authenticated with <strong>System Administrator (ROLE_ADMIN)</strong> privileges to view revenue analytics and global configurations.
+                </>
+              )
             ) : (
-              <>
-                Bạn cần đăng nhập bằng tài khoản <strong>Nhân viên (Store Manager, Thu ngân POS hoặc Thủ kho)</strong> để sử dụng bảng điều khiển này.
-              </>
+              lang === 'vi' ? (
+                <>
+                  Bạn cần đăng nhập bằng tài khoản <strong>Nhân viên (Store Manager hoặc Thu ngân POS)</strong> để sử dụng bảng điều khiển này.
+                </>
+              ) : (
+                <>
+                  You must log in with <strong>Store Manager / Staff</strong> credentials to access inventory and in-store POS fulfillment.
+                </>
+              )
             )}
           </p>
 
@@ -148,7 +162,11 @@ export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }
           >
             <KeyRound size={18} color="#e60012" style={{ flexShrink: 0 }} />
             <div>
-              Trang đăng nhập có sẵn nút <strong>"1-Click Test Login"</strong> giúp bạn vào thử nghiệm vai trò này ngay lập tức.
+              {lang === 'vi' ? (
+                <>Trang đăng nhập có sẵn nút <strong>"1-Click Test Login"</strong> giúp bạn vào thử nghiệm vai trò này ngay lập tức.</>
+              ) : (
+                <>The login gateway includes <strong>"1-Click Quick Demo Switcher"</strong> buttons for immediate instant access.</>
+              )}
             </div>
           </div>
 
@@ -176,7 +194,7 @@ export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }
                 e.currentTarget.style.borderColor = '#ccc';
               }}
             >
-              Để sau
+              {lang === 'vi' ? 'Để sau' : 'Cancel'}
             </button>
 
             <button
@@ -202,7 +220,7 @@ export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#cc0010')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#e60012')}
             >
-              <LogIn size={16} /> Đăng nhập ngay
+              <LogIn size={16} /> {lang === 'vi' ? 'Đăng nhập ngay' : 'Sign In Now'}
             </button>
           </div>
         </div>

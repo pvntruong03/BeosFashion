@@ -35,35 +35,35 @@ import { useLanguage } from '../contexts/LanguageContext';
 const APPAREL_TYPES = [
   {
     id: 'tshirt',
-    name: 'Áo Thun Cotton Supima Trơn',
+    name: 'Supima Cotton Crew Neck T-Shirt',
     basePrice: 299000,
     frontImage: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
     backImage: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&auto=format&fit=crop&q=80',
-    description: 'Chất vải 100% Cotton Supima dệt mịn màng, bề mặt phẳng mịn tối ưu cho in ấn và thêu vi tính cao cấp.'
+    description: '100% Supima Cotton extra-fine weave, ultra-smooth surface engineered for high-precision printing & embroidery.'
   },
   {
     id: 'polo',
-    name: 'Áo Polo AIRism Pique Có Cổ',
+    name: 'AIRism Pique Short Sleeve Polo',
     basePrice: 399000,
     frontImage: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80',
     backImage: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&auto=format&fit=crop&q=80',
-    description: 'Vải dệt pique thoáng khí AIRism mát lạnh, cổ áo đứng phom lịch lãm, thích hợp thêu logo ngực trái.'
+    description: 'Breathable AIRism pique knit with instant cool touch, structured collar ideal for subtle chest embroidery.'
   },
   {
     id: 'hoodie',
-    name: 'Áo Hoodie Nỉ Bông Dày Dặn',
+    name: 'Heavyweight Fleece Pullover Hoodie',
     basePrice: 549000,
     frontImage: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&auto=format&fit=crop&q=80',
     backImage: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?w=800&auto=format&fit=crop&q=80',
-    description: 'Form áo Oversized dáng Streetwear rộng rãi, mũ trùm 2 lớp giữ ấm cực tốt.'
+    description: 'Relaxed oversized streetwear fit with double-layered hood and brushed fleece interior for superior warmth.'
   },
   {
     id: 'tote',
-    name: 'Túi Tote Vải Canvas Dày 12oz',
+    name: '12oz Heavy Canvas Utility Tote Bag',
     basePrice: 199000,
     frontImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80',
     backImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80',
-    description: 'Vải bố canvas mộc bền chắc, quai đeo êm ái, in chữ slogan thời trang.'
+    description: 'Durable heavyweight raw cotton canvas with reinforced shoulder straps, customized slogan typography.'
   }
 ];
 
@@ -78,53 +78,53 @@ const BASE_COLORS = [
 
 // Embroidery & Print Thread Colors
 const THREAD_COLORS = [
-  { name: 'Chỉ Vàng Gold', hex: '#D4AF37', border: '#b8941f' },
-  { name: 'Chỉ Trắng Tinh', hex: '#FFFFFF', border: '#ddd' },
-  { name: 'Chỉ Đen Tuyền', hex: '#111111', border: '#000' },
-  { name: 'Chỉ Đỏ BEO', hex: '#E60012', border: '#b3000e' },
-  { name: 'Chỉ Xanh Royal', hex: '#0052CC', border: '#003d99' },
-  { name: 'Chỉ Xanh Rêu', hex: '#2E7D32', border: '#1b5e20' },
-  { name: 'Chỉ Bạc Silver', hex: '#C0C0C0', border: '#999' }
+  { name: 'Gold Thread', hex: '#D4AF37', border: '#b8941f' },
+  { name: 'Pure White', hex: '#FFFFFF', border: '#ddd' },
+  { name: 'Stealth Black', hex: '#111111', border: '#000' },
+  { name: 'BEO Crimson Red', hex: '#E60012', border: '#b3000e' },
+  { name: 'Royal Blue', hex: '#0052CC', border: '#003d99' },
+  { name: 'Emerald Moss', hex: '#2E7D32', border: '#1b5e20' },
+  { name: 'Silver Thread', hex: '#C0C0C0', border: '#999' }
 ];
 
 // Typography Fonts
 const FONTS = [
-  { id: 'sans', name: 'Hiện Đại (Sans-serif)', fontFamily: "'Inter', sans-serif", style: 'Clean & Minimal' },
-  { id: 'serif', name: 'Cổ Điển (Serif)', fontFamily: "'Playfair Display', Georgia, serif", style: 'Luxury & Elegant' },
-  { id: 'mono', name: 'Mã Vạch / Tech (Mono)', fontFamily: "'JetBrains Mono', monospace", style: 'Tech & Streetwear' },
-  { id: 'bold', name: 'Đậm Nét (Bold Impact)', fontFamily: "'Oswald', Impact, sans-serif", style: 'Bold & Sporty' },
-  { id: 'cursive', name: 'Chữ Ký Nghệ Thuật', fontFamily: "'Dancing Script', cursive, serif", style: 'Signature & Chic' }
+  { id: 'sans', name: 'Modern Sans-Serif', fontFamily: "'Inter', sans-serif", style: 'Clean & Minimal' },
+  { id: 'serif', name: 'Classic Serif', fontFamily: "'Playfair Display', Georgia, serif", style: 'Luxury & Elegant' },
+  { id: 'mono', name: 'Tech Monospace', fontFamily: "'JetBrains Mono', monospace", style: 'Tech & Streetwear' },
+  { id: 'bold', name: 'Bold Impact', fontFamily: "'Oswald', Impact, sans-serif", style: 'Bold & Sporty' },
+  { id: 'cursive', name: 'Handwritten Script', fontFamily: "'Dancing Script', cursive, serif", style: 'Signature & Chic' }
 ];
 
 // Position Presets
 const POSITION_PRESETS = [
-  { id: 'CHEST_LEFT', name: 'Ngực Trái', x: 38, y: 32, side: 'FRONT', fee: 50000 },
-  { id: 'CHEST_CENTER', name: 'Giữa Ngực', x: 50, y: 38, side: 'FRONT', fee: 70000 },
-  { id: 'CHEST_RIGHT', name: 'Ngực Phải', x: 62, y: 32, side: 'FRONT', fee: 50000 },
-  { id: 'HEM_BOTTOM', name: 'Gấu Áo', x: 65, y: 72, side: 'FRONT', fee: 50000 },
-  { id: 'BACK_CENTER', name: 'Lưng Áo (Bản To)', x: 50, y: 35, side: 'BACK', fee: 90000 }
+  { id: 'CHEST_LEFT', name: 'Left Chest', x: 38, y: 32, side: 'FRONT', fee: 50000 },
+  { id: 'CHEST_CENTER', name: 'Chest Center', x: 50, y: 38, side: 'FRONT', fee: 70000 },
+  { id: 'CHEST_RIGHT', name: 'Right Chest', x: 62, y: 32, side: 'FRONT', fee: 50000 },
+  { id: 'HEM_BOTTOM', name: 'Bottom Hem', x: 65, y: 72, side: 'FRONT', fee: 50000 },
+  { id: 'BACK_CENTER', name: 'Back Big Print', x: 50, y: 35, side: 'BACK', fee: 90000 }
 ];
 
 // Badges & Embroidery Icons
 const EMBROIDERY_ICONS = [
-  { id: 'beo-logo', name: 'BEO Brand Crown', icon: '👑' },
-  { id: 'heart', name: 'Trái Tim Tối Giản', icon: '❤️' },
-  { id: 'star', name: 'Ngôi Sao May Mắn', icon: '⭐' },
-  { id: 'sparkle', name: 'Ánh Kim Cương', icon: '✨' },
-  { id: 'cantho-wave', name: 'Sóng Biển Cần Thơ', icon: '🌊' },
-  { id: 'coffee', name: 'Cà Phê Sáng', icon: '☕' },
-  { id: 'fire', name: 'Ngọn Lửa Nhiệt Huyết', icon: '🔥' },
-  { id: 'clover', name: 'Cỏ 4 Lá May Mắn', icon: '🍀' },
-  { id: 'cat', name: 'Mèo Năng Lượng', icon: '🐱' },
-  { id: 'smile', name: 'Nụ Cười Happy', icon: '😊' },
-  { id: 'music', name: 'Nốt Nhạc Chill', icon: '🎵' },
-  { id: 'plane', name: 'Máy Bay Du Lịch', icon: '✈️' }
+  { id: 'beo-logo', name: 'BEO Crown', icon: '👑' },
+  { id: 'heart', name: 'Minimal Heart', icon: '❤️' },
+  { id: 'star', name: 'Lucky Star', icon: '⭐' },
+  { id: 'sparkle', name: 'Diamond Sparkle', icon: '✨' },
+  { id: 'cantho-wave', name: 'Can Tho Waves', icon: '🌊' },
+  { id: 'coffee', name: 'Morning Espresso', icon: '☕' },
+  { id: 'fire', name: 'Passion Flame', icon: '🔥' },
+  { id: 'clover', name: 'Four-Leaf Clover', icon: '🍀' },
+  { id: 'cat', name: 'Energy Neko', icon: '🐱' },
+  { id: 'smile', name: 'Happy Mood', icon: '😊' },
+  { id: 'music', name: 'Chill Vibes', icon: '🎵' },
+  { id: 'plane', name: 'Traveler Aero', icon: '✈️' }
 ];
 
 export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate }) => {
   const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
 
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -133,13 +133,13 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
   const [selectedApparel, setSelectedApparel] = useState(APPAREL_TYPES[0]);
   const [selectedColor, setSelectedColor] = useState(BASE_COLORS[0]);
   const [selectedSize, setSelectedSize] = useState('L');
-  const [viewSide, setViewSide] = useState('FRONT'); // 'FRONT' | 'BACK'
-  const [activeTab, setActiveTab] = useState('text'); // 'text' | 'badge' | 'image' | 'position' | 'garment'
+  const [viewSide, setViewSide] = useState('FRONT');
+  const [activeTab, setActiveTab] = useState('text');
 
   // Customization Content States
   const [customText, setCustomText] = useState('BEO 2026');
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
-  const [selectedThread, setSelectedThread] = useState(THREAD_COLORS[3]); // Red
+  const [selectedThread, setSelectedThread] = useState(THREAD_COLORS[3]);
   const [textSize, setTextSize] = useState(20);
   const [selectedBadge, setSelectedBadge] = useState(EMBROIDERY_ICONS[0]);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -157,7 +157,6 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [activeLayer, setActiveLayer] = useState('all'); // 'all' | 'text' | 'badge'
 
   // Current Coordinates based on View Side
   const currentX = viewSide === 'FRONT' ? positionConfig.frontX : positionConfig.backX;
@@ -245,14 +244,14 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      showError('Dung lượng ảnh tối đa 5MB');
+      showError(lang === 'vi' ? 'Dung lượng ảnh tối đa 5MB' : 'Max image size is 5MB');
       return;
     }
     const reader = new FileReader();
     reader.onload = (event) => {
       setUploadedImage(event.target.result);
       setActiveTab('image');
-      showSuccess('Đã tải ảnh lên canvas thành công!');
+      showSuccess(lang === 'vi' ? 'Đã tải ảnh lên canvas thành công!' : 'Image uploaded to canvas successfully!');
     };
     reader.readAsDataURL(file);
   };
@@ -264,7 +263,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
       apparelName: selectedApparel.name,
       garmentColor: selectedColor.name,
       size: selectedSize,
-      position: `Tọa độ X:${Math.round(currentX)}%, Y:${Math.round(currentY)}% (${viewSide === 'FRONT' ? 'Mặt trước' : 'Mặt sau'})`,
+      position: `X:${Math.round(currentX)}%, Y:${Math.round(currentY)}% (${viewSide === 'FRONT' ? 'Front' : 'Back'})`,
       text: customText.trim() || null,
       font: selectedFont.name,
       threadColor: selectedThread.name,
@@ -272,10 +271,9 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
       hasUploadedImage: !!uploadedImage
     };
 
-    // Synthesize product object for cart
     const customizedProduct = {
       id: 21,
-      name: `[Custom Lab] ${selectedApparel.name} - ${customText || 'Cá nhân hóa'}`,
+      name: `[Custom Lab] ${selectedApparel.name} - ${customText || 'Customized'}`,
       code: `BEO-CUSTOM-${Date.now().toString().slice(-4)}`,
       primaryImageUrl: selectedApparel.frontImage,
       basePrice: totalPrice,
@@ -293,7 +291,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
     };
 
     addToCart(customizedProduct, customizedVariant, 1);
-    showSuccess(`Đã thêm áo thiết kế riêng "${customText || selectedApparel.name}" vào giỏ hàng!`);
+    showSuccess(lang === 'vi' ? `Đã thêm áo thiết kế riêng "${customText || selectedApparel.name}" vào giỏ hàng!` : `Added custom design "${customText || selectedApparel.name}" to cart!`);
     if (onClose) onClose();
   };
 
@@ -334,10 +332,10 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
           </div>
           <div>
             <div style={{ fontWeight: '900', fontSize: '1.15rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              BEO CUSTOM LAB: XƯỞNG THIẾT KẾ & THÊU ÁO CÁ NHÂN HÓA
+              {lang === 'vi' ? 'BEO CUSTOM LAB: XƯỞNG THIẾT KẾ & THÊU ÁO CÁ NHÂN HÓA' : 'BEO CUSTOM LAB: INTERACTIVE BESPOKE DESIGN STUDIO'}
             </div>
             <div style={{ fontSize: '0.78rem', color: '#aaa' }}>
-              Tự do kéo thả chữ & sticker đến bất kỳ vị trí nào trên áo với độ chính xác cao
+              {lang === 'vi' ? 'Tự do kéo thả chữ & sticker đến bất kỳ vị trí nào trên áo với độ chính xác cao' : 'Freely position custom text, digital embroidery & photo badges with pixel precision'}
             </div>
           </div>
         </div>
@@ -408,7 +406,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                   borderRadius: '2px'
                 }}
               >
-                MẶT TRƯỚC
+                {lang === 'vi' ? 'MẶT TRƯỚC' : 'FRONT VIEW'}
               </button>
               <button
                 onClick={() => setViewSide('BACK')}
@@ -423,7 +421,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                   borderRadius: '2px'
                 }}
               >
-                MẶT SAU (LƯNG)
+                {lang === 'vi' ? 'MẶT SAU (LƯNG)' : 'BACK VIEW'}
               </button>
             </div>
 
@@ -528,7 +526,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 zIndex: 20,
                 maxWidth: '240px'
               }}
-              title="Bấm giữ và kéo chuột để di chuyển tự do!"
+              title={lang === 'vi' ? 'Bấm giữ và kéo chuột để di chuyển tự do!' : 'Click and drag to reposition freely!'}
             >
               {/* Move Handle Top Badge */}
               <div style={{
@@ -549,7 +547,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 pointerEvents: 'none'
               }}>
                 <Move size={10} />
-                <span>KÉO THẢ</span>
+                <span>{lang === 'vi' ? 'KÉO THẢ' : 'DRAG ME'}</span>
               </div>
 
               {/* Uploaded User Photo if any */}
@@ -619,7 +617,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
             marginBottom: '12px'
           }}>
             <Sparkles size={13} color="#e60012" />
-            <span><strong>Mẹo:</strong> Bấm và kéo trực tiếp khung chữ/sticker trên áo để đặt vào vị trí ưng ý!</span>
+            <span><strong>Tip:</strong> {lang === 'vi' ? 'Bấm và kéo trực tiếp khung chữ/sticker trên áo để đặt vào vị trí ưng ý!' : 'Click and drag text or stickers on the garment canvas to customize position!'}</span>
           </div>
 
           {/* Bottom Live Price & Specs Bar */}
@@ -634,14 +632,14 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
             borderRadius: '2px'
           }}>
             <div>
-              <div style={{ fontSize: '0.75rem', color: '#666' }}>GIÁ PHÔI ÁO + CÔNG THÊU IN:</div>
+              <div style={{ fontSize: '0.75rem', color: '#666' }}>{lang === 'vi' ? 'GIÁ PHÔI ÁO + CÔNG THÊU IN:' : 'TOTAL (GARMENT + EMBROIDERY):'}</div>
               <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#e60012' }}>
                 {formatPrice(totalPrice)}
               </div>
             </div>
             <div style={{ textAlign: 'right', fontSize: '0.78rem', color: '#555' }}>
-              <div>Phôi: <strong>{selectedApparel.name}</strong></div>
-              <div>Màu: <strong>{selectedColor.name}</strong> | Size: <strong>{selectedSize}</strong></div>
+              <div>{lang === 'vi' ? 'Phôi:' : 'Item:'} <strong>{selectedApparel.name}</strong></div>
+              <div>{lang === 'vi' ? 'Màu:' : 'Color:'} <strong>{selectedColor.name}</strong> | Size: <strong>{selectedSize}</strong></div>
             </div>
           </div>
         </div>
@@ -666,11 +664,11 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
               paddingBottom: '10px'
             }}>
               {[
-                { id: 'text', label: 'Chữ In', icon: <Type size={14} /> },
+                { id: 'text', label: lang === 'vi' ? 'Chữ In' : 'Text', icon: <Type size={14} /> },
                 { id: 'badge', label: 'Sticker', icon: <Smile size={14} /> },
-                { id: 'image', label: 'Tải Ảnh', icon: <Upload size={14} /> },
-                { id: 'position', label: 'Vị Trí', icon: <Move size={14} /> },
-                { id: 'garment', label: 'Phôi Áo', icon: <Layers size={14} /> }
+                { id: 'image', label: lang === 'vi' ? 'Tải Ảnh' : 'Photo', icon: <Upload size={14} /> },
+                { id: 'position', label: lang === 'vi' ? 'Vị Trí' : 'Position', icon: <Move size={14} /> },
+                { id: 'garment', label: lang === 'vi' ? 'Phôi Áo' : 'Garment', icon: <Layers size={14} /> }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -703,14 +701,14 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {/* Input Text Box */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Nội Dung Chữ / Tên / Slogan Cá Nhân:
+                    {lang === 'vi' ? 'Nội Dung Chữ / Tên / Slogan Cá Nhân:' : 'Custom Text / Name / Slogan:'}
                   </label>
                   <input
                     type="text"
                     maxLength={30}
                     value={customText}
                     onChange={(e) => setCustomText(e.target.value)}
-                    placeholder="VD: HUYNH NHU, BEO 2026, CAN THO..."
+                    placeholder="e.g. BEO 2026, TOKYO, CAN THO..."
                     style={{
                       width: '100%',
                       padding: '10px 12px',
@@ -722,14 +720,14 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     }}
                   />
                   <div style={{ fontSize: '0.72rem', color: '#666', marginTop: '4px', textAlign: 'right' }}>
-                    {customText.length}/30 ký tự
+                    {customText.length}/30 characters
                   </div>
                 </div>
 
                 {/* Font Selector */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Phông Chữ Nghệ Thuật:
+                    {lang === 'vi' ? 'Phông Chữ Nghệ Thuật:' : 'Typography & Style:'}
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '6px' }}>
                     {FONTS.map((font) => (
@@ -757,7 +755,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {/* Thread Color Picker */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Màu Chỉ Thêu / Mực In: <strong>{selectedThread.name}</strong>
+                    {lang === 'vi' ? 'Màu Chỉ Thêu / Mực In:' : 'Embroidery Thread Color:'} <strong>{selectedThread.name}</strong>
                   </label>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {THREAD_COLORS.map((th) => (
@@ -782,7 +780,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {/* Font Size Slider */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: '800', marginBottom: '4px' }}>
-                    <span>CỠ CHỮ: {textSize}px</span>
+                    <span>{lang === 'vi' ? 'CỠ CHỮ:' : 'FONT SIZE:'} {textSize}px</span>
                   </div>
                   <input
                     type="range"
@@ -800,7 +798,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
             {activeTab === 'badge' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase' }}>
-                  Chọn Sticker / Biểu Tượng Thêu:
+                  {lang === 'vi' ? 'Chọn Sticker / Biểu Tượng Thêu:' : 'Select Embroidery Badge / Icon:'}
                 </label>
                 <div style={{
                   display: 'grid',
@@ -838,7 +836,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {/* Sticker Size Slider */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: '800', marginBottom: '4px' }}>
-                    <span>KÍCH THƯỚC STICKER: {badgeSize}px</span>
+                    <span>{lang === 'vi' ? 'KÍCH THƯỚC STICKER:' : 'BADGE SIZE:'} {badgeSize}px</span>
                   </div>
                   <input
                     type="range"
@@ -856,7 +854,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
             {activeTab === 'image' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase' }}>
-                  Tải Ảnh / Logo Cá Nhân Của Bạn:
+                  {lang === 'vi' ? 'Tải Ảnh / Logo Cá Nhân Của Bạn:' : 'Upload Your Personal Photo / Artwork:'}
                 </label>
 
                 <div
@@ -872,10 +870,10 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 >
                   <Upload size={28} color="#888" style={{ margin: '0 auto 8px auto' }} />
                   <div style={{ fontWeight: '800', fontSize: '0.88rem', color: '#111' }}>
-                    Bấm vào đây để chọn ảnh từ máy
+                    {lang === 'vi' ? 'Bấm vào đây để chọn ảnh từ máy' : 'Click to select photo from device'}
                   </div>
                   <div style={{ fontSize: '0.72rem', color: '#888', marginTop: '4px' }}>
-                    Hỗ trợ JPG, PNG, WEBP (Tối đa 5MB)
+                    JPG, PNG, WEBP (Max 5MB)
                   </div>
                   <input
                     type="file"
@@ -889,12 +887,12 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {uploadedImage && (
                   <div style={{ padding: '12px', border: '1px solid #eee', backgroundColor: '#fcfcfc' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>Kích thước ảnh: {imageScale}%</span>
+                      <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>{lang === 'vi' ? 'Kích thước ảnh:' : 'Photo Scale:'} {imageScale}%</span>
                       <button
                         onClick={() => setUploadedImage(null)}
                         style={{ fontSize: '0.75rem', color: '#e60012', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: '700' }}
                       >
-                        Gỡ ảnh
+                        {lang === 'vi' ? 'Gỡ ảnh' : 'Remove'}
                       </button>
                     </div>
                     <input
@@ -916,7 +914,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {/* Presets Grid */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '8px', textTransform: 'uppercase' }}>
-                    Cài Đặt Vị Trí Mẫu Nhanh:
+                    {lang === 'vi' ? 'Cài Đặt Vị Trí Mẫu Nhanh:' : 'Quick Placement Presets:'}
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '6px' }}>
                     {POSITION_PRESETS.map((preset) => (
@@ -955,7 +953,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                   alignItems: 'center'
                 }}>
                   <div style={{ fontSize: '0.78rem', fontWeight: '800', marginBottom: '10px', textTransform: 'uppercase' }}>
-                    Bàn Phím Điều Hướng Căn Chỉnh Tinh Tế:
+                    {lang === 'vi' ? 'Bàn Phím Điều Hướng Căn Chỉnh Tinh Tế:' : 'Precision Directional Controls:'}
                   </div>
 
                   {/* D-Pad Buttons */}
@@ -972,7 +970,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                       onClick={() => nudge(0, -3)}
                       className="btn-uq"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      title="Lên trên"
+                      title="Move Up"
                     >
                       <ArrowUp size={16} />
                     </button>
@@ -982,7 +980,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                       onClick={() => nudge(-3, 0)}
                       className="btn-uq"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      title="Sang trái"
+                      title="Move Left"
                     >
                       <ArrowLeft size={16} />
                     </button>
@@ -990,15 +988,15 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                       onClick={() => updateCurrentCoords(50, 38)}
                       className="btn-uq"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: '900' }}
-                      title="Về chính giữa"
+                      title="Center Position"
                     >
-                      TÂM
+                      CENTER
                     </button>
                     <button
                       onClick={() => nudge(3, 0)}
                       className="btn-uq"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      title="Sang phải"
+                      title="Move Right"
                     >
                       <ArrowRight size={16} />
                     </button>
@@ -1008,7 +1006,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                       onClick={() => nudge(0, 3)}
                       className="btn-uq"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      title="Xuống dưới"
+                      title="Move Down"
                     >
                       <ArrowDown size={16} />
                     </button>
@@ -1018,12 +1016,12 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                   {/* Rotation Slider */}
                   <div style={{ width: '100%', marginTop: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: '700', marginBottom: '2px' }}>
-                      <span>XOAY GÓC: {positionConfig.rotation}°</span>
+                      <span>{lang === 'vi' ? 'XOAY GÓC:' : 'ROTATION ANGLE:'} {positionConfig.rotation}°</span>
                       <button
                         onClick={() => setPositionConfig((p) => ({ ...p, rotation: 0 }))}
                         style={{ background: 'transparent', border: 'none', color: '#e60012', fontSize: '0.72rem', cursor: 'pointer', fontWeight: '700' }}
                       >
-                        Đặt lại 0°
+                        Reset 0°
                       </button>
                     </div>
                     <input
@@ -1044,7 +1042,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Chọn Loại Phôi Trang Phục:
+                    {lang === 'vi' ? 'Chọn Loại Phôi Trang Phục:' : 'Select Base Garment:'}
                   </label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {APPAREL_TYPES.map((ap) => (
@@ -1077,7 +1075,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {/* Base Color Picker */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Màu Áo: <strong>{selectedColor.name}</strong>
+                    {lang === 'vi' ? 'Màu Áo:' : 'Garment Color:'} <strong>{selectedColor.name}</strong>
                   </label>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {BASE_COLORS.map((col) => (
@@ -1109,7 +1107,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                 {/* Size Selector */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Kích Thước: <strong>{selectedSize}</strong>
+                    {lang === 'vi' ? 'Kích Thước:' : 'Size:'} <strong>{selectedSize}</strong>
                   </label>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     {['S', 'M', 'L', 'XL', 'XXL'].map((sz) => (
@@ -1139,7 +1137,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
           {/* Action Buttons */}
           <div style={{ borderTop: '2px solid #111', paddingTop: '14px', marginTop: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span style={{ fontSize: '0.82rem', color: '#666' }}>Tổng thanh toán hoàn thiện:</span>
+              <span style={{ fontSize: '0.82rem', color: '#666' }}>{lang === 'vi' ? 'Tổng thanh toán hoàn thiện:' : 'Total Price:'}</span>
               <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#e60012' }}>
                 {formatPrice(totalPrice)}
               </span>
@@ -1160,7 +1158,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
               }}
             >
               <ShoppingBag size={18} />
-              <span>THÊM ÁO THIẾT KẾ VÀO GIỎ HÀNG</span>
+              <span>{lang === 'vi' ? 'THÊM ÁO THIẾT KẾ VÀO GIỎ HÀNG' : 'ADD BESPOKE ITEM TO CART'}</span>
             </button>
           </div>
         </div>

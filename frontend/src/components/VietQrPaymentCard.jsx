@@ -6,7 +6,7 @@ import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
 
 export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
   const { showSuccess, showError } = useToast();
 
   const [copiedField, setCopiedField] = useState(null);
@@ -16,7 +16,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
 
   const qrData = order?.vietQr || {
     bankId: 'vietinbank',
-    bankName: 'VietinBank (Ngân hàng TMCP Công Thương Việt Nam)',
+    bankName: 'VietinBank (Vietnam Joint Stock Commercial Bank for Industry and Trade)',
     accountNo: '113366668888',
     accountName: 'BEO FASHION VIETNAM',
     amount: order?.finalAmount || 0,
@@ -28,7 +28,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
       setCopiedField(fieldName);
-      showSuccess(`Đã sao chép ${fieldName}!`);
+      showSuccess(lang === 'vi' ? `Đã sao chép ${fieldName}!` : `Copied ${fieldName}!`);
       setTimeout(() => setCopiedField(null), 2000);
     }
   };
@@ -47,7 +47,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
           try {
             confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
           } catch (e) {}
-          showSuccess('Hệ thống đã nhận được chuyển khoản! Đơn hàng được xác nhận.');
+          showSuccess(lang === 'vi' ? 'Hệ thống đã nhận được chuyển khoản! Đơn hàng được xác nhận.' : 'Payment received! Order verified successfully.');
           if (onPaymentConfirmed) onPaymentConfirmed();
         }
       } catch (err) {
@@ -56,7 +56,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
     }, 2500);
 
     return () => clearInterval(interval);
-  }, [isPaid, order?.orderNumber, onPaymentConfirmed, showSuccess]);
+  }, [isPaid, order?.orderNumber, onPaymentConfirmed, showSuccess, lang]);
 
   // Simulate payment (SePay/Casso/Bank webhook)
   const handleSimulatePayment = async () => {
@@ -72,10 +72,10 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
       try {
         confetti({ particleCount: 90, spread: 70, origin: { y: 0.5 } });
       } catch (e) {}
-      showSuccess('Giả lập chuyển khoản thành công! Đơn hàng đã được xác nhận.');
+      showSuccess(lang === 'vi' ? 'Giả lập chuyển khoản thành công! Đơn hàng đã được xác nhận.' : 'Simulated transfer verified! Order confirmed.');
       if (onPaymentConfirmed) onPaymentConfirmed(res.data?.data);
     } catch (err) {
-      showError(err.message || 'Lỗi khi giả lập chuyển khoản');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi giả lập chuyển khoản' : 'Failed to simulate transfer'));
     } finally {
       setIsSimulating(false);
     }
@@ -111,22 +111,24 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
           </div>
           <div>
             <h3 style={{ fontSize: '1.05rem', fontWeight: '800', margin: 0, textTransform: 'uppercase' }}>
-              {isPaid ? 'THANH TOÁN THÀNH CÔNG' : 'QUÉT MÃ VIETQR ĐỂ THANH TOÁN TỰ ĐỘNG'}
+              {isPaid
+                ? (lang === 'vi' ? 'THANH TOÁN THÀNH CÔNG' : 'PAYMENT SUCCESSFUL')
+                : (lang === 'vi' ? 'QUÉT MÃ VIETQR ĐỂ THANH TOÁN TỰ ĐỘNG' : 'SCAN VIETQR CODE TO COMPLETE PAYMENT')}
             </h3>
             <div style={{ fontSize: '0.75rem', color: '#666' }}>
-              Chuẩn Napas247 • Tự động xác nhận sau 2-5 giây
+              {lang === 'vi' ? 'Chuẩn Napas247 • Tự động xác nhận sau 2-5 giây' : 'Napas247 Standard • Instant verification in 2-5 seconds'}
             </div>
           </div>
         </div>
 
         {isPaid ? (
           <span className="badge-uq" style={{ backgroundColor: '#00875a', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <CheckCircle2 size={14} /> ĐÃ THANH TOÁN
+            <CheckCircle2 size={14} /> {lang === 'vi' ? 'ĐÃ THANH TOÁN' : 'PAID'}
           </span>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#e60012', fontWeight: '700' }}>
             <RefreshCw size={14} className="spin" style={{ animation: 'spin 2s linear infinite' }} />
-            <span>Đang chờ chuyển khoản...</span>
+            <span>{lang === 'vi' ? 'Đang chờ chuyển khoản...' : 'Awaiting transfer confirmation...'}</span>
           </div>
         )}
       </div>
@@ -148,10 +150,12 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
             <CheckCircle2 size={38} />
           </div>
           <h4 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#111', marginBottom: '6px' }}>
-            Giao Dịch Đã Khớp Hoàn Toàn!
+            {lang === 'vi' ? 'Giao Dịch Đã Khớp Hoàn Toàn!' : 'Transaction Verified Successfully!'}
           </h4>
           <p style={{ fontSize: '0.85rem', color: '#555' }}>
-            Hệ thống ngân hàng đã xác nhận thanh toán số tiền <strong>{formatPrice(order.finalAmount)}</strong> cho đơn hàng <strong>{order.orderNumber}</strong>.
+            {lang === 'vi'
+              ? `Hệ thống ngân hàng đã xác nhận thanh toán số tiền ${formatPrice(order.finalAmount)} cho đơn hàng ${order.orderNumber}.`
+              : `Banking system confirmed payment of ${formatPrice(order.finalAmount)} for order ${order.orderNumber}.`}
           </p>
         </div>
       ) : (
@@ -173,7 +177,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
           }}>
             <img
               src={qrData.qrImageUrl}
-              alt="Mã QR Chuyển Khoản VietQR"
+              alt="VietQR Payment QR Code"
               style={{
                 width: '260px',
                 height: 'auto',
@@ -184,7 +188,9 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               }}
             />
             <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '10px', textAlign: 'center' }}>
-              Mở App Ngân hàng bất kỳ hoặc Ví MoMo/ZaloPay<br />để quét mã chuyển khoản tự động khớp số tiền
+              {lang === 'vi'
+                ? 'Mở App Ngân hàng bất kỳ hoặc Ví MoMo/ZaloPay để quét mã chuyển khoản tự động khớp số tiền'
+                : 'Open any Mobile Banking App or MoMo to scan and pay with auto-filled reference code'}
             </div>
           </div>
 
@@ -192,7 +198,9 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.85rem' }}>
             {/* Bank Name */}
             <div style={{ padding: '8px 12px', backgroundColor: '#fcfcfc', border: '1px solid #eee' }}>
-              <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>Ngân hàng thụ hưởng</div>
+              <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>
+                {lang === 'vi' ? 'Ngân hàng thụ hưởng' : 'Beneficiary Bank'}
+              </div>
               <div style={{ fontWeight: '800', color: '#111', marginTop: '2px' }}>{qrData.bankName}</div>
             </div>
 
@@ -206,23 +214,27 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               border: '1px solid #eee'
             }}>
               <div>
-                <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>Số tài khoản</div>
+                <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>
+                  {lang === 'vi' ? 'Số tài khoản' : 'Account Number'}
+                </div>
                 <div style={{ fontWeight: '900', color: '#111', fontSize: '1rem', fontFamily: 'monospace' }}>{qrData.accountNo}</div>
               </div>
               <button
                 type="button"
-                onClick={() => copyToClipboard(qrData.accountNo, 'Số tài khoản')}
+                onClick={() => copyToClipboard(qrData.accountNo, 'Account Number')}
                 className="btn-uq btn-uq-outline-gray"
                 style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
-                {copiedField === 'Số tài khoản' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
-                <span>{copiedField === 'Số tài khoản' ? 'Đã sao chép' : 'Sao chép'}</span>
+                {copiedField === 'Account Number' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
+                <span>{copiedField === 'Account Number' ? (lang === 'vi' ? 'Đã sao chép' : 'Copied') : (lang === 'vi' ? 'Sao chép' : 'Copy')}</span>
               </button>
             </div>
 
             {/* Account Name */}
             <div style={{ padding: '8px 12px', backgroundColor: '#fcfcfc', border: '1px solid #eee' }}>
-              <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>Chủ tài khoản</div>
+              <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>
+                {lang === 'vi' ? 'Chủ tài khoản' : 'Account Holder'}
+              </div>
               <div style={{ fontWeight: '800', color: '#111', marginTop: '2px' }}>{qrData.accountName}</div>
             </div>
 
@@ -236,17 +248,19 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               border: '1px solid #ffd2d2'
             }}>
               <div>
-                <div style={{ fontSize: '0.72rem', color: '#e60012', textTransform: 'uppercase', fontWeight: '700' }}>Số tiền chính xác</div>
+                <div style={{ fontSize: '0.72rem', color: '#e60012', textTransform: 'uppercase', fontWeight: '700' }}>
+                  {lang === 'vi' ? 'Số tiền chính xác' : 'Exact Amount'}
+                </div>
                 <div style={{ fontWeight: '900', color: '#e60012', fontSize: '1.1rem' }}>{formatPrice(order.finalAmount)}</div>
               </div>
               <button
                 type="button"
-                onClick={() => copyToClipboard(String(Math.round(order.finalAmount)), 'Số tiền')}
+                onClick={() => copyToClipboard(String(Math.round(order.finalAmount)), 'Amount')}
                 className="btn-uq btn-uq-outline-gray"
                 style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
-                {copiedField === 'Số tiền' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
-                <span>{copiedField === 'Số tiền' ? 'Đã sao chép' : 'Sao chép'}</span>
+                {copiedField === 'Amount' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
+                <span>{copiedField === 'Amount' ? (lang === 'vi' ? 'Đã sao chép' : 'Copied') : (lang === 'vi' ? 'Sao chép' : 'Copy')}</span>
               </button>
             </div>
 
@@ -260,17 +274,19 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               border: '1px solid #cce5ff'
             }}>
               <div>
-                <div style={{ fontSize: '0.72rem', color: '#0052cc', textTransform: 'uppercase', fontWeight: '700' }}>Nội dung chuyển khoản (Bắt buộc)</div>
+                <div style={{ fontSize: '0.72rem', color: '#0052cc', textTransform: 'uppercase', fontWeight: '700' }}>
+                  {lang === 'vi' ? 'Nội dung chuyển khoản (Bắt buộc)' : 'Payment Reference Code (Required)'}
+                </div>
                 <div style={{ fontWeight: '900', color: '#0052cc', fontSize: '0.95rem', fontFamily: 'monospace' }}>{qrData.transferContent}</div>
               </div>
               <button
                 type="button"
-                onClick={() => copyToClipboard(qrData.transferContent, 'Nội dung CK')}
+                onClick={() => copyToClipboard(qrData.transferContent, 'Reference Code')}
                 className="btn-uq btn-uq-outline-gray"
                 style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
-                {copiedField === 'Nội dung CK' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
-                <span>{copiedField === 'Nội dung CK' ? 'Đã sao chép' : 'Sao chép'}</span>
+                {copiedField === 'Reference Code' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
+                <span>{copiedField === 'Reference Code' ? (lang === 'vi' ? 'Đã sao chép' : 'Copied') : (lang === 'vi' ? 'Sao chép' : 'Copy')}</span>
               </button>
             </div>
 
@@ -284,10 +300,12 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
                 style={{ width: '100%', padding: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
                 <Sparkles size={16} />
-                <span>{isSimulating ? 'Đang giả lập...' : '🧪 Giả lập Chuyển Khoản Thành Công (Test Webhook/SePay)'}</span>
+                <span>{isSimulating ? (lang === 'vi' ? 'Đang giả lập...' : 'Simulating...') : (lang === 'vi' ? '🧪 Giả lập Chuyển Khoản Thành Công (Test Webhook/SePay)' : '🧪 Simulate Successful Bank Transfer (Test Webhook)')}</span>
               </button>
               <div style={{ fontSize: '0.72rem', color: '#777', textAlign: 'center', marginTop: '4px' }}>
-                * Bấm nút trên để thử nghiệm luồng Webhook tự động khớp tiền mà không cần quét mã thật.
+                {lang === 'vi'
+                  ? '* Bấm nút trên để thử nghiệm luồng Webhook tự động khớp tiền mà không cần quét mã thật.'
+                  : '* Click above to test the automated webhook reconciliation flow without actual banking transaction.'}
               </div>
             </div>
           </div>

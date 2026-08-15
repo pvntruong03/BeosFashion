@@ -1,28 +1,28 @@
 // ==========================================
-// BEO MODERN FASHION - EXCEL & CSV EXPORTER
-// Chuẩn UTF-8 BOM hiển thị tiếng Việt hoàn hảo trên Microsoft Excel
+// BEO STORE - EXCEL & CSV EXPORTER
+// UTF-8 BOM encoding for seamless Microsoft Excel compatibility
 // ==========================================
 
 export const exportOrdersToExcel = (orders = []) => {
   if (!orders || orders.length === 0) {
-    alert('Không có dữ liệu đơn hàng để xuất!');
+    alert('No order records to export!');
     return;
   }
 
   const headers = [
-    'Mã Đơn Hàng',
-    'Khách Hàng',
-    'Số Điện Thoại',
-    'Địa Chỉ Giao Hàng',
-    'Tỉnh / Thành Phố',
-    'Chi Nhánh Tiếp Nhận',
-    'Loại Đơn',
-    'Phương Thức Thanh Toán',
-    'Trạng Thái Đơn',
-    'Mã Khuyến Mãi',
-    'Giảm Giá (VND)',
-    'Tổng Tiền Đơn Hàng (VND)',
-    'Thời Gian Tạo'
+    'Order ID',
+    'Customer Name',
+    'Phone Number',
+    'Shipping Address',
+    'City / Province',
+    'Fulfillment Store',
+    'Order Type',
+    'Payment Method',
+    'Fulfillment Status',
+    'Coupon Code',
+    'Discount Amount (VND)',
+    'Total Amount (VND)',
+    'Created At'
   ];
 
   const rows = orders.map((ord) => [
@@ -31,14 +31,14 @@ export const exportOrdersToExcel = (orders = []) => {
     `"${ord.customerPhone || ''}"`,
     `"${(ord.shippingAddress || '').replace(/"/g, '""')}"`,
     `"${ord.shippingCity || ''}"`,
-    `"${ord.storeName || 'BEO Flagship Cần Thơ'}"`,
+    `"${ord.storeName || 'BEO Flagship Can Tho'}"`,
     `"${ord.orderType || ''}"`,
     `"${ord.paymentMethod || 'VIETQR'}"`,
     `"${ord.status || ''}"`,
     `"${ord.couponCode || ''}"`,
     ord.discountAmount || 0,
     ord.finalAmount || 0,
-    `"${ord.createdAt ? new Date(ord.createdAt).toLocaleString('vi-VN') : ''}"`
+    `"${ord.createdAt ? new Date(ord.createdAt).toLocaleString('en-US') : ''}"`
   ]);
 
   const csvContent = '\uFEFF' + [
@@ -50,7 +50,7 @@ export const exportOrdersToExcel = (orders = []) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `BEO_Fashion_DanhSachDonHang_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.setAttribute('download', `BEO_Store_Orders_Export_${new Date().toISOString().slice(0, 10)}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -58,20 +58,20 @@ export const exportOrdersToExcel = (orders = []) => {
 
 export const exportProductsToExcel = (products = []) => {
   if (!products || products.length === 0) {
-    alert('Không có dữ liệu sản phẩm để xuất!');
+    alert('No product records to export!');
     return;
   }
 
   const headers = [
-    'Mã Sản Phẩm',
-    'Tên Sản Phẩm',
-    'Danh Mục',
-    'Bộ Sưu Tập',
-    'Giá Gốc (VND)',
-    'Số Lượng Tồn Kho',
-    'Đánh Giá TB (Sao)',
-    'Số Lượt Đánh Giá',
-    'Trạng Thái Bán'
+    'Product Code',
+    'Product Name',
+    'Category',
+    'Collection',
+    'Retail Price (VND)',
+    'Stock Available',
+    'Average Rating',
+    'Review Count',
+    'Status'
   ];
 
   const rows = products.map((p) => [
@@ -83,7 +83,7 @@ export const exportProductsToExcel = (products = []) => {
     p.totalStock !== undefined ? p.totalStock : 100,
     p.averageRating || 5.0,
     p.reviewCount || 0,
-    p.active ? 'Đang kinh doanh' : 'Tạm dừng'
+    p.active ? 'Active' : 'Inactive'
   ]);
 
   const csvContent = '\uFEFF' + [
@@ -95,7 +95,7 @@ export const exportProductsToExcel = (products = []) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `BEO_Fashion_DanhSachSanPham_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.setAttribute('download', `BEO_Store_Products_Export_${new Date().toISOString().slice(0, 10)}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

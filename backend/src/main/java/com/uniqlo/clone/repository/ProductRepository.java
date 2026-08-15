@@ -23,6 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findByIsNewTrueAndActiveTrue();
     List<Product> findByBestSellerTrueAndActiveTrue();
     List<Product> findByLimitedOfferTrueAndActiveTrue();
+    Page<Product> findByActiveTrueOrderByCreatedAtDesc(Pageable pageable);
 
     List<Product> findByGenderAndActiveTrue(Gender gender);
     List<Product> findByCategoryIdAndActiveTrue(Long categoryId);

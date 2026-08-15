@@ -148,14 +148,22 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductDto> getNewArrivals() {
-        return productRepository.findByIsNewTrueAndActiveTrue().stream()
+        List<Product> products = productRepository.findByIsNewTrueAndActiveTrue();
+        if (products == null || products.isEmpty()) {
+            products = productRepository.findByActiveTrueOrderByCreatedAtDesc(PageRequest.of(0, 8)).getContent();
+        }
+        return products.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ProductDto> getBestSellers() {
-        return productRepository.findByBestSellerTrueAndActiveTrue().stream()
+        List<Product> products = productRepository.findByBestSellerTrueAndActiveTrue();
+        if (products == null || products.isEmpty()) {
+            products = productRepository.findByFeaturedTrueAndActiveTrue();
+        }
+        return products.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }

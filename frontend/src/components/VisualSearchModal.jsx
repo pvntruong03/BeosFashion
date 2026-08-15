@@ -6,43 +6,43 @@ import api from '../services/api';
 const SAMPLE_PRESETS = [
   {
     id: 1,
-    title: 'Áo Thun AIRism Đen Oversized',
-    hint: 'áo thun đen airism',
+    title: 'AIRism Oversized Black Tee',
+    hint: 'black oversized airism tee',
     imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
-    category: 'Áo Thun'
+    category: 'T-Shirts'
   },
   {
     id: 2,
-    title: 'Áo Khoác Parka Chống Nắng UV',
-    hint: 'áo khoác chống nắng hoodie uv parka',
+    title: 'UV Protection Parka Jacket',
+    hint: 'uv protection hoodie parka jacket',
     imageUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80',
-    category: 'Áo Khoác'
+    category: 'Outerwear'
   },
   {
     id: 3,
-    title: 'Quần Smart Ankle Pants Xám',
-    hint: 'quần smart ankle pants co giãn xám',
+    title: 'Smart Ankle Pants Gray',
+    hint: 'smart ankle stretch pants gray',
     imageUrl: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=800&q=80',
-    category: 'Quần'
+    category: 'Pants'
   },
   {
     id: 4,
-    title: 'Áo Sơ Mi Oxford Trắng',
-    hint: 'áo sơ mi trắng oxford dài tay',
+    title: 'White Oxford Long Sleeve Shirt',
+    hint: 'white oxford long sleeve shirt',
     imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80',
-    category: 'Áo Sơ Mi'
+    category: 'Shirts'
   },
   {
     id: 5,
-    title: 'Đầm Suông Nữ Dạo Phố',
-    hint: 'đầm suông nữ thời trang dạo phố hè',
+    title: 'Minimalist Rayon Shift Dress',
+    hint: 'women rayon casual shift dress',
     imageUrl: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80',
-    category: 'Đầm & Váy'
+    category: 'Dresses'
   }
 ];
 
 export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
   const [selectedImage, setSelectedImage] = useState(null);
   const [customImageUrl, setCustomImageUrl] = useState('');
   const [isScanning, setIsScanning] = useState(false);
@@ -58,7 +58,6 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
     setSearchResult(null);
 
     try {
-      // Simulate visual neural network scan delay for realistic AI feel
       await new Promise((res) => setTimeout(res, 800));
 
       const res = await api.post('/products/visual-search', {
@@ -71,7 +70,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
       }
     } catch (err) {
       console.error('Visual search error:', err);
-      setError('Không thể phân tích hình ảnh này. Vui lòng thử lại với hình ảnh khác.');
+      setError(lang === 'vi' ? 'Không thể phân tích hình ảnh này. Vui lòng thử lại với hình ảnh khác.' : 'Unable to analyze image. Please try another photo.');
     } finally {
       setIsScanning(false);
     }
@@ -133,17 +132,19 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
             </div>
             <div>
               <h2 style={{ fontSize: '1.1rem', fontWeight: '900', letterSpacing: '0.5px', margin: 0, textTransform: 'uppercase' }}>
-                Tìm Kiếm Bằng Hình Ảnh (Visual AI Search)
+                {lang === 'vi' ? 'Tìm Kiếm Bằng Hình Ảnh (Visual AI Search)' : 'Visual AI Search (Photo-to-Product)'}
               </h2>
               <div style={{ fontSize: '0.78rem', color: '#bbb', marginTop: '2px' }}>
-                Tải ảnh trang phục bất kỳ để AI phân tích màu sắc, kiểu dáng và tìm sản phẩm LifeWear tương đồng
+                {lang === 'vi'
+                  ? 'Tải ảnh trang phục bất kỳ để AI phân tích màu sắc, kiểu dáng và tìm sản phẩm LifeWear tương đồng'
+                  : 'Upload any outfit photo for neural-network analysis to discover matching LifeWear items'}
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            style={{ color: '#fff', padding: '6px', cursor: 'pointer', transition: 'transform 0.2s' }}
-            aria-label="Đóng"
+            style={{ color: '#fff', padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'transform 0.2s' }}
+            aria-label="Close"
           >
             <X size={24} />
           </button>
@@ -154,7 +155,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
           <div style={{ marginBottom: '20px' }}>
             <div style={{ fontSize: '0.85rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Sparkles size={16} color="#e60012" />
-              <span>Hoặc thử nhanh với các mẫu trang phục gợi ý:</span>
+              <span>{lang === 'vi' ? 'Hoặc thử nhanh với các mẫu trang phục gợi ý:' : 'Or try with sample aesthetic presets:'}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '10px' }}>
               {SAMPLE_PRESETS.map((preset) => (
@@ -205,10 +206,10 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
             >
               <Upload size={28} color="#e60012" style={{ marginBottom: '8px' }} />
               <span style={{ fontWeight: '800', fontSize: '0.85rem', color: '#111' }}>
-                Tải ảnh trang phục từ máy tính
+                {lang === 'vi' ? 'Tải ảnh trang phục từ máy tính' : 'Upload photo from device'}
               </span>
               <span style={{ fontSize: '0.75rem', color: '#777', marginTop: '4px' }}>
-                JPG, PNG, WEBP (Tối đa 10MB)
+                JPG, PNG, WEBP (Max 10MB)
               </span>
               <input
                 type="file"
@@ -229,7 +230,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
             }}>
               <span style={{ fontWeight: '800', fontSize: '0.85rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <ImageIcon size={16} />
-                <span>Hoặc dán liên kết URL ảnh:</span>
+                <span>{lang === 'vi' ? 'Hoặc dán liên kết URL ảnh:' : 'Or paste direct image URL:'}</span>
               </span>
               <form onSubmit={handleCustomUrlSubmit} style={{ display: 'flex', gap: '8px' }}>
                 <input
@@ -250,7 +251,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                   className="btn-uq btn-uq-primary"
                   style={{ padding: '8px 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
                 >
-                  Tìm
+                  {lang === 'vi' ? 'Tìm' : 'Search'}
                 </button>
               </form>
             </div>
@@ -283,10 +284,10 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                 }} />
               </div>
               <div style={{ fontWeight: '800', fontSize: '1rem', color: '#fff' }}>
-                AI ĐANG PHÂN TÍCH ĐƯỜNG NÉT & TÔNG MÀU TRANG PHỤC...
+                {lang === 'vi' ? 'AI ĐANG PHÂN TÍCH ĐƯỜNG NÉT & TÔNG MÀU TRANG PHỤC...' : 'AI IS ANALYZING SILHOUETTE, PATTERN & COLORWAYS...'}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '4px' }}>
-                Đang quét thư viện sản phẩm LifeWear để tìm các mẫu khớp nhất
+                {lang === 'vi' ? 'Đang quét thư viện sản phẩm LifeWear để tìm các mẫu khớp nhất' : 'Scanning catalog embeddings to find closest matches'}
               </div>
             </div>
           )}
@@ -308,7 +309,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
               }}>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#666', textTransform: 'uppercase', fontWeight: '700' }}>
-                    ĐẶC ĐIỂM AI NHẬN DIỆN:
+                    {lang === 'vi' ? 'ĐẶC ĐIỂM AI NHẬN DIỆN:' : 'IDENTIFIED ATTRIBUTES:'}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
                     {searchResult.detectedTags?.map((tag, idx) => (
@@ -320,7 +321,9 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                 </div>
 
                 <div style={{ fontSize: '0.8rem', color: '#555', textAlign: 'right' }}>
-                  Tìm thấy <strong>{searchResult.matchedProducts?.length || 0}</strong> sản phẩm khớp ({searchResult.analysisTimeMs}ms)
+                  {lang === 'vi'
+                    ? `Tìm thấy ${searchResult.matchedProducts?.length || 0} sản phẩm khớp (${searchResult.analysisTimeMs}ms)`
+                    : `Found ${searchResult.matchedProducts?.length || 0} matches in ${searchResult.analysisTimeMs}ms`}
                 </div>
               </div>
 
@@ -363,7 +366,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                         gap: '3px'
                       }}>
                         <CheckCircle2 size={10} />
-                        <span>{matchItem.similarityPercentage}% Khớp</span>
+                        <span>{matchItem.similarityPercentage}% {lang === 'vi' ? 'Khớp' : 'Match'}</span>
                       </div>
 
                       {/* Product Image */}
@@ -410,7 +413,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                             className="btn-uq btn-uq-outline-gray"
                             style={{ padding: '4px 8px', fontSize: '0.72rem' }}
                           >
-                            Xem <ArrowRight size={10} />
+                            {lang === 'vi' ? 'Xem' : 'View'} <ArrowRight size={10} />
                           </button>
                         </div>
                       </div>

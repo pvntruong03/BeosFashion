@@ -35,7 +35,7 @@ public class AdminController {
     private final CouponService couponService;
     private final UserRepository userRepository;
 
-    @GetMapping("/dashboard/stats")
+    @GetMapping({"/dashboard/stats", "/stats"})
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "Get overall business analytics, revenue KPIs, and charts")
     public ResponseEntity<ApiResponse<AdminDashboardStatsDto>> getDashboardStats() {
@@ -71,8 +71,8 @@ public class AdminController {
     @Operation(summary = "Get all system orders with pagination")
     public ResponseEntity<ApiResponse<Page<OrderDto>>> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Page<OrderDto> orders = orderService.getAllOrders(PageRequest.of(page, size));
+            @RequestParam(defaultValue = "500") int size) {
+        Page<OrderDto> orders = orderService.getAllOrders(PageRequest.of(page, Math.min(size, 1000)));
         return ResponseEntity.ok(ApiResponse.ok(orders));
     }
 
@@ -146,5 +146,22 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> deleteCoupon(@PathVariable Long id) {
         couponService.deleteCoupon(id);
         return ResponseEntity.ok(ApiResponse.ok("Đã xóa mã khuyến mãi thành công", null));
+    }
+
+    private final com.uniqlo.clone.service.VietQrService vietQrService;
+
+    @GetMapping("/bank-config")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Get receiving bank account configuration")
+    public ResponseEntity<ApiResponse<com.uniqlo.clone.service.VietQrService.BankConfig>> getBankConfig() {
+        return ResponseEntity.ok(ApiResponse.ok(vietQrService.getBankConfig()));
+    }
+
+    @RequestMapping(value = "/bank-config", method = {RequestMethod.POST, RequestMethod.PUT})
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Update receiving bank account configuration")
+    public ResponseEntity<ApiResponse<com.uniqlo.clone.service.VietQrService.BankConfig>> updateBankConfig(@RequestBody com.uniqlo.clone.service.VietQrService.BankConfig config) {
+        vietQrService.updateBankConfig(config);
+        return ResponseEntity.ok(ApiResponse.ok("Receiving bank configuration updated successfully", vietQrService.getBankConfig()));
     }
 }

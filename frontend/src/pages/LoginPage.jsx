@@ -5,9 +5,9 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 export const LoginPage = ({ onNavigate }) => {
   const { login, register, loginAsDemo } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState('login'); // 'login' or 'register'
+  const [activeTab, setActiveTab] = useState('login');
 
   // Login form
   const [email, setEmail] = useState('');
@@ -20,7 +20,7 @@ export const LoginPage = ({ onNavigate }) => {
   const [regPassword, setRegPassword] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regAddress, setRegAddress] = useState('');
-  const [regCity, setRegCity] = useState('TP. Hồ Chí Minh');
+  const [regCity, setRegCity] = useState('Can Tho');
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -81,10 +81,12 @@ export const LoginPage = ({ onNavigate }) => {
           </div>
         </div>
         <h1 className="heading-section" style={{ fontSize: '1.8rem', textTransform: 'uppercase' }}>
-          CỔNG ĐĂNG NHẬP HỆ THỐNG BEO
+          {lang === 'vi' ? 'CỔNG ĐĂNG NHẬP HỆ THỐNG BEO' : 'BEO STORE UNIFIED LOGIN PORTAL'}
         </h1>
         <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
-          Một trang đăng nhập duy nhất cho tất cả Khách hàng, Nhân viên chi nhánh và Quản trị viên
+          {lang === 'vi'
+            ? 'Một trang đăng nhập duy nhất cho tất cả Khách hàng, Nhân viên chi nhánh và Quản trị viên'
+            : 'Single login gateway with role-based routing for Customers, Store Managers, and System Admins'}
         </p>
       </div>
 
@@ -105,12 +107,15 @@ export const LoginPage = ({ onNavigate }) => {
                 padding: '12px',
                 fontWeight: '800',
                 fontSize: '0.95rem',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
                 borderBottom: activeTab === 'login' ? '2px solid #e60012' : '2px solid transparent',
                 color: activeTab === 'login' ? '#e60012' : '#666',
                 textAlign: 'center'
               }}
             >
-              ĐĂNG NHẬP
+              {lang === 'vi' ? 'ĐĂNG NHẬP' : 'SIGN IN'}
             </button>
             <button
               onClick={() => setActiveTab('register')}
@@ -119,12 +124,15 @@ export const LoginPage = ({ onNavigate }) => {
                 padding: '12px',
                 fontWeight: '800',
                 fontSize: '0.95rem',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
                 borderBottom: activeTab === 'register' ? '2px solid #e60012' : '2px solid transparent',
                 color: activeTab === 'register' ? '#e60012' : '#666',
                 textAlign: 'center'
               }}
             >
-              ĐĂNG KÝ MỚI
+              {lang === 'vi' ? 'ĐĂNG KÝ MỚI' : 'CREATE ACCOUNT'}
             </button>
           </div>
 
@@ -133,7 +141,7 @@ export const LoginPage = ({ onNavigate }) => {
             <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
-                  ĐỊA CHỈ EMAIL *
+                  {lang === 'vi' ? 'ĐỊA CHỈ EMAIL *' : 'EMAIL ADDRESS *'}
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
@@ -150,8 +158,8 @@ export const LoginPage = ({ onNavigate }) => {
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: '700' }}>MẬT KHẨU *</label>
-                  <a href="#" style={{ fontSize: '0.75rem', color: '#e60012' }}>Quên mật khẩu?</a>
+                  <label style={{ fontSize: '0.8rem', fontWeight: '700' }}>{lang === 'vi' ? 'MẬT KHẨU *' : 'PASSWORD *'}</label>
+                  <a href="#" style={{ fontSize: '0.75rem', color: '#e60012' }}>{lang === 'vi' ? 'Quên mật khẩu?' : 'Forgot password?'}</a>
                 </div>
                 <div style={{ position: 'relative' }}>
                   <input
@@ -172,7 +180,7 @@ export const LoginPage = ({ onNavigate }) => {
                 className="btn-uq btn-uq-primary"
                 style={{ width: '100%', padding: '14px', fontSize: '1rem', marginTop: '8px' }}
               >
-                <span>{loading ? 'Đang xác thực...' : 'Đăng Nhập'}</span>
+                <span>{loading ? (lang === 'vi' ? 'Đang xác thực...' : 'Authenticating...') : (lang === 'vi' ? 'Đăng Nhập' : 'Sign In')}</span>
                 <ArrowRight size={18} />
               </button>
             </form>
@@ -180,11 +188,13 @@ export const LoginPage = ({ onNavigate }) => {
             /* Form Register */
             <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Họ và tên *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                  {lang === 'vi' ? 'Họ và tên *' : 'Full Name *'}
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder="Nguyễn Văn A"
+                  placeholder="Alex Johnson"
                   value={regFullName}
                   onChange={(e) => setRegFullName(e.target.value)}
                   style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none' }}
@@ -192,7 +202,9 @@ export const LoginPage = ({ onNavigate }) => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Email *</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                  {lang === 'vi' ? 'Email *' : 'Email Address *'}
+                </label>
                 <input
                   type="email"
                   required
@@ -204,7 +216,9 @@ export const LoginPage = ({ onNavigate }) => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Mật khẩu * (Tối thiểu 6 ký tự)</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                  {lang === 'vi' ? 'Mật khẩu * (Tối thiểu 6 ký tự)' : 'Password * (Min 6 characters)'}
+                </label>
                 <input
                   type="password"
                   required
@@ -216,7 +230,9 @@ export const LoginPage = ({ onNavigate }) => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Số điện thoại</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                  {lang === 'vi' ? 'Số điện thoại' : 'Phone Number'}
+                </label>
                 <input
                   type="tel"
                   placeholder="0912345678"
@@ -227,10 +243,12 @@ export const LoginPage = ({ onNavigate }) => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Địa chỉ nhận hàng</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                  {lang === 'vi' ? 'Địa chỉ nhận hàng' : 'Shipping Address'}
+                </label>
                 <input
                   type="text"
-                  placeholder="Số nhà, tên đường, quận/huyện..."
+                  placeholder={lang === 'vi' ? 'Số nhà, tên đường, quận/huyện...' : 'Street address, apartment, district...'}
                   value={regAddress}
                   onChange={(e) => setRegAddress(e.target.value)}
                   style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none' }}
@@ -243,7 +261,7 @@ export const LoginPage = ({ onNavigate }) => {
                 className="btn-uq btn-uq-red"
                 style={{ width: '100%', padding: '14px', fontSize: '1rem', marginTop: '8px' }}
               >
-                <span>{loading ? 'Đang tạo tài khoản...' : 'Đăng Ký Thành Viên'}</span>
+                <span>{loading ? (lang === 'vi' ? 'Đang tạo tài khoản...' : 'Creating Account...') : (lang === 'vi' ? 'Đăng Ký Thành Viên' : 'Register Account')}</span>
               </button>
             </form>
           )}
@@ -254,11 +272,13 @@ export const LoginPage = ({ onNavigate }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
             <KeyRound size={20} color="#e60012" />
             <span style={{ fontWeight: '800', fontSize: '1.05rem', textTransform: 'uppercase' }}>
-              Tài Khoản Thử Nghiệm 1-Click
+              {lang === 'vi' ? 'Tài Khoản Thử Nghiệm 1-Click' : '1-Click Quick Demo Switcher'}
             </span>
           </div>
           <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '20px', lineHeight: 1.5 }}>
-            Bấm trực tiếp vào các nút bên dưới để đăng nhập ngay và trải nghiệm cơ chế tự động điều hướng theo quyền hạn (Single Login Routing):
+            {lang === 'vi'
+              ? 'Bấm trực tiếp vào các nút bên dưới để đăng nhập ngay và trải nghiệm cơ chế tự động điều hướng theo quyền hạn (Single Login Routing):'
+              : 'Click any role below to instantly log in and experience seamless role-based routing (Single Login Gateway):'}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -280,11 +300,11 @@ export const LoginPage = ({ onNavigate }) => {
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>👑 Admin Quản Trị Hệ Thống</span>
+                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>👑 {lang === 'vi' ? 'Admin Quản Trị Hệ Thống' : 'System Administrator'}</span>
                   <span className="badge-uq red">ADMIN</span>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  admin@uniqlo.com • Điều hướng: <code>/admin/dashboard</code>
+                  admin@uniqlo.com • {lang === 'vi' ? 'Điều hướng:' : 'Redirect:'} <code>/admin/dashboard</code>
                 </div>
               </div>
               <ArrowRight size={16} color="#e60012" />
@@ -308,11 +328,11 @@ export const LoginPage = ({ onNavigate }) => {
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>🏬 Quản Lý Cửa Hàng (Store Manager)</span>
+                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>🏬 {lang === 'vi' ? 'Quản Lý Cửa Hàng (Store Manager)' : 'Store Manager (POS & Inventory)'}</span>
                   <span className="badge-uq black">MANAGER</span>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  manager.cantho@uniqlo.com • Chi nhánh Cần Thơ (Vincom Xuân Khánh)
+                  manager.cantho@uniqlo.com • {lang === 'vi' ? 'Chi nhánh Cần Thơ (Vincom Xuân Khánh)' : 'Can Tho Flagship Store'}
                 </div>
               </div>
               <ArrowRight size={16} />
@@ -336,11 +356,11 @@ export const LoginPage = ({ onNavigate }) => {
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>👤 Khách Hàng (Customer)</span>
+                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>👤 {lang === 'vi' ? 'Khách Hàng (Customer)' : 'Customer (Shopper)'}</span>
                   <span className="badge-uq gray">CUSTOMER</span>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  customer@gmail.com • Mua hàng & Giỏ hàng
+                  customer@gmail.com • {lang === 'vi' ? 'Mua sắm & Giỏ hàng' : 'Shopping Bag & Orders'}
                 </div>
               </div>
               <ArrowRight size={16} />

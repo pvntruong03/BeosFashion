@@ -1,5 +1,7 @@
 package com.uniqlo.clone.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.uniqlo.clone.entity.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,9 +32,19 @@ public class ProductDto {
     private Gender gender;
     private String collection;
     private boolean featured;
+
+    @JsonProperty("isNew")
+    @JsonAlias({"new", "isNew"})
     private boolean isNew;
+
+    @JsonProperty("bestSeller")
+    @JsonAlias({"bestSeller", "isBestSeller"})
     private boolean bestSeller;
+
+    @JsonProperty("limitedOffer")
+    @JsonAlias({"limitedOffer", "isLimitedOffer"})
     private boolean limitedOffer;
+
     private String primaryImageUrl;
     private Double averageRating;
     private Integer reviewCount;

@@ -13,8 +13,17 @@ import {
   ShoppingBag,
   Clock
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const QUICK_PROMPTS = [
+const QUICK_PROMPTS_EN = [
+  '👕 Suggest t-shirt size for 175cm',
+  '🎁 What discount codes are available?',
+  '🏬 Can Tho flagship showroom address',
+  '🚚 Shipping & 30-day return policy',
+  '📦 How to track my order',
+];
+
+const QUICK_PROMPTS_VI = [
   '👕 Gợi ý áo thun cho nam 1m75',
   '🎁 Mã giảm giá hôm nay?',
   '🏬 Địa chỉ showroom Cần Thơ',
@@ -22,42 +31,45 @@ const QUICK_PROMPTS = [
   '📦 Cách theo dõi đơn hàng',
 ];
 
-const KNOWLEDGE_BASE = [
+const KNOWLEDGE_BASE_EN = [
   {
-    keywords: ['áo thun', 'ao thun', 'nam', '1m75', 'size', 'kích thước', 'chon size'],
-    reply: 'Với chiều cao 1m75 (cân nặng ~65-72kg), BEO gợi ý bạn chọn **Size L** cho dòng áo **AIRism Cotton Oversized T-Shirt** để mặc chuẩn phom thoải mái hoặc **Size M** nếu thích phom Regular vừa vặn. Bạn có thể xem ngay bộ sưu tập Áo Thun Nam ở mục BỘ SƯU TẬP nhé!'
+    keywords: ['t-shirt', 'tee', 'size', '175cm', 'men', 'fit', 'sizing'],
+    reply: 'For a height of 175cm (~65-72kg), BEO recommends **Size L** for the **AIRism Cotton Oversized T-Shirt** for a comfortable relaxed silhouette, or **Size M** if you prefer a tailored regular fit. Explore our catalog under the Tops & T-Shirts collection!'
   },
   {
-    keywords: ['mã giảm giá', 'ma giam gia', 'voucher', 'coupon', 'khuyen mai', 'uu dai', 'beo10'],
-    reply: '🎉 Hiện tại BEO đang có các mã ưu đãi độc quyền:\n• **BEO10**: Giảm ngay 10% (tối đa 100.000đ cho đơn từ 300.000đ).\n• **LIFEWEAR50K**: Giảm ngay 50.000đ cho đơn từ 400.000đ.\n• **Freeship toàn quốc** tự động áp dụng cho đơn từ 500.000đ!'
+    keywords: ['coupon', 'code', 'discount', 'voucher', 'promo', 'beo10', 'sale'],
+    reply: '🎉 Exclusive active promotions available at BEO STORE:\n• **BEO10**: 10% OFF orders from 300,000 VND (max 100,000 VND discount).\n• **LIFEWEAR50K**: 50,000 VND direct discount on orders from 400,000 VND.\n• **Free Standard Shipping** automatically applied on all orders over 500,000 VND!'
   },
   {
-    keywords: ['cần thơ', 'can tho', 'xuan khanh', 'chi nhánh', 'dia chi', 'showroom', 'cua hang', 'dong khoi'],
-    reply: '🏬 Showroom **BEO Vincom Xuân Khánh Cần Thơ** tọa lạc tại: **Tòa tháp Vincom Xuân Khánh, 209 Đường 30 Tháng 4, Phường Xuân Khánh, Quận Ninh Kiều, Cần Thơ**.\n• Hotline: `0292 3788 888`\n• Giờ mở cửa: 09:30 - 22:00 hàng ngày (Có dịch vụ Click & Collect nhận hàng trong 2 giờ)!'
+    keywords: ['can tho', 'showroom', 'address', 'store', 'location', 'hours'],
+    reply: '🏬 **BEO STORE Can Tho Flagship Showroom**:\n• Address: **209 30th April Street, Xuan Khanh Ward, Ninh Kieu District, Can Tho City**.\n• Hotline: `1900019199999`\n• Hours: 08:00 - 22:00 Daily (Click & Collect ready in 2 hours)!'
   },
   {
-    keywords: ['giao hàng', 'giao hang', 'doi tra', 'đổi trả', 'freeship', 'phi ship', 'bao lau'],
-    reply: '🚚 **Chính sách giao hàng & Đổi trả của BEO:**\n• Giao hàng tiêu chuẩn 2-3 ngày toàn quốc.\n• **Miễn phí vận chuyển** cho đơn từ 500.000đ (phí tiêu chuẩn 30.000đ).\n• Hỗ trợ đổi hàng trong vòng **30 ngày** tại bất kỳ showroom BEO nào trên toàn quốc!'
+    keywords: ['shipping', 'delivery', 'return', 'exchange', 'freeship', 'how long'],
+    reply: '🚚 **BEO Shipping & Return Guarantee**:\n• Standard nationwide delivery within 2-3 business days.\n• **Free Shipping** on orders over 500,000 VND (standard rate 30,000 VND).\n• **30-Day Hassle-Free Returns & Exchanges** at any BEO store or online!'
   },
   {
-    keywords: ['tra cứu', 'tra cuu', 'theo doi', 'don hang', 'order', 'kiem tra don'],
-    reply: '📦 Để tra cứu đơn hàng, bạn có thể vào menu **"Đơn hàng của tôi"** trong tài khoản, hoặc nhập Mã đơn hàng (VD: `UQ-260814-...`) trên trang Kiểm tra đơn. Mọi cập nhật trạng thái sẽ được hiển thị theo thời gian thực!'
+    keywords: ['track', 'order', 'tracking', 'status', 'check'],
+    reply: '📦 To track your order, visit **"My Orders"** in your account menu, or enter your Order ID (e.g. `UQ-260814-...`) on our Order Tracking page for live real-time fulfillment updates!'
   },
   {
-    keywords: ['chất liệu', 'chat lieu', 'airism', 'heattech', 'lifewear'],
-    reply: '✨ **Công nghệ độc quyền LifeWear của BEO:**\n• **AIRism**: Vải sợi siêu mịn mát lạnh, thoáng khí gấp 3 lần, thấm hút mồ hôi tối ưu cho mùa hè.\n• **100% Supima Cotton**: Sợi bông dài cao cấp giữ phom bền đẹp sau nhiều lần giặt.'
+    keywords: ['material', 'fabric', 'airism', 'cotton', 'lifewear', 'quality'],
+    reply: '✨ **Proprietary LifeWear Fabric Technologies**:\n• **AIRism**: Ultra-fine breathable microfibers with instant dry cooling touch.\n• **100% Long-Staple Supima Cotton**: Lustrous hand-feel and durable shape retention wash after wash.'
   }
 ];
 
 export const AiChatWidget = ({ onNavigate }) => {
+  const { lang } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('chat'); // 'chat', 'social'
+  const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'bot',
-      text: 'Xin chào! Tôi là **Trợ lý Ảo BEO AI**. Tôi có thể hỗ trợ bạn chọn size, gợi ý phối đồ LifeWear, tra cứu mã giảm giá hoặc thông tin showroom Cần Thơ. Bạn cần giúp gì hôm nay ạ?',
-      time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+      text: lang === 'vi'
+        ? 'Xin chào! Tôi là **Trợ lý Ảo BEO AI**. Tôi có thể hỗ trợ bạn chọn size, gợi ý phối đồ LifeWear, tra cứu mã giảm giá hoặc thông tin showroom Cần Thơ. Bạn cần giúp gì hôm nay ạ?'
+        : 'Hello! I am the **BEO AI Assistant**. I can assist you with size recommendations, LifeWear outfit styling, voucher codes, or showroom details. How may I help you today?',
+      time: new Date().toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
     }
   ]);
   const [inputVal, setInputVal] = useState('');
@@ -85,19 +97,18 @@ export const AiChatWidget = ({ onNavigate }) => {
       id: Date.now(),
       sender: 'user',
       text: text.trim(),
-      time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
     };
 
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInputVal('');
     setIsTyping(true);
 
-    // AI Response Simulation with pattern matching
     setTimeout(() => {
       const lower = text.toLowerCase();
       let matchedReply = null;
 
-      for (const item of KNOWLEDGE_BASE) {
+      for (const item of KNOWLEDGE_BASE_EN) {
         if (item.keywords.some((kw) => lower.includes(kw))) {
           matchedReply = item.reply;
           break;
@@ -105,14 +116,16 @@ export const AiChatWidget = ({ onNavigate }) => {
       }
 
       if (!matchedReply) {
-        matchedReply = `Cảm ơn bạn đã nhắn tin! Tôi đã ghi nhận yêu cầu "${text}". Bạn có thể xem nhanh danh mục sản phẩm, hoặc liên hệ trực tiếp đội ngũ CSKH BEO qua **Zalo / Messenger / Hotline** ở tab "Kênh Hỗ Trợ" bên trên nhé!`;
+        matchedReply = lang === 'vi'
+          ? `Cảm ơn bạn đã nhắn tin! Tôi đã ghi nhận yêu cầu "${text}". Bạn có thể xem nhanh danh mục sản phẩm, hoặc liên hệ trực tiếp đội ngũ CSKH BEO qua **Zalo / Messenger / Hotline** ở tab "Kênh Hỗ Trợ" bên trên nhé!`
+          : `Thank you for your message! I've noted your inquiry for "${text}". You can explore our catalog or contact our concierge directly via **Zalo / Facebook / Hotline** on the Support tab above!`;
       }
 
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
         text: matchedReply,
-        time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+        time: new Date().toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
       };
 
       setMessages((prev) => [...prev, botMsg]);
@@ -120,34 +133,18 @@ export const AiChatWidget = ({ onNavigate }) => {
     }, 600);
   };
 
+  const quickPrompts = lang === 'vi' ? QUICK_PROMPTS_VI : QUICK_PROMPTS_EN;
+
   return (
     <aside aria-label="BEO Customer Support Widget">
       {/* Floating Trigger Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            zIndex: 2000,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '12px 18px',
-            backgroundColor: '#111111',
-            color: '#ffffff',
-            border: '2px solid #e60012',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.3)',
-            cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            transform: 'scale(1)'
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-          title="Mở Trợ lý Ảo BEO & Hỗ trợ đa kênh"
+          className="ai-chat-fab"
+          title={lang === 'vi' ? 'Mở Trợ lý Ảo BEO & Hỗ trợ đa kênh' : 'Open BEO AI Assistant & Support'}
         >
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Bot size={22} color="#e60012" />
             {hasUnread && (
               <span
@@ -164,12 +161,12 @@ export const AiChatWidget = ({ onNavigate }) => {
               />
             )}
           </div>
-          <div style={{ textAlign: 'left' }}>
+          <div className="ai-chat-text" style={{ textAlign: 'left' }}>
             <div style={{ fontSize: '0.82rem', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
               BEO AI Chat
             </div>
             <div style={{ fontSize: '0.7rem', color: '#aaa' }}>
-              Hỗ trợ 24/7 & MXH
+              {lang === 'vi' ? 'Hỗ trợ 24/7 & MXH' : '24/7 AI & Live Support'}
             </div>
           </div>
         </button>
@@ -177,25 +174,7 @@ export const AiChatWidget = ({ onNavigate }) => {
 
       {/* Main Chat Box Container */}
       {isOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            zIndex: 2000,
-            width: '380px',
-            maxWidth: 'calc(100vw - 32px)',
-            height: '560px',
-            maxHeight: 'calc(100vh - 100px)',
-            backgroundColor: '#ffffff',
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.25)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            animation: 'slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}
-        >
+        <div className="ai-chat-popup">
           {/* Header */}
           <div
             style={{
@@ -230,7 +209,7 @@ export const AiChatWidget = ({ onNavigate }) => {
                   </span>
                 </div>
                 <div style={{ fontSize: '0.72rem', color: '#aaa' }}>
-                  Trợ lý thời trang & Hỗ trợ mua sắm
+                  {lang === 'vi' ? 'Trợ lý thời trang & Hỗ trợ mua sắm' : 'Fashion Concierge & Shopping Assistant'}
                 </div>
               </div>
             </div>
@@ -238,7 +217,7 @@ export const AiChatWidget = ({ onNavigate }) => {
             <button
               onClick={() => setIsOpen(false)}
               style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: '4px' }}
-              title="Đóng cửa sổ"
+              title="Close"
             >
               <X size={20} />
             </button>
@@ -265,7 +244,7 @@ export const AiChatWidget = ({ onNavigate }) => {
               }}
             >
               <Bot size={15} />
-              <span>Trợ Lý Ảo AI</span>
+              <span>{lang === 'vi' ? 'Trợ Lý Ảo AI' : 'BEO AI Concierge'}</span>
             </button>
 
             <button
@@ -287,7 +266,7 @@ export const AiChatWidget = ({ onNavigate }) => {
               }}
             >
               <Phone size={15} />
-              <span>Kênh Hỗ Trợ (Zalo/FB)</span>
+              <span>{lang === 'vi' ? 'Kênh Hỗ Trợ (Zalo/FB)' : 'Live Channels (Zalo/FB)'}</span>
             </button>
           </div>
 
@@ -329,15 +308,15 @@ export const AiChatWidget = ({ onNavigate }) => {
                 {isTyping && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#888', fontSize: '0.8rem' }}>
                     <Bot size={14} color="#e60012" />
-                    <span>BEO AI đang phản hồi...</span>
+                    <span>{lang === 'vi' ? 'BEO AI đang phản hồi...' : 'BEO AI is typing...'}</span>
                   </div>
                 )}
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick Prompts Carousel / Pills */}
+              {/* Quick Prompts Carousel */}
               <div style={{ padding: '8px 12px', backgroundColor: '#f8f8f8', borderTop: '1px solid #eee', overflowX: 'auto', display: 'flex', gap: '6px', whiteSpace: 'nowrap' }}>
-                {QUICK_PROMPTS.map((p, idx) => (
+                {quickPrompts.map((p, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(p)}
@@ -376,7 +355,7 @@ export const AiChatWidget = ({ onNavigate }) => {
               >
                 <input
                   type="text"
-                  placeholder="Nhập câu hỏi cho trợ lý BEO..."
+                  placeholder={lang === 'vi' ? 'Nhập câu hỏi cho trợ lý BEO...' : 'Ask BEO Stylist anything...'}
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
                   style={{
@@ -411,7 +390,9 @@ export const AiChatWidget = ({ onNavigate }) => {
           {activeTab === 'social' && (
             <div style={{ padding: '20px 16px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.5, textAlign: 'center', marginBottom: '6px' }}>
-                Kết nối trực tiếp với chuyên viên chăm sóc khách hàng của <strong>BEO Fashion</strong> qua các kênh yêu thích:
+                {lang === 'vi'
+                  ? 'Kết nối trực tiếp với chuyên viên chăm sóc khách hàng của BEO Fashion qua các kênh yêu thích:'
+                  : 'Connect directly with our customer concierge team across channels:'}
               </div>
 
               {/* Zalo Official */}
@@ -438,7 +419,7 @@ export const AiChatWidget = ({ onNavigate }) => {
                     Z
                   </div>
                   <div>
-                    <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#0052cc' }}>Zalo Chat Official</div>
+                    <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#0052cc' }}>Zalo Support Official</div>
                     <div style={{ fontSize: '0.75rem', color: '#666' }}>zalo.me/0567740000</div>
                   </div>
                 </div>
@@ -469,7 +450,7 @@ export const AiChatWidget = ({ onNavigate }) => {
                     f
                   </div>
                   <div>
-                    <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#1877f2' }}>Fanpage Facebook</div>
+                    <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#1877f2' }}>Facebook Fanpage</div>
                     <div style={{ fontSize: '0.75rem', color: '#666' }}>facebook.com/beofashionstorecantho</div>
                   </div>
                 </div>
@@ -509,12 +490,14 @@ export const AiChatWidget = ({ onNavigate }) => {
 
               {/* Hotline */}
               <div style={{ padding: '16px', backgroundColor: '#fafafa', border: '1px solid #eee', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '4px' }}>TỔNG ĐÀI HOTLINE CSKH</div>
+                <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '4px' }}>
+                  {lang === 'vi' ? 'TỔNG ĐÀI HOTLINE CSKH' : 'CUSTOMER SERVICE HOTLINE'}
+                </div>
                 <a href="tel:1900019199999" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#e60012', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <Phone size={18} /> 1900019199999
                 </a>
                 <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '4px' }}>
-                  (08:00 - 22:00 hàng ngày)
+                  {lang === 'vi' ? '(08:00 - 22:00 hàng ngày)' : '(08:00 - 22:00 Daily)'}
                 </div>
               </div>
             </div>

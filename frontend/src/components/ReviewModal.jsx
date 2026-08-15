@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { X, Star, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 
 export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => {
+  const { lang } = useLanguage();
   const { showSuccess, showError } = useToast();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -28,11 +30,11 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
         purchasedSize,
         purchasedColor: product.variants?.[0]?.colorName || 'Default'
       });
-      showSuccess('Cảm ơn bạn đã gửi đánh giá sản phẩm!');
+      showSuccess(lang === 'vi' ? 'Cảm ơn bạn đã gửi đánh giá sản phẩm!' : 'Thank you for your product review!');
       if (onReviewSubmitted) onReviewSubmitted();
       onClose();
     } catch (err) {
-      showError(err.message || 'Lỗi khi gửi đánh giá');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi gửi đánh giá' : 'Failed to submit review'));
     } finally {
       setLoading(false);
     }
@@ -61,10 +63,12 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
           <div>
-            <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>Đánh Giá Sản Phẩm</div>
+            <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>
+              {lang === 'vi' ? 'Đánh Giá Sản Phẩm' : 'Write a Product Review'}
+            </div>
             <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '2px' }}>{product.name}</div>
           </div>
-          <button onClick={onClose} style={{ color: '#666' }}>
+          <button onClick={onClose} style={{ color: '#666', background: 'transparent', border: 'none', cursor: 'pointer' }}>
             <X size={22} />
           </button>
         </div>
@@ -73,7 +77,7 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
           {/* Rating stars */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '6px' }}>
-              Mức độ hài lòng của bạn:
+              {lang === 'vi' ? 'Mức độ hài lòng của bạn:' : 'Overall Rating:'}
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
               {[1, 2, 3, 4, 5].map((star) => (
@@ -83,7 +87,7 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
-                  style={{ padding: '4px' }}
+                  style={{ padding: '4px', background: 'transparent', border: 'none', cursor: 'pointer' }}
                 >
                   <Star
                     size={28}
@@ -93,7 +97,7 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
                 </button>
               ))}
               <span style={{ marginLeft: '8px', fontSize: '0.9rem', fontWeight: '700', alignSelf: 'center' }}>
-                {rating === 5 ? 'Tuyệt vời (5/5)' : `${rating}/5 sao`}
+                {rating === 5 ? (lang === 'vi' ? 'Tuyệt vời (5/5)' : 'Excellent (5/5)') : `${rating}/5 ${lang === 'vi' ? 'sao' : 'stars'}`}
               </span>
             </div>
           </div>
@@ -101,13 +105,13 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
           {/* Fit Rating */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '6px' }}>
-              Độ vừa vặn của trang phục:
+              {lang === 'vi' ? 'Độ vừa vặn của trang phục:' : 'Garment Fit:'}
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {[
-                { id: 'RUNS_SMALL', label: 'Hơi chật' },
-                { id: 'TRUE_TO_SIZE', label: 'Vừa vặn chuẩn' },
-                { id: 'RUNS_LARGE', label: 'Hơi rộng' },
+                { id: 'RUNS_SMALL', label: lang === 'vi' ? 'Hơi chật' : 'Runs Small' },
+                { id: 'TRUE_TO_SIZE', label: lang === 'vi' ? 'Vừa vặn chuẩn' : 'True to Size' },
+                { id: 'RUNS_LARGE', label: lang === 'vi' ? 'Hơi rộng' : 'Runs Large' },
               ].map((f) => (
                 <button
                   type="button"
@@ -119,7 +123,8 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
                     fontWeight: '600',
                     border: fitRating === f.id ? '2px solid #111' : '1px solid #ddd',
                     backgroundColor: fitRating === f.id ? '#111' : '#fff',
-                    color: fitRating === f.id ? '#fff' : '#333'
+                    color: fitRating === f.id ? '#fff' : '#333',
+                    cursor: 'pointer'
                   }}
                 >
                   {f.label}
@@ -131,7 +136,7 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
           {/* Purchased size */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '6px' }}>
-              Size bạn đã mua:
+              {lang === 'vi' ? 'Size bạn đã mua:' : 'Purchased Size:'}
             </label>
             <select
               value={purchasedSize}
@@ -147,12 +152,12 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
           {/* Title */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '6px' }}>
-              Tiêu đề nhận xét:
+              {lang === 'vi' ? 'Tiêu đề nhận xét:' : 'Review Title:'}
             </label>
             <input
               type="text"
               required
-              placeholder="VD: Chất vải rất mát mẻ, form dáng đẹp"
+              placeholder={lang === 'vi' ? 'VD: Chất vải rất mát mẻ, form dáng đẹp' : 'e.g. Incredibly soft fabric and perfect drape'}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               style={{ width: '100%', padding: '10px', border: '1px solid #ccc', outline: 'none' }}
@@ -162,12 +167,12 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
           {/* Comment */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '6px' }}>
-              Chi tiết trải nghiệm của bạn:
+              {lang === 'vi' ? 'Chi tiết trải nghiệm của bạn:' : 'Your Experience Review:'}
             </label>
             <textarea
               required
               rows={4}
-              placeholder="Chia sẻ về chất liệu vải, cảm giác khi mặc, độ bền sau khi giặt..."
+              placeholder={lang === 'vi' ? 'Chia sẻ về chất liệu vải, cảm giác khi mặc, độ bền sau khi giặt...' : 'Share your feedback on comfort, styling, washing durability, etc.'}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               style={{ width: '100%', padding: '10px', border: '1px solid #ccc', outline: 'none', resize: 'vertical' }}
@@ -180,7 +185,7 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
             className="btn-uq btn-uq-primary"
             style={{ width: '100%', padding: '14px' }}
           >
-            {loading ? 'Đang gửi...' : 'Gửi Đánh Giá Ngay'}
+            {loading ? (lang === 'vi' ? 'Đang gửi...' : 'Submitting...') : (lang === 'vi' ? 'Gửi Đánh Giá Ngay' : 'Submit Review')}
           </button>
         </form>
       </div>

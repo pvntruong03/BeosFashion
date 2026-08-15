@@ -27,7 +27,7 @@ import api from '../services/api';
 export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const { formatPrice, t } = useLanguage();
+  const { formatPrice, t, lang } = useLanguage();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -45,7 +45,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   const [isCustomizerModalOpen, setIsCustomizerModalOpen] = useState(false);
 
   // Accordion toggles
-  const [openSection, setOpenSection] = useState('details'); // details, material, care, stores
+  const [openSection, setOpenSection] = useState('details');
 
   const fetchProductData = useCallback(async () => {
     setLoading(true);
@@ -103,7 +103,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   }
   const uniqueColors = Array.from(colorMap.values());
 
-  // Available sizes for the selected color
+  // Available sizes for the currently selected color
   const availableSizesForColor = product?.variants
     ? product.variants.filter((v) => v.colorName === selectedColor)
     : [];
@@ -112,20 +112,21 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
     setSelectedColor(colorName);
     if (imageUrl) setActiveImage(imageUrl);
 
-    // Auto-update selected variant with current or first size
-    const matchingVariant = product.variants.find(
-      (v) => v.colorName === colorName && v.size === selectedSize
-    ) || product.variants.find((v) => v.colorName === colorName);
+    // Auto-select first available size variant for new color
+    const variantsForColor = product.variants.filter((v) => v.colorName === colorName);
+    const sameSizeVariant = variantsForColor.find((v) => v.size === selectedSize);
 
-    if (matchingVariant) {
-      setSelectedSize(matchingVariant.size);
-      setSelectedVariant(matchingVariant);
+    if (sameSizeVariant) {
+      setSelectedVariant(sameSizeVariant);
+    } else if (variantsForColor.length > 0) {
+      setSelectedSize(variantsForColor[0].size);
+      setSelectedVariant(variantsForColor[0]);
     }
   };
 
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
-    const variant = product.variants.find(
+    const variant = product?.variants?.find(
       (v) => v.colorName === selectedColor && v.size === size
     );
     if (variant) {
@@ -133,21 +134,34 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
     }
   };
 
-  const handleAddToCart = async () => {
-    if (!selectedVariant) return;
-    await addToCart(selectedVariant.id, quantity, true);
+  const handleAddToCart = () => {
+    if (!product || !selectedVariant) return;
+    addToCart(product, selectedVariant, quantity);
   };
 
-  const handleBuyNow = async () => {
-    if (!selectedVariant) return;
-    await addToCart(selectedVariant.id, quantity, false);
+  const handleBuyNow = () => {
+    if (!product || !selectedVariant) return;
+    addToCart(product, selectedVariant, quantity);
     onNavigate('checkout');
   };
 
-  if (loading || !product) {
+  if (loading) {
     return (
       <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: '1rem', color: '#666' }}>Đang tải thông tin sản phẩm...</div>
+        <div style={{ fontSize: '1.1rem', color: '#666' }}>
+          {lang === 'vi' ? 'Đang tải thông tin sản phẩm...' : 'Loading product details...'}
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
+        <h2>{lang === 'vi' ? 'Không tìm thấy sản phẩm' : 'Product Not Found'}</h2>
+        <button onClick={() => onNavigate('products')} className="btn-uq btn-uq-primary" style={{ marginTop: '16px' }}>
+          {lang === 'vi' ? 'Quay lại cửa hàng' : 'Back to Store'}
+        </button>
       </div>
     );
   }
@@ -158,120 +172,79 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   return (
     <div className="container" style={{ padding: '32px 24px' }}>
       {/* Breadcrumb */}
-      <div style={{ fontSize: '0.8rem', color: '#767676', marginBottom: '20px' }}>
-        <span style={{ cursor: 'pointer' }} onClick={() => onNavigate('home')}>Trang chủ</span> /{' '}
-        <span style={{ cursor: 'pointer' }} onClick={() => onNavigate('products', { gender: product.gender })}>
-          {product.gender}
-        </span> /{' '}
-        <span style={{ cursor: 'pointer' }} onClick={() => onNavigate('products', { categorySlug: product.categorySlug })}>
-          {product.categoryName}
-        </span> /{' '}
-        <strong style={{ color: '#111' }}>{product.name}</strong>
+      <div style={{ fontSize: '0.8rem', color: '#767676', marginBottom: '24px' }}>
+        {lang === 'vi' ? 'Trang chủ / Sản phẩm' : 'Home / Products'} / {product.gender} / {product.collection} / <strong style={{ color: '#111' }}>{product.name}</strong>
       </div>
 
-      {/* Main Product Layout */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         gap: '48px',
         marginBottom: '60px'
       }}>
-        {/* Left Column: Image Gallery */}
-        <div>
-          {/* Main Large Image */}
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            paddingTop: '120%',
-            backgroundColor: '#f8f8f8',
-            overflow: 'hidden',
-            marginBottom: '16px'
-          }}>
-            <img
-              src={activeImage}
-              alt={product.name}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
-            />
-            {product.limitedOffer && (
-              <span className="badge-uq red" style={{ position: 'absolute', top: '16px', left: '16px' }}>
-                Khuyến Mãi Có Hạn
-              </span>
-            )}
+        {/* Left: Gallery (Thumbnails + Main Hero Image) */}
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {/* Thumbnails list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {product.images?.map((img, idx) => (
+              <img
+                key={idx}
+                src={img.imageUrl}
+                alt={`${product.name} ${idx}`}
+                onClick={() => setActiveImage(img.imageUrl)}
+                style={{
+                  width: '64px',
+                  height: '80px',
+                  objectFit: 'cover',
+                  cursor: 'pointer',
+                  border: activeImage === img.imageUrl ? '2px solid #e60012' : '1px solid #e5e5e5',
+                  opacity: activeImage === img.imageUrl ? 1 : 0.7,
+                  transition: 'all 0.2s ease'
+                }}
+              />
+            ))}
           </div>
 
-          {/* Thumbnail Strip */}
-          <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '6px' }}>
-            {product.images && product.images.length > 0 ? (
-              product.images.map((img) => (
-                <div
-                  key={img.id}
-                  onClick={() => setActiveImage(img.imageUrl)}
-                  style={{
-                    width: '70px',
-                    height: '84px',
-                    flexShrink: 0,
-                    cursor: 'pointer',
-                    border: activeImage === img.imageUrl ? '2px solid #111' : '1px solid #ddd',
-                    backgroundColor: '#f8f8f8'
-                  }}
-                >
-                  <img src={img.imageUrl} alt={img.altText} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-              ))
-            ) : (
-              uniqueColors.map((c) => (
-                <div
-                  key={c.colorName}
-                  onClick={() => {
-                    handleColorSelect(c.colorName, c.imageUrl);
-                  }}
-                  style={{
-                    width: '70px',
-                    height: '84px',
-                    flexShrink: 0,
-                    cursor: 'pointer',
-                    border: activeImage === c.imageUrl ? '2px solid #111' : '1px solid #ddd',
-                    backgroundColor: '#f8f8f8'
-                  }}
-                >
-                  <img src={c.imageUrl} alt={c.colorName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-              ))
+          {/* Main Large Image */}
+          <div style={{ flex: 1, backgroundColor: '#f8f8f8', position: 'relative', overflow: 'hidden' }}>
+            <img
+              src={activeImage || product.primaryImageUrl}
+              alt={product.name}
+              style={{ width: '100%', maxHeight: '600px', objectFit: 'cover' }}
+            />
+            {product.salePrice && (
+              <span className="badge-uq red" style={{ position: 'absolute', top: '16px', left: '16px', fontSize: '0.85rem' }}>
+                {lang === 'vi' ? 'KHUYẾN MÃI' : 'LIMITED OFFER'}
+              </span>
+            )}
+            {product.isNew && (
+              <span className="badge-uq black" style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '0.85rem' }}>
+                NEW
+              </span>
             )}
           </div>
         </div>
 
-        {/* Right Column: Product Info & Actions */}
+        {/* Right: Product Buying Actions */}
         <div>
-          {/* Tag & Code */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#e60012', textTransform: 'uppercase' }}>
-              {product.collection || 'BEO LIFEWEAR'}
-            </span>
-            <span style={{ fontSize: '0.8rem', color: '#888' }}>Mã SP: {product.code}</span>
+          {/* Category & Code */}
+          <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '6px' }}>
+            {lang === 'vi' ? 'Mã sản phẩm:' : 'SKU:'} <strong style={{ color: '#111' }}>{product.code}</strong> • {product.gender}
           </div>
 
-          {/* Title */}
-          <h1 className="heading-section" style={{ fontSize: '1.75rem', lineHeight: 1.3, marginBottom: '12px' }}>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '12px', lineHeight: 1.2 }}>
             {product.name}
           </h1>
 
-          {/* Rating */}
+          {/* Ratings badge */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <div style={{ display: 'flex', gap: '2px' }}>
               {[1, 2, 3, 4, 5].map((s) => (
                 <Star key={s} size={16} color="#ffab00" fill="#ffab00" />
               ))}
             </div>
             <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product.averageRating || 5.0}</span>
-            <span style={{ color: '#666', fontSize: '0.85rem' }}>({reviews.length} đánh giá đã xác thực)</span>
+            <span style={{ color: '#666', fontSize: '0.85rem' }}>({reviews.length} {lang === 'vi' ? 'đánh giá đã xác thực' : 'verified reviews'})</span>
           </div>
 
           {/* Pricing */}
@@ -284,7 +257,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 <span className="text-old-price" style={{ fontSize: '1.1rem' }}>
                   {formatPrice(product.basePrice)}
                 </span>
-                <span className="badge-uq red">TIẾT KIỆM {formatPrice(product.basePrice - product.salePrice)}</span>
+                <span className="badge-uq red">{lang === 'vi' ? `TIẾT KIỆM ${formatPrice(product.basePrice - product.salePrice)}` : `SAVE ${formatPrice(product.basePrice - product.salePrice)}`}</span>
               </>
             ) : (
               <span style={{ fontSize: '1.8rem', fontWeight: '800' }}>
@@ -296,7 +269,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           {/* 1. COLOR SELECTOR */}
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
-              <span>Màu sắc: <strong>{selectedColor}</strong></span>
+              <span>{lang === 'vi' ? 'Màu sắc:' : 'Color:'} <strong>{selectedColor}</strong></span>
             </div>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               {uniqueColors.map((c) => (
@@ -322,7 +295,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           {/* 2. SIZE SELECTOR */}
           <div style={{ marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '0.9rem' }}>Kích cỡ: <strong>{selectedSize}</strong></span>
+              <span style={{ fontSize: '0.9rem' }}>{lang === 'vi' ? 'Kích cỡ:' : 'Size:'} <strong>{selectedSize}</strong></span>
               <button
                 onClick={() => setIsSizeAdvisorOpen(true)}
                 style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#e60012', fontWeight: '700', border: 'none', background: 'transparent', cursor: 'pointer' }}
@@ -369,15 +342,21 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 {selectedVariant.totalStock > 10 ? (
                   <>
                     <CheckCircle2 size={14} color="#00875a" />
-                    <span style={{ color: '#00875a', fontWeight: '600' }}>Còn hàng sẵn sàng giao ({selectedVariant.totalStock} sản phẩm)</span>
+                    <span style={{ color: '#00875a', fontWeight: '600' }}>
+                      {lang === 'vi' ? `Còn hàng sẵn sàng giao (${selectedVariant.totalStock} sản phẩm)` : `In Stock & Ready to Ship (${selectedVariant.totalStock} units)`}
+                    </span>
                   </>
                 ) : selectedVariant.totalStock > 0 ? (
                   <>
                     <AlertTriangle size={14} color="#ffab00" />
-                    <span style={{ color: '#ffab00', fontWeight: '700' }}>Sắp hết hàng! Chỉ còn {selectedVariant.totalStock} sản phẩm</span>
+                    <span style={{ color: '#ffab00', fontWeight: '700' }}>
+                      {lang === 'vi' ? `Sắp hết hàng! Chỉ còn ${selectedVariant.totalStock} sản phẩm` : `Low Stock! Only ${selectedVariant.totalStock} units left`}
+                    </span>
                   </>
                 ) : (
-                  <span style={{ color: '#d9383a', fontWeight: '700' }}>Tạm thời hết hàng</span>
+                  <span style={{ color: '#d9383a', fontWeight: '700' }}>
+                    {lang === 'vi' ? 'Tạm thời hết hàng' : 'Temporarily Out of Stock'}
+                  </span>
                 )}
               </div>
             )}
@@ -422,7 +401,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 justifyContent: 'center',
                 backgroundColor: '#fff'
               }}
-              title="Yêu thích"
+              title={t('wishlist')}
             >
               <Heart size={20} color={isFavorited ? '#e60012' : '#333'} fill={isFavorited ? '#e60012' : 'none'} />
             </button>
@@ -456,7 +435,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
               }}
             >
               <Sparkles size={16} color="#e60012" />
-              <span>🎨 TỰ THIẾT KẾ / THÊU TÊN CHO ÁO NÀY (+50.000đ)</span>
+              <span>{lang === 'vi' ? '🎨 TỰ THIẾT KẾ / THÊU TÊN CHO ÁO NÀY (+50.000đ)' : '🎨 CUSTOMIZE & EMBROIDER THIS ITEM (+50,000 VND)'}</span>
             </button>
           )}
 
@@ -468,7 +447,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 onClick={() => setOpenSection(openSection === 'details' ? '' : 'details')}
                 style={{ width: '100%', padding: '14px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '700', fontSize: '0.9rem' }}
               >
-                <span>MÔ TẢ CHI TIẾT & TỔNG QUAN</span>
+                <span>{lang === 'vi' ? 'MÔ TẢ CHI TIẾT & TỔNG QUAN' : 'PRODUCT OVERVIEW & DETAILS'}</span>
                 <ChevronDown size={16} style={{ transform: openSection === 'details' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {openSection === 'details' && (
@@ -485,13 +464,13 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 onClick={() => setOpenSection(openSection === 'material' ? '' : 'material')}
                 style={{ width: '100%', padding: '14px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '700', fontSize: '0.9rem' }}
               >
-                <span>CHẤT LIỆU & HƯỚNG DẪN GIẶT ỦI</span>
+                <span>{lang === 'vi' ? 'CHẤT LIỆU & HƯỚNG DẪN GIẶT ỦI' : 'MATERIAL & CARE INSTRUCTIONS'}</span>
                 <ChevronDown size={16} style={{ transform: openSection === 'material' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {openSection === 'material' && (
                 <div style={{ paddingBottom: '16px', fontSize: '0.85rem', color: '#555', lineHeight: 1.6 }}>
-                  <div><strong>Chất liệu:</strong> {product.material || 'Cotton & Polyester'}</div>
-                  <div style={{ marginTop: '4px' }}><strong>Hướng dẫn chăm sóc:</strong> {product.careInstruction || 'Giặt máy chế độ nhẹ, lộn trái khi giặt'}</div>
+                  <div><strong>{lang === 'vi' ? 'Chất liệu:' : 'Material:'}</strong> {product.material || 'Cotton & Polyester'}</div>
+                  <div style={{ marginTop: '4px' }}><strong>{lang === 'vi' ? 'Hướng dẫn chăm sóc:' : 'Care Instructions:'}</strong> {product.careInstruction || (lang === 'vi' ? 'Giặt máy chế độ nhẹ, lộn trái khi giặt' : 'Machine wash gentle cycle, wash inside out')}</div>
                 </div>
               )}
             </div>
@@ -502,7 +481,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 onClick={() => setOpenSection(openSection === 'stores' ? '' : 'stores')}
                 style={{ width: '100%', padding: '14px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '700', fontSize: '0.9rem' }}
               >
-                <span>TÌM CÒN HÀNG TẠI CỬA HÀNG VẬT LÝ</span>
+                <span>{lang === 'vi' ? 'TÌM CÒN HÀNG TẠI CỬA HÀNG VẬT LÝ' : 'CHECK IN-STORE AVAILABILITY'}</span>
                 <ChevronDown size={16} style={{ transform: openSection === 'stores' ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {openSection === 'stores' && (
@@ -516,11 +495,11 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <span style={{ color: inv.inStock ? '#00875a' : '#d9383a', fontWeight: '700' }}>
-                            {inv.inStock ? `Còn ${inv.quantity} sp` : 'Hết hàng'}
+                            {inv.inStock ? (lang === 'vi' ? `Còn ${inv.quantity} sp` : `${inv.quantity} in stock`) : (lang === 'vi' ? 'Hết hàng' : 'Out of stock')}
                           </span>
                         </div>
                       </div>
-                    )) || <div>Vui lòng chọn size và màu sắc để tra cứu tồn kho cửa hàng.</div>}
+                    )) || <div>{lang === 'vi' ? 'Vui lòng chọn size và màu sắc để tra cứu tồn kho cửa hàng.' : 'Please select a size and color to check in-store stock.'}</div>}
                   </div>
                 </div>
               )}
@@ -538,13 +517,60 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           <h2 className="heading-section" style={{ marginBottom: '24px' }}>
             {t('related_products')}
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '24px' }}>
+          <div className="responsive-product-grid">
             {relatedProducts.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} onNavigate={onNavigate} />
             ))}
           </div>
         </section>
       )}
+
+      {/* Sticky Mobile Add to Cart Bar */}
+      <div className="mobile-only animate-slide-up" style={{
+        position: 'fixed',
+        bottom: '60px',
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderTop: '1px solid #e0e0e0',
+        padding: '10px 16px',
+        zIndex: 1400,
+        boxShadow: '0 -4px 15px rgba(0,0,0,0.08)',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px'
+      }}>
+        <div style={{ minWidth: '100px' }}>
+          <div style={{ fontSize: '0.72rem', color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>
+            {selectedColor} / {selectedSize || 'Chọn size'}
+          </div>
+          <div style={{ fontSize: '1.05rem', fontWeight: '900', color: currentPrice < basePrice ? '#e60012' : '#111' }}>
+            {formatPrice(currentPrice)}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
+          <button
+            onClick={handleAddToCart}
+            disabled={!selectedVariant || selectedVariant.totalStock <= 0}
+            className="btn-uq btn-uq-primary"
+            style={{ height: '42px', padding: '0 12px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+          >
+            <ShoppingBag size={15} />
+            <span>{t('add_to_cart')}</span>
+          </button>
+          <button
+            onClick={handleBuyNow}
+            disabled={!selectedVariant || selectedVariant.totalStock <= 0}
+            className="btn-uq btn-uq-red"
+            style={{ height: '42px', padding: '0 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+          >
+            <span>{t('buy_now')}</span>
+          </button>
+        </div>
+      </div>
 
       {/* Modals */}
       <SizeAdvisorModal

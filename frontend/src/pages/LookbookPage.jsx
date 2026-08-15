@@ -1,28 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ArrowRight, ShoppingBag, Sparkles, Tag } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export const LookbookPage = ({ onNavigate }) => {
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
 
   const looks = [
     {
       id: 1,
-      title: 'City Casual LifeWear - Phong cách Công sở Tối giản',
-      desc: 'Sự kết hợp hoàn hảo giữa Áo sơ mi Oxford chất liệu cotton cao cấp và Quần Smart Ankle Pants co giãn 2 chiều, tạo nên vẻ ngoài thanh lịch nhưng vô cùng thoải mái suốt ngày dài năng động.',
+      title: lang === 'vi' ? 'City Casual LifeWear - Phong cách Công sở Tối giản' : 'City Casual LifeWear - Modern Minimalist Workplace',
+      desc: lang === 'vi'
+        ? 'Sự kết hợp hoàn hảo giữa Áo sơ mi Oxford chất liệu cotton cao cấp và Quần Smart Ankle Pants co giãn 2 chiều, tạo nên vẻ ngoài thanh lịch nhưng vô cùng thoải mái suốt ngày dài năng động.'
+        : 'The perfect pairing of breathable Supima Cotton Crew Neck Tee with 2-way stretch Smart Ankle Pants, offering timeless Tokyo elegance with all-day functional ease.',
       mainImage: 'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&w=1000&q=80',
       items: [
         {
           id: 1,
           slug: 'airism-cotton-oversized-crew-neck-t-shirt',
-          name: 'AIRism Cotton Áo Thun Cổ Tròn Dáng Rộng',
+          name: lang === 'vi' ? 'AIRism Cotton Áo Thun Cổ Tròn Dáng Rộng' : 'AIRism Cotton Oversized Crew Neck T-Shirt',
           price: 399000,
           color: '00 WHITE'
         },
         {
           id: 3,
           slug: 'smart-ankle-pants-2-way-stretch',
-          name: 'Smart Pants Quần Dài Co Giãn 2 Chiều',
+          name: lang === 'vi' ? 'Smart Pants Quần Dài Co Giãn 2 Chiều' : 'Smart Ankle Pants (2-Way Stretch)',
           price: 699000,
           color: '69 NAVY'
         }
@@ -30,21 +32,23 @@ export const LookbookPage = ({ onNavigate }) => {
     },
     {
       id: 2,
-      title: 'Modern Minimalist Chic - Nữ tính & Hiện đại',
-      desc: 'Phối đồ chuẩn phong cách Tokyo với Áo thun Supima Cotton và Quần xếp ly Pleated Wide Pants thời thượng, tôn dáng và mang lại nét thanh lịch tự nhiên.',
+      title: lang === 'vi' ? 'Modern Minimalist Chic - Nữ tính & Hiện đại' : 'Modern Minimalist Chic - Contemporary Feminine',
+      desc: lang === 'vi'
+        ? 'Phối đồ chuẩn phong cách Tokyo với Áo thun Supima Cotton và Quần xếp ly Pleated Wide Pants thời thượng, tôn dáng và mang lại nét thanh lịch tự nhiên.'
+        : 'Authentic metropolitan styling combining lustrous Supima Cotton tees with high-waisted Pleated Wide Pants for effortless drape and movement.',
       mainImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=80',
       items: [
         {
           id: 6,
           slug: 'women-supima-cotton-crew-neck-t-shirt',
-          name: 'Áo Thun Nữ Cotton Supima Cổ Tròn Ngắn Tay',
+          name: lang === 'vi' ? 'Áo Thun Nữ Cotton Supima Cổ Tròn Ngắn Tay' : 'Women Supima Cotton Crew Neck Short Sleeve T-Shirt',
           price: 299000,
           color: '01 OFF WHITE'
         },
         {
           id: 7,
           slug: 'women-pleated-wide-pants',
-          name: 'Quần Xếp Ly Dáng Rộng Pleated Wide Pants Nữ',
+          name: lang === 'vi' ? 'Quần Xếp Ly Dáng Rộng Pleated Wide Pants Nữ' : 'Women Pleated Wide Straight Pants',
           price: 799000,
           color: '32 BEIGE'
         }
@@ -52,21 +56,23 @@ export const LookbookPage = ({ onNavigate }) => {
     },
     {
       id: 3,
-      title: 'Summer Active Lifestyle - Năng động Mùa hè',
-      desc: 'Được thiết kế cho những ngày hè rực rỡ với Áo khoác chống nắng UV Protection AIRism và Áo thun Graphic UT cá tính.',
+      title: lang === 'vi' ? 'Summer Active Lifestyle - Năng động Mùa hè' : 'Summer Active Lifestyle - High-Performance Utility',
+      desc: lang === 'vi'
+        ? 'Được thiết kế cho những ngày hè rực rỡ với Áo khoác chống nắng UV Protection AIRism và Áo thun Graphic UT cá tính.'
+        : 'Engineered for bright summer days with AIRism UV Protection Mesh Full-Zip Hoodie layered over expressive UT Graphic collaborated art tees.',
       mainImage: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80',
       items: [
         {
           id: 5,
           slug: 'ut-graphic-t-shirt-jujutsu-kaisen',
-          name: 'UT Áo Thun Graphic Anime Series',
+          name: lang === 'vi' ? 'UT Áo Thun Graphic Anime Series' : 'UT Graphic Anime Collaboration T-Shirt',
           price: 499000,
           color: '09 BLACK'
         },
         {
           id: 8,
           slug: 'women-airism-uv-protection-mesh-hoodie',
-          name: 'Áo Khoác Vải Mắt Lưới AIRism Chống Tia UV',
+          name: lang === 'vi' ? 'Áo Khoác Vải Mắt Lưới AIRism Chống Tia UV' : 'AIRism UV Protection Mesh Full-Zip Hoodie',
           price: 599000,
           color: '01 OFF WHITE'
         }
@@ -82,10 +88,12 @@ export const LookbookPage = ({ onNavigate }) => {
           <span>BEO STYLE GUIDE SS26</span>
         </div>
         <h1 className="heading-display" style={{ fontSize: '2.4rem', textTransform: 'uppercase', marginBottom: '12px' }}>
-          LifeWear Lookbook
+          {lang === 'vi' ? 'LifeWear Lookbook' : 'LifeWear Styling Lookbook'}
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#666', lineHeight: 1.6 }}>
-          Gợi ý phối trang phục thường ngày theo phong cách tối giản Nhật Bản. Bấm vào từng sản phẩm trong bộ phối đồ để xem chi tiết và mua ngay.
+          {lang === 'vi'
+            ? 'Gợi ý phối trang phục thường ngày theo phong cách tối giản Nhật Bản. Bấm vào từng sản phẩm trong bộ phối đồ để xem chi tiết và mua ngay.'
+            : 'Curated everyday outfit formulas crafted around Japanese simplicity and functionality. Click any featured item in the set to view details and buy instantly.'}
         </p>
       </div>
 
@@ -126,7 +134,7 @@ export const LookbookPage = ({ onNavigate }) => {
               </p>
 
               <div style={{ fontWeight: '800', fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '12px', color: '#111' }}>
-                CÁC SẢN PHẨM TRONG BỘ PHỐI ĐỒ NÀY:
+                {lang === 'vi' ? 'CÁC SẢN PHẨM TRONG BỘ PHỐI ĐỒ NÀY:' : 'FEATURED ITEMS IN THIS LOOK:'}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
@@ -149,7 +157,7 @@ export const LookbookPage = ({ onNavigate }) => {
                   >
                     <div>
                       <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#111' }}>{it.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#777' }}>Màu: {it.color}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#777' }}>{lang === 'vi' ? 'Màu:' : 'Color:'} {it.color}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ fontWeight: '800', color: '#e60012', fontSize: '0.95rem' }}>
@@ -166,7 +174,7 @@ export const LookbookPage = ({ onNavigate }) => {
                 className="btn-uq btn-uq-primary"
               >
                 <ShoppingBag size={18} />
-                <span>Xem Thêm Các Bộ Phối Đồ Khác</span>
+                <span>{lang === 'vi' ? 'Xem Thêm Các Bộ Phối Đồ Khác' : 'Explore All Collection Items'}</span>
               </button>
             </div>
           </div>

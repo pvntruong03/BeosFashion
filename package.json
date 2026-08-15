@@ -1,0 +1,21 @@
+{
+  "name": "beo-modern-fashion",
+  "version": "1.0.0",
+  "description": "BEO Modern Fashion - Omnichannel E-Commerce Platform",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js",
+    "public": "node start-public.js",
+    "test": "node scratch/real_system_e2e_verification.js",
+    "build": "npm run build --prefix frontend"
+  },
+  "keywords": [
+    "beo-fashion",
+    "ecommerce",
+    "react",
+    "spring-boot"
+  ],
+  "author": "BEO Modern Fashion",
+  "license": "ISC"
+}

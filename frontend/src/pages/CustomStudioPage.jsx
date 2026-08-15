@@ -6,8 +6,11 @@ import {
   Truck
 } from 'lucide-react';
 import { ProductCustomizerStudio } from '../components/ProductCustomizerStudio';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const CustomStudioPage = ({ onNavigate }) => {
+  const { lang } = useLanguage();
+
   return (
     <div style={{ backgroundColor: '#fafafa', minHeight: '100vh', paddingBottom: '60px' }}>
       {/* Studio Banner Hero */}
@@ -33,7 +36,7 @@ export const CustomStudioPage = ({ onNavigate }) => {
             textTransform: 'uppercase'
           }}>
             <Sparkles size={14} color="#ffd700" />
-            <span>BEO CUSTOM LAB • DỊCH VỤ CÁ NHÂN HÓA CAO CẤP</span>
+            <span>{lang === 'vi' ? 'BEO CUSTOM LAB • DỊCH VỤ CÁ NHÂN HÓA CAO CẤP' : 'BEO CUSTOM LAB • BESPOKE EMBROIDERY & PRINTING'}</span>
           </div>
 
           <h1 style={{
@@ -43,7 +46,7 @@ export const CustomStudioPage = ({ onNavigate }) => {
             marginBottom: '12px',
             textTransform: 'uppercase'
           }}>
-            TỰ TAY THIẾT KẾ & THÊU TÊN LÊN TRANG PHỤC CỦA BẠN
+            {lang === 'vi' ? 'TỰ TAY THIẾT KẾ & THÊU TÊN LÊN TRANG PHỤC CỦA BẠN' : 'PERSONALIZE & EMBROIDER YOUR APPAREL'}
           </h1>
 
           <p style={{
@@ -53,7 +56,9 @@ export const CustomStudioPage = ({ onNavigate }) => {
             maxWidth: '700px',
             margin: '0 auto 24px auto'
           }}>
-            Biến chiếc áo thun, áo polo hay túi canvas thành tác phẩm độc nhất vô nhị mang dấu ấn riêng của bạn. Công nghệ thêu vi tính Nhật Bản độ nét cao, giặt máy bền đẹp không phai màu.
+            {lang === 'vi'
+              ? 'Biến chiếc áo thun, áo polo hay túi canvas thành tác phẩm độc nhất vô nhị mang dấu ấn riêng của bạn. Công nghệ thêu vi tính Nhật Bản độ nét cao, giặt máy bền đẹp không phai màu.'
+              : 'Transform essential tees, polo shirts, or canvas bags into one-of-a-kind statement pieces. High-precision Japanese digital embroidery and screen printing, engineered for everyday durability.'}
           </p>
 
           <div style={{
@@ -66,15 +71,15 @@ export const CustomStudioPage = ({ onNavigate }) => {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <ShieldCheck size={16} color="#00875a" />
-              <span>Chỉ thêu bền màu 100%</span>
+              <span>{lang === 'vi' ? 'Chỉ thêu bền màu 100%' : 'Colorfast Thread Guarantee'}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Scissors size={16} color="#ffd700" />
-              <span>Gia công tỉ mỉ tại Cần Thơ</span>
+              <span>{lang === 'vi' ? 'Gia công tỉ mỉ tại Cần Thơ' : 'Handcrafted in Can Tho'}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Truck size={16} color="#0052cc" />
-              <span>Giao hàng chỉ sau 24-48h</span>
+              <span>{lang === 'vi' ? 'Giao hàng chỉ sau 24-48h' : 'Dispatched in 24-48 Hours'}</span>
             </div>
           </div>
         </div>
@@ -94,7 +99,7 @@ export const CustomStudioPage = ({ onNavigate }) => {
           textTransform: 'uppercase',
           marginBottom: '32px'
         }}>
-          QUY TRÌNH CÁ NHÂN HÓA 3 BƯỚC ĐƠN GIẢN
+          {lang === 'vi' ? 'QUY TRÌNH CÁ NHÂN HÓA 3 BƯỚC ĐƠN GIẢN' : '3-STEP CUSTOMIZATION PROCESS'}
         </h2>
 
         <div style={{
@@ -105,18 +110,18 @@ export const CustomStudioPage = ({ onNavigate }) => {
           {[
             {
               step: '01',
-              title: 'CHỌN PHÔI ÁO & MÀU SẮC',
-              desc: 'Lựa chọn phôi áo thun Cotton Supima, áo Polo AIRism mát lạnh hoặc áo Hoodie nỉ bông cao cấp.'
+              title: lang === 'vi' ? 'CHỌN PHÔI ÁO & MÀU SẮC' : 'SELECT GARMENT & COLOR',
+              desc: lang === 'vi' ? 'Lựa chọn phôi áo thun Cotton Supima, áo Polo AIRism mát lạnh hoặc áo Hoodie nỉ bông cao cấp.' : 'Choose from Supima Cotton Crew Neck Tees, cooling AIRism Polos, or heavyweight Fleece Hoodies.'
             },
             {
               step: '02',
-              title: 'SÁNG TẠO THIẾT KẾ CỦA BẠN',
-              desc: 'Gõ tên, slogan, chọn font chữ nghệ thuật, màu chỉ thêu hoặc tải lên hình ảnh kỷ niệm của bạn.'
+              title: lang === 'vi' ? 'SÁNG TẠO THIẾT KẾ CỦA BẠN' : 'CREATE YOUR UNIQUE DESIGN',
+              desc: lang === 'vi' ? 'Gõ tên, slogan, chọn font chữ nghệ thuật, màu chỉ thêu hoặc tải lên hình ảnh kỷ niệm của bạn.' : 'Type custom names, slogans, select typography & thread colors, or upload memorable photos.'
             },
             {
               step: '03',
-              title: 'XƯỞNG BEO GIA CÔNG & GIAO TẬN TAY',
-              desc: 'Kỹ thuật viên xưởng thêu BEO căn chỉnh vi tính tỉ mỉ và đóng hộp sang trọng giao đến bạn.'
+              title: lang === 'vi' ? 'XƯỞNG BEO GIA CÔNG & GIAO TẬN TAY' : 'CRAFTED & DELIVERED TO YOU',
+              desc: lang === 'vi' ? 'Kỹ thuật viên xưởng thêu BEO căn chỉnh vi tính tỉ mỉ và đóng hộp sang trọng giao đến bạn.' : 'Our master tailors calibrate computer embroidery machines and package in luxury gift boxes.'
             }
           ].map((item) => (
             <div

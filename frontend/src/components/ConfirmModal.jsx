@@ -1,17 +1,28 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const ConfirmModal = ({
   isOpen,
-  title = 'Xác nhận hành động',
+  title,
   message,
-  confirmText = 'Xác nhận',
-  cancelText = 'Hủy bỏ',
+  confirmText,
+  cancelText,
   isDanger = true,
+  type,
   onConfirm,
-  onCancel
+  onCancel,
+  onClose
 }) => {
+  const { lang } = useLanguage();
   if (!isOpen) return null;
+
+  const handleClose = onCancel || onClose;
+  const isDangerous = type === 'danger' || isDanger;
+
+  const defaultTitle = lang === 'vi' ? 'Xác nhận hành động' : 'Confirm Action';
+  const defaultConfirmText = lang === 'vi' ? 'Xác nhận' : 'Confirm';
+  const defaultCancelText = lang === 'vi' ? 'Hủy bỏ' : 'Cancel';
 
   return (
     <div
@@ -27,7 +38,7 @@ export const ConfirmModal = ({
         padding: '20px',
         animation: 'fadeIn 0.2s ease-out'
       }}
-      onClick={onCancel}
+      onClick={handleClose}
     >
       <div
         style={{
@@ -43,11 +54,11 @@ export const ConfirmModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Accent Strip */}
-        <div style={{ height: '4px', backgroundColor: isDanger ? '#e60012' : '#111' }} />
+        <div style={{ height: '4px', backgroundColor: isDangerous ? '#e60012' : '#111' }} />
 
         {/* Close Button */}
         <button
-          onClick={onCancel}
+          onClick={handleClose}
           style={{
             position: 'absolute',
             top: '16px',
@@ -71,21 +82,21 @@ export const ConfirmModal = ({
             style={{
               width: '56px',
               height: '56px',
-              backgroundColor: isDanger ? '#fef2f2' : '#f5f5f5',
-              border: `1px solid ${isDanger ? '#fee2e2' : '#e5e5e5'}`,
+              backgroundColor: isDangerous ? '#fef2f2' : '#f5f5f5',
+              border: `1px solid ${isDangerous ? '#fee2e2' : '#e5e5e5'}`,
               borderRadius: '50%',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: '16px',
-              color: isDanger ? '#e60012' : '#111'
+              color: isDangerous ? '#e60012' : '#111'
             }}
           >
             <AlertTriangle size={28} />
           </div>
 
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 10px 0', color: '#111' }}>
-            {title}
+            {title || defaultTitle}
           </h3>
 
           <p style={{ fontSize: '0.88rem', color: '#666', lineHeight: 1.6, margin: '0 0 24px 0' }}>
@@ -94,7 +105,7 @@ export const ConfirmModal = ({
 
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
-              onClick={onCancel}
+              onClick={handleClose}
               style={{
                 flex: 1,
                 padding: '10px 16px',
@@ -108,7 +119,7 @@ export const ConfirmModal = ({
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
             >
-              {cancelText}
+              {cancelText || defaultCancelText}
             </button>
 
             <button
@@ -116,17 +127,17 @@ export const ConfirmModal = ({
               style={{
                 flex: 1,
                 padding: '10px 16px',
-                backgroundColor: isDanger ? '#e60012' : '#111',
+                backgroundColor: isDangerous ? '#e60012' : '#111',
                 border: 'none',
                 color: '#ffffff',
                 fontSize: '0.85rem',
                 fontWeight: '700',
                 cursor: 'pointer'
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDanger ? '#cc0010' : '#333')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = isDanger ? '#e60012' : '#111')}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDangerous ? '#cc0010' : '#333')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = isDangerous ? '#e60012' : '#111')}
             >
-              {confirmText}
+              {confirmText || defaultConfirmText}
             </button>
           </div>
         </div>

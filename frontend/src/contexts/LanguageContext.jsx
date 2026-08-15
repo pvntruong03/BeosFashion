@@ -172,14 +172,20 @@ const translations = {
 const LanguageContext = createContext(null);
 
 export const LanguageProvider = ({ children }) => {
-  const [lang, setLang] = useState('vi');
+  const [lang, setLang] = useState(() => {
+    return localStorage.getItem('beo_lang') || 'en';
+  });
 
   const toggleLanguage = () => {
-    setLang((prev) => (prev === 'vi' ? 'en' : 'vi'));
+    setLang((prev) => {
+      const next = prev === 'vi' ? 'en' : 'vi';
+      localStorage.setItem('beo_lang', next);
+      return next;
+    });
   };
 
   const t = (key) => {
-    return translations[lang][key] || key;
+    return translations[lang]?.[key] || translations['en']?.[key] || key;
   };
 
   const formatPrice = (amount) => {
@@ -187,8 +193,7 @@ export const LanguageProvider = ({ children }) => {
     if (lang === 'vi') {
       return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     } else {
-      const inUSD = (amount / 25000).toFixed(2);
-      return `$${inUSD}`;
+      return `${new Intl.NumberFormat('en-US').format(amount)} VND`;
     }
   };
 

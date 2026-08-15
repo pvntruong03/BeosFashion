@@ -3,7 +3,7 @@ import { X, Printer, CheckCircle, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export const ReceiptModal = ({ isOpen, onClose, order }) => {
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
 
   if (!isOpen || !order) return null;
 
@@ -42,15 +42,17 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
           backgroundColor: '#111',
           color: '#fff'
         }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>HÓA ĐƠN ĐIỆN TỬ / PHIẾU BÁN HÀNG</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>
+            {lang === 'vi' ? 'HÓA ĐƠN ĐIỆN TỬ / PHIẾU BÁN HÀNG' : 'ELECTRONIC RECEIPT & SALES SLIP'}
+          </span>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={handlePrint}
-              style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '4px 8px', backgroundColor: '#333' }}
+              style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '4px 8px', backgroundColor: '#333', border: 'none', cursor: 'pointer' }}
             >
-              <Printer size={14} /> In hóa đơn
+              <Printer size={14} /> {lang === 'vi' ? 'In hóa đơn' : 'Print'}
             </button>
-            <button onClick={onClose} style={{ color: '#fff', padding: '4px' }}>
+            <button onClick={onClose} style={{ color: '#fff', padding: '4px', background: 'transparent', border: 'none', cursor: 'pointer' }}>
               <X size={18} />
             </button>
           </div>
@@ -66,35 +68,35 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
         }}>
           {/* Store header */}
           <div style={{ textAlign: 'center', borderBottom: '1px dashed #999', paddingBottom: '14px', marginBottom: '14px' }}>
-            <div style={{ fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px' }}>BEO VIETNAM</div>
+            <div style={{ fontWeight: '900', fontSize: '1.2rem', letterSpacing: '1px' }}>BEO STORE VIETNAM</div>
             <div style={{ fontWeight: '700', fontSize: '0.9rem', marginTop: '2px' }}>
-              {order.storeName || 'CỬA HÀNG TRỰC TUYẾN BEO'}
+              {order.storeName || (lang === 'vi' ? 'CỬA HÀNG TRỰC TUYẾN BEO' : 'BEO ONLINE STORE')}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#555', marginTop: '4px' }}>
-              {order.shippingAddress || 'TP. Hồ Chí Minh'}
+              {order.shippingAddress || 'Can Tho City, Vietnam'}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#555' }}>
-              Hotline: 1900 1234 • MST: 0315891234
+              Hotline: 1900019199999 • Tax ID: 0315891234
             </div>
           </div>
 
           {/* Order Meta */}
           <div style={{ borderBottom: '1px dashed #999', paddingBottom: '10px', marginBottom: '12px', fontSize: '0.8rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>MÃ ĐƠN HÀNG:</span>
+              <span>{lang === 'vi' ? 'MÃ ĐƠN HÀNG:' : 'ORDER ID:'}</span>
               <strong style={{ fontSize: '0.9rem' }}>{order.orderNumber}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-              <span>NGÀY GIỜ:</span>
-              <span>{order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN')}</span>
+              <span>{lang === 'vi' ? 'NGÀY GIỜ:' : 'DATE & TIME:'}</span>
+              <span>{order.createdAt ? new Date(order.createdAt).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US') : new Date().toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US')}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-              <span>KHÁCH HÀNG:</span>
-              <span>{order.customerName || 'Khách vãng lai'} ({order.customerPhone || 'N/A'})</span>
+              <span>{lang === 'vi' ? 'KHÁCH HÀNG:' : 'CUSTOMER:'}</span>
+              <span>{order.customerName || (lang === 'vi' ? 'Khách vãng lai' : 'Walk-in Guest')} ({order.customerPhone || 'N/A'})</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-              <span>LOẠI ĐƠN:</span>
-              <span>{order.orderType === 'POS_IN_STORE' ? 'Bán tại quầy (POS)' : 'Giao hàng tận nơi'}</span>
+              <span>{lang === 'vi' ? 'LOẠI ĐƠN:' : 'ORDER TYPE:'}</span>
+              <span>{order.orderType === 'POS_IN_STORE' ? (lang === 'vi' ? 'Bán tại quầy (POS)' : 'In-Store POS') : (lang === 'vi' ? 'Giao hàng tận nơi' : 'Home Delivery')}</span>
             </div>
           </div>
 
@@ -103,9 +105,9 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
             <table style={{ width: '100%', fontSize: '0.8rem', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #111', textAlign: 'left' }}>
-                  <th style={{ padding: '4px 0' }}>SẢN PHẨM</th>
-                  <th style={{ padding: '4px 0', textAlign: 'center' }}>SL</th>
-                  <th style={{ padding: '4px 0', textAlign: 'right' }}>THÀNH TIỀN</th>
+                  <th style={{ padding: '4px 0' }}>{lang === 'vi' ? 'SẢN PHẨM' : 'ITEM'}</th>
+                  <th style={{ padding: '4px 0', textAlign: 'center' }}>{lang === 'vi' ? 'SL' : 'QTY'}</th>
+                  <th style={{ padding: '4px 0', textAlign: 'right' }}>{lang === 'vi' ? 'THÀNH TIỀN' : 'AMOUNT'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,18 +134,18 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
           {/* Payment breakdown */}
           <div style={{ borderBottom: '1px dashed #999', paddingBottom: '12px', marginBottom: '14px', fontSize: '0.85rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span>TỔNG TIỀN HÀNG:</span>
+              <span>{lang === 'vi' ? 'TỔNG TIỀN HÀNG:' : 'SUBTOTAL:'}</span>
               <span>{formatPrice(order.subTotal)}</span>
             </div>
             {order.discountAmount > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: '#e60012' }}>
-                <span>GIẢM GIÁ VOUCHER ({order.couponCode}):</span>
+                <span>{lang === 'vi' ? 'GIẢM GIÁ VOUCHER' : 'COUPON DISCOUNT'} ({order.couponCode}):</span>
                 <span>-{formatPrice(order.discountAmount)}</span>
               </div>
             )}
             {order.shippingFee > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span>PHÍ VẬN CHUYỂN:</span>
+                <span>{lang === 'vi' ? 'PHÍ VẬN CHUYỂN:' : 'SHIPPING FEE:'}</span>
                 <span>{formatPrice(order.shippingFee)}</span>
               </div>
             )}
@@ -156,17 +158,17 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
               paddingTop: '6px',
               marginTop: '6px'
             }}>
-              <span>TỔNG THANH TOÁN:</span>
+              <span>{lang === 'vi' ? 'TỔNG THANH TOÁN:' : 'FINAL TOTAL:'}</span>
               <span>{formatPrice(order.finalAmount)}</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.8rem', color: '#555' }}>
-              <span>PHƯƠNG THỨC:</span>
-              <strong>{order.payment?.paymentMethod || 'TIỀN MẶT / VNPAY'}</strong>
+              <span>{lang === 'vi' ? 'PHƯƠNG THỨC:' : 'PAYMENT METHOD:'}</span>
+              <strong>{order.payment?.paymentMethod || 'VIETQR / CASH'}</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.8rem', color: '#555' }}>
-              <span>TRẠNG THÁI GD:</span>
-              <strong style={{ color: '#00875a' }}>{order.payment?.paymentStatus || 'ĐÃ THANH TOÁN'}</strong>
+              <span>{lang === 'vi' ? 'TRẠNG THÁI GD:' : 'STATUS:'}</span>
+              <strong style={{ color: '#00875a' }}>{order.payment?.paymentStatus || 'PAID'}</strong>
             </div>
           </div>
 
@@ -185,8 +187,9 @@ export const ReceiptModal = ({ isOpen, onClose, order }) => {
             </div>
             <div style={{ fontSize: '0.75rem', marginTop: '4px' }}>{order.orderNumber}</div>
             <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '8px' }}>
-              Cảm ơn quý khách đã mua sắm tại BEO!<br />
-              Đổi trả miễn phí trong vòng 30 ngày kèm hóa đơn này.
+              {lang === 'vi'
+                ? 'Cảm ơn quý khách đã mua sắm tại BEO!\nĐổi trả miễn phí trong vòng 30 ngày kèm hóa đơn này.'
+                : 'Thank you for choosing BEO STORE!\n30-day free exchange with this official receipt.'}
             </div>
           </div>
         </div>

@@ -32,16 +32,16 @@ const PRESET_AVATARS = [
 
 export const ProfilePage = ({ onNavigate }) => {
   const { user, updateUserData } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { showSuccess, showError } = useToast();
 
-  const [activeTab, setActiveTab] = useState('general'); // 'general', 'password', 'membership'
+  const [activeTab, setActiveTab] = useState('general');
 
   // General profile form state
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [city, setCity] = useState('TP. Hồ Chí Minh');
+  const [city, setCity] = useState('Can Tho');
   const [avatar, setAvatar] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -56,7 +56,7 @@ export const ProfilePage = ({ onNavigate }) => {
       setFullName(user.fullName || '');
       setPhone(user.phone || '');
       setAddress(user.address || '');
-      setCity(user.city || 'TP. Hồ Chí Minh');
+      setCity(user.city || 'Can Tho');
       setAvatar(user.avatar || '');
     }
   }, [user]);
@@ -65,13 +65,13 @@ export const ProfilePage = ({ onNavigate }) => {
     return (
       <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '12px' }}>
-          Vui lòng đăng nhập
+          {lang === 'vi' ? 'Vui lòng đăng nhập' : 'Please Sign In'}
         </h2>
         <p style={{ color: '#666', marginBottom: '24px' }}>
-          Bạn cần đăng nhập để quản lý thông tin tài khoản và xem quyền lợi hội viên.
+          {lang === 'vi' ? 'Bạn cần đăng nhập để quản lý thông tin tài khoản và xem quyền lợi hội viên.' : 'Please sign in to manage account profile and membership privileges.'}
         </p>
         <button onClick={() => onNavigate('login')} className="btn-uq btn-uq-primary">
-          Đăng nhập ngay
+          {lang === 'vi' ? 'Đăng nhập ngay' : 'Sign In Now'}
         </button>
       </div>
     );
@@ -80,7 +80,7 @@ export const ProfilePage = ({ onNavigate }) => {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (!fullName.trim()) {
-      showError('Vui lòng nhập họ và tên của bạn');
+      showError(lang === 'vi' ? 'Vui lòng nhập họ và tên của bạn' : 'Please enter your full name');
       return;
     }
 
@@ -97,9 +97,9 @@ export const ProfilePage = ({ onNavigate }) => {
       if (updateUserData) {
         updateUserData(res.data);
       }
-      showSuccess('Đã cập nhật thông tin hồ sơ thành công!');
+      showSuccess(lang === 'vi' ? 'Đã cập nhật thông tin hồ sơ thành công!' : 'Profile information updated successfully!');
     } catch (err) {
-      showError(err.message || 'Lỗi khi cập nhật thông tin');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi cập nhật thông tin' : 'Failed to update profile'));
     } finally {
       setIsSavingProfile(false);
     }
@@ -108,15 +108,15 @@ export const ProfilePage = ({ onNavigate }) => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (!oldPassword) {
-      showError('Vui lòng nhập mật khẩu hiện tại');
+      showError(lang === 'vi' ? 'Vui lòng nhập mật khẩu hiện tại' : 'Please enter current password');
       return;
     }
     if (!newPassword || newPassword.length < 6) {
-      showError('Mật khẩu mới phải có tối thiểu 6 ký tự');
+      showError(lang === 'vi' ? 'Mật khẩu mới phải có tối thiểu 6 ký tự' : 'New password must have at least 6 characters');
       return;
     }
     if (newPassword !== confirmPassword) {
-      showError('Mật khẩu xác nhận không khớp');
+      showError(lang === 'vi' ? 'Mật khẩu xác nhận không khớp' : 'Passwords do not match');
       return;
     }
 
@@ -127,12 +127,12 @@ export const ProfilePage = ({ onNavigate }) => {
         newPassword
       });
 
-      showSuccess('Đã thay đổi mật khẩu thành công!');
+      showSuccess(lang === 'vi' ? 'Đã thay đổi mật khẩu thành công!' : 'Password changed successfully!');
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      showError(err.message || 'Lỗi khi đổi mật khẩu');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi đổi mật khẩu' : 'Failed to change password'));
     } finally {
       setIsSavingPassword(false);
     }
@@ -195,7 +195,7 @@ export const ProfilePage = ({ onNavigate }) => {
               <span className="badge-uq red">{user.role}</span>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#aaa', margin: '4px 0 0 0' }}>
-              Thành viên BEO LifeWear • Email: <strong>{user.email}</strong>
+              {lang === 'vi' ? 'Thành viên BEO LifeWear • Email:' : 'BEO LifeWear Member • Email:'} <strong>{user.email}</strong>
             </p>
           </div>
         </div>
@@ -207,7 +207,7 @@ export const ProfilePage = ({ onNavigate }) => {
             style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
           >
             <ShoppingBag size={16} />
-            <span>Lịch sử đơn hàng</span>
+            <span>{t('orders')}</span>
           </button>
           <button
             onClick={() => onNavigate('wishlist')}
@@ -215,7 +215,7 @@ export const ProfilePage = ({ onNavigate }) => {
             style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
           >
             <Heart size={16} />
-            <span>Yêu thích</span>
+            <span>{t('wishlist')}</span>
           </button>
         </div>
       </div>
@@ -225,14 +225,14 @@ export const ProfilePage = ({ onNavigate }) => {
         {/* Left Sidebar Navigation */}
         <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e5e5', overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', fontWeight: '800', fontSize: '0.9rem', textTransform: 'uppercase' }}>
-            Tài Khoản Của Tôi
+            {lang === 'vi' ? 'Tài Khoản Của Tôi' : 'My Account Settings'}
           </div>
 
           <div>
             {[
-              { id: 'general', label: '1. Thông tin cá nhân & Địa chỉ', icon: <User size={18} /> },
-              { id: 'password', label: '2. Bảo mật & Đổi mật khẩu', icon: <Lock size={18} /> },
-              { id: 'membership', label: '3. Quyền lợi Hội viên BEO Club', icon: <Award size={18} /> },
+              { id: 'general', label: lang === 'vi' ? '1. Thông tin cá nhân & Địa chỉ' : '1. Profile & Shipping Address', icon: <User size={18} /> },
+              { id: 'password', label: lang === 'vi' ? '2. Bảo mật & Đổi mật khẩu' : '2. Security & Password', icon: <Lock size={18} /> },
+              { id: 'membership', label: lang === 'vi' ? '3. Quyền lợi Hội viên BEO Club' : '3. BEO Club Membership Privileges', icon: <Award size={18} /> },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -264,10 +264,10 @@ export const ProfilePage = ({ onNavigate }) => {
           <div style={{ padding: '20px', backgroundColor: '#fcfcfc', borderTop: '1px solid #eee' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#00875a' }}>
               <ShieldCheck size={18} />
-              <span style={{ fontWeight: '700', fontSize: '0.85rem' }}>Bảo mật thông tin 100%</span>
+              <span style={{ fontWeight: '700', fontSize: '0.85rem' }}>{lang === 'vi' ? 'Bảo mật thông tin 100%' : '100% Privacy Protected'}</span>
             </div>
             <p style={{ fontSize: '0.78rem', color: '#666', lineHeight: 1.5, margin: 0 }}>
-              Dữ liệu của bạn được mã hóa an toàn theo tiêu chuẩn bảo mật điện tử của BEO Fashion.
+              {lang === 'vi' ? 'Dữ liệu của bạn được mã hóa an toàn theo tiêu chuẩn bảo mật điện tử của BEO STORE.' : 'Your data is encrypted securely following international e-commerce standards.'}
             </p>
           </div>
         </div>
@@ -279,10 +279,10 @@ export const ProfilePage = ({ onNavigate }) => {
             <div>
               <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
-                  Hồ Sơ Cá Nhân & Địa Chỉ Giao Hàng
+                  {lang === 'vi' ? 'Hồ Sơ Cá Nhân & Địa Chỉ Giao Hàng' : 'Personal Profile & Shipping Address'}
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
-                  Quản lý thông tin hồ sơ để việc đặt hàng và nhận ưu đãi diễn ra nhanh chóng nhất.
+                  {lang === 'vi' ? 'Quản lý thông tin hồ sơ để việc đặt hàng và nhận ưu đãi diễn ra nhanh chóng nhất.' : 'Manage profile details for faster checkout and exclusive member perks.'}
                 </p>
               </div>
 
@@ -290,7 +290,7 @@ export const ProfilePage = ({ onNavigate }) => {
                 {/* Avatar Chooser */}
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '8px' }}>
-                    Ảnh đại diện (Avatar)
+                    {lang === 'vi' ? 'Ảnh đại diện (Avatar)' : 'Profile Photo (Avatar)'}
                   </label>
 
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '12px' }}>
@@ -302,7 +302,7 @@ export const ProfilePage = ({ onNavigate }) => {
                     <div style={{ flex: 1 }}>
                       <input
                         type="url"
-                        placeholder="Nhập đường dẫn URL ảnh hoặc chọn mẫu bên dưới..."
+                        placeholder={lang === 'vi' ? 'Nhập đường dẫn URL ảnh hoặc chọn mẫu bên dưới...' : 'Enter photo URL or choose a preset below...'}
                         value={avatar}
                         onChange={(e) => setAvatar(e.target.value)}
                         style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.85rem' }}
@@ -312,7 +312,7 @@ export const ProfilePage = ({ onNavigate }) => {
 
                   {/* Preset Avatars */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.78rem', color: '#666' }}>Gợi ý mẫu:</span>
+                    <span style={{ fontSize: '0.78rem', color: '#666' }}>{lang === 'vi' ? 'Gợi ý mẫu:' : 'Presets:'}</span>
                     {PRESET_AVATARS.map((url, idx) => (
                       <img
                         key={idx}
@@ -329,7 +329,7 @@ export const ProfilePage = ({ onNavigate }) => {
                           transform: avatar === url ? 'scale(1.1)' : 'scale(1)',
                           transition: 'transform 0.15s'
                         }}
-                        title="Bấm để chọn"
+                        title={lang === 'vi' ? 'Bấm để chọn' : 'Click to select'}
                       />
                     ))}
                   </div>
@@ -338,7 +338,7 @@ export const ProfilePage = ({ onNavigate }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '16px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                      Họ và tên *
+                      {lang === 'vi' ? 'Họ và tên *' : 'Full Name *'}
                     </label>
                     <div style={{ position: 'relative' }}>
                       <input
@@ -347,7 +347,7 @@ export const ProfilePage = ({ onNavigate }) => {
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
-                        placeholder="VD: Nguyễn Văn A"
+                        placeholder="Alex Johnson"
                       />
                       <User size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                     </div>
@@ -355,7 +355,7 @@ export const ProfilePage = ({ onNavigate }) => {
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                      Số điện thoại nhận hàng
+                      {lang === 'vi' ? 'Số điện thoại nhận hàng' : 'Phone Number'}
                     </label>
                     <div style={{ position: 'relative' }}>
                       <input
@@ -363,7 +363,7 @@ export const ProfilePage = ({ onNavigate }) => {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
-                        placeholder="VD: 0912345678"
+                        placeholder="0912345678"
                       />
                       <Phone size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                     </div>
@@ -372,7 +372,7 @@ export const ProfilePage = ({ onNavigate }) => {
 
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Email đăng nhập (Không thể thay đổi)
+                    {lang === 'vi' ? 'Email đăng nhập (Không thể thay đổi)' : 'Account Email (Read-only)'}
                   </label>
                   <div style={{ position: 'relative' }}>
                     <input
@@ -388,7 +388,7 @@ export const ProfilePage = ({ onNavigate }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                      Địa chỉ nhận hàng mặc định
+                      {lang === 'vi' ? 'Địa chỉ nhận hàng mặc định' : 'Default Shipping Address'}
                     </label>
                     <div style={{ position: 'relative' }}>
                       <input
@@ -396,7 +396,7 @@ export const ProfilePage = ({ onNavigate }) => {
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         style={{ width: '100%', padding: '10px 12px 10px 36px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
-                        placeholder="Số nhà, tên đường, phường/xã..."
+                        placeholder={lang === 'vi' ? 'Số nhà, tên đường, phường/xã...' : 'Street address, apartment, ward...'}
                       />
                       <MapPin size={16} color="#888" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                     </div>
@@ -404,22 +404,22 @@ export const ProfilePage = ({ onNavigate }) => {
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                      Tỉnh / Thành phố
+                      {lang === 'vi' ? 'Tỉnh / Thành phố' : 'City / Province'}
                     </label>
                     <select
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem', backgroundColor: '#fff' }}
                     >
-                      <option value="Cần Thơ">Cần Thơ</option>
-                      <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                      <option value="Hà Nội">Hà Nội</option>
-                      <option value="Đà Nẵng">Đà Nẵng</option>
-                      <option value="Hải Phòng">Hải Phòng</option>
-                      <option value="Bình Dương">Bình Dương</option>
-                      <option value="Đồng Nai">Đồng Nai</option>
+                      <option value="Can Tho">Can Tho</option>
+                      <option value="Ho Chi Minh City">Ho Chi Minh City</option>
+                      <option value="Ha Noi">Ha Noi</option>
+                      <option value="Da Nang">Da Nang</option>
+                      <option value="Hai Phong">Hai Phong</option>
+                      <option value="Binh Duong">Binh Duong</option>
+                      <option value="Dong Nai">Dong Nai</option>
                       <option value="An Giang">An Giang</option>
-                      <option value="Kiên Giang">Kiên Giang</option>
+                      <option value="Kien Giang">Kien Giang</option>
                     </select>
                   </div>
                 </div>
@@ -432,7 +432,7 @@ export const ProfilePage = ({ onNavigate }) => {
                     style={{ padding: '12px 28px', fontSize: '0.9rem', fontWeight: '700' }}
                   >
                     <Save size={16} />
-                    <span>{isSavingProfile ? 'Đang lưu...' : 'Lưu Thay Đổi'}</span>
+                    <span>{isSavingProfile ? (lang === 'vi' ? 'Đang lưu...' : 'Saving...') : (lang === 'vi' ? 'Lưu Thay Đổi' : 'Save Changes')}</span>
                   </button>
                 </div>
               </form>
@@ -444,17 +444,17 @@ export const ProfilePage = ({ onNavigate }) => {
             <div>
               <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
-                  Đổi Mật Khẩu Bảo Mật
+                  {lang === 'vi' ? 'Đổi Mật Khẩu Bảo Mật' : 'Change Security Password'}
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
-                  Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu của bạn cho người khác.
+                  {lang === 'vi' ? 'Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu của bạn cho người khác.' : 'Keep your account secure by using a strong password of at least 6 characters.'}
                 </p>
               </div>
 
               <form onSubmit={handleChangePassword} style={{ maxWidth: '480px' }}>
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Mật khẩu hiện tại *
+                    {lang === 'vi' ? 'Mật khẩu hiện tại *' : 'Current Password *'}
                   </label>
                   <input
                     type="password"
@@ -462,13 +462,13 @@ export const ProfilePage = ({ onNavigate }) => {
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
-                    placeholder="Nhập mật khẩu đang dùng"
+                    placeholder={lang === 'vi' ? 'Nhập mật khẩu đang dùng' : 'Enter current password'}
                   />
                 </div>
 
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Mật khẩu mới * (Tối thiểu 6 ký tự)
+                    {lang === 'vi' ? 'Mật khẩu mới * (Tối thiểu 6 ký tự)' : 'New Password * (At least 6 characters)'}
                   </label>
                   <input
                     type="password"
@@ -477,13 +477,13 @@ export const ProfilePage = ({ onNavigate }) => {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
-                    placeholder="Nhập mật khẩu mới"
+                    placeholder={lang === 'vi' ? 'Nhập mật khẩu mới' : 'Enter new password'}
                   />
                 </div>
 
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Xác nhận mật khẩu mới *
+                    {lang === 'vi' ? 'Xác nhận mật khẩu mới *' : 'Confirm New Password *'}
                   </label>
                   <input
                     type="password"
@@ -492,7 +492,7 @@ export const ProfilePage = ({ onNavigate }) => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.9rem' }}
-                    placeholder="Nhập lại mật khẩu mới"
+                    placeholder={lang === 'vi' ? 'Nhập lại mật khẩu mới' : 'Confirm new password'}
                   />
                 </div>
 
@@ -503,7 +503,7 @@ export const ProfilePage = ({ onNavigate }) => {
                   style={{ padding: '12px 28px', fontSize: '0.9rem', fontWeight: '700' }}
                 >
                   <Lock size={16} />
-                  <span>{isSavingPassword ? 'Đang cập nhật...' : 'Cập Nhật Mật Khẩu'}</span>
+                  <span>{isSavingPassword ? (lang === 'vi' ? 'Đang cập nhật...' : 'Updating...') : (lang === 'vi' ? 'Cập Nhật Mật Khẩu' : 'Update Password')}</span>
                 </button>
               </form>
             </div>
@@ -514,10 +514,10 @@ export const ProfilePage = ({ onNavigate }) => {
             <div>
               <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
-                  Hội Viên BEO Club & Đặc Quyền
+                  {lang === 'vi' ? 'Hội Viên BEO Club & Đặc Quyền' : 'BEO Club Membership & Rewards'}
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
-                  Thẻ thành viên điện tử BEO LifeWear tích điểm cho mọi đơn hàng trực tuyến và tại cửa hàng.
+                  {lang === 'vi' ? 'Thẻ thành viên điện tử BEO LifeWear tích điểm cho mọi đơn hàng trực tuyến và tại cửa hàng.' : 'Digital loyalty membership card earning reward points for every purchase.'}
                 </p>
               </div>
 
@@ -538,7 +538,7 @@ export const ProfilePage = ({ onNavigate }) => {
                       BEO LIFEWEAR MEMBER
                     </span>
                     <div style={{ fontSize: '1.3rem', fontWeight: '900', marginTop: '4px', letterSpacing: '1px' }}>
-                      {user.fullName || 'QUÝ KHÁCH'}
+                      {user.fullName || 'ESTEEMED CLIENT'}
                     </div>
                   </div>
                   <span className="badge-uq red" style={{ fontSize: '0.8rem', padding: '4px 10px' }}>
@@ -548,15 +548,15 @@ export const ProfilePage = ({ onNavigate }) => {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: '#aaa' }}>MÃ THÀNH VIÊN</div>
+                    <div style={{ fontSize: '0.75rem', color: '#aaa' }}>{lang === 'vi' ? 'MÃ THÀNH VIÊN' : 'MEMBER ID'}</div>
                     <div style={{ fontSize: '1rem', fontWeight: '800', letterSpacing: '2px', fontFamily: 'monospace' }}>
                       BEO-{user.id ? String(user.id).padStart(6, '0') : '888888'}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#aaa' }}>ĐIỂM TÍCH LŨY</div>
+                    <div style={{ fontSize: '0.75rem', color: '#aaa' }}>{lang === 'vi' ? 'ĐIỂM TÍCH LŨY' : 'REWARD POINTS'}</div>
                     <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#ffb800' }}>
-                      1,250 PTS
+                      {user.points ? user.points.toLocaleString() : '1,500'} PTS
                     </div>
                   </div>
                 </div>
@@ -564,34 +564,34 @@ export const ProfilePage = ({ onNavigate }) => {
 
               {/* Benefits Grid */}
               <h3 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '14px', textTransform: 'uppercase' }}>
-                Đặc Quyền Hội Viên Dành Riêng Cho Bạn
+                {lang === 'vi' ? 'Đặc Quyền Hội Viên Dành Riêng Cho Bạn' : 'Exclusive VIP Member Benefits'}
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
                 <div style={{ padding: '16px', border: '1px solid #eee', backgroundColor: '#fafafa' }}>
                   <div style={{ color: '#e60012', fontWeight: '800', fontSize: '0.9rem', marginBottom: '4px' }}>
-                    🎁 Voucher Sinh Nhật 15%
+                    🎁 {lang === 'vi' ? 'Voucher Sinh Nhật 15%' : '15% Birthday Gift Voucher'}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                    Nhận mã giảm giá 15% vào tháng sinh nhật của bạn cho mọi sản phẩm LifeWear.
+                    {lang === 'vi' ? 'Nhận mã giảm giá 15% vào tháng sinh nhật của bạn cho mọi sản phẩm LifeWear.' : 'Receive a special 15% birthday discount voucher during your birthday month.'}
                   </div>
                 </div>
 
                 <div style={{ padding: '16px', border: '1px solid #eee', backgroundColor: '#fafafa' }}>
                   <div style={{ color: '#e60012', fontWeight: '800', fontSize: '0.9rem', marginBottom: '4px' }}>
-                    🚚 Miễn Phí Vận Chuyển
+                    🚚 {lang === 'vi' ? 'Miễn Phí Vận Chuyển' : 'Free Standard Shipping'}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                    Tự động freeship toàn quốc cho tất cả đơn hàng từ 500.000đ.
+                    {lang === 'vi' ? 'Tự động freeship toàn quốc cho tất cả đơn hàng từ 500.000đ.' : 'Automatic free shipping on all orders over 500,000 VND.'}
                   </div>
                 </div>
 
                 <div style={{ padding: '16px', border: '1px solid #eee', backgroundColor: '#fafafa' }}>
                   <div style={{ color: '#e60012', fontWeight: '800', fontSize: '0.9rem', marginBottom: '4px' }}>
-                    🔄 30 Ngày Đổi Trả
+                    🔄 {lang === 'vi' ? '30 Ngày Đổi Trả' : '30-Day Free Return & Exchange'}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                    Chính sách đổi hàng linh hoạt tại toàn bộ hệ thống cửa hàng BEO trên toàn quốc.
+                    {lang === 'vi' ? 'Chính sách đổi hàng linh hoạt tại toàn bộ hệ thống cửa hàng BEO trên toàn quốc.' : 'Hassle-free exchange policy across all BEO flagship stores nationwide.'}
                   </div>
                 </div>
               </div>

@@ -88,12 +88,12 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
 
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: '#ffffff', borderBottom: '1px solid #e5e5e5' }}>
-      {/* Top utility bar */}
-      <div style={{ backgroundColor: '#f8f8f8', borderBottom: '1px solid #f0f0f0', fontSize: '0.8rem', padding: '6px 0' }}>
+      {/* Top utility bar (Desktop only to prevent mobile clutter) */}
+      <div className="desktop-only" style={{ backgroundColor: '#f8f8f8', borderBottom: '1px solid #f0f0f0', fontSize: '0.8rem', padding: '6px 0' }}>
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: '#666' }}>
-            <span>Miễn phí giao hàng cho đơn từ 500.000đ</span>
-            <span style={{ color: '#e60012', fontWeight: '700' }}>• BỘ SƯU TẬP SS26 ĐÃ RA MẮT</span>
+            <span>{lang === 'vi' ? 'Miễn phí giao hàng cho đơn từ 500.000đ' : 'Free standard shipping on orders over 500,000 VND'}</span>
+            <span style={{ color: '#e60012', fontWeight: '700' }}>• {lang === 'vi' ? 'BỘ SƯU TẬP SS26 ĐÃ RA MẮT' : 'SS26 NEW COLLECTION LAUNCHED'}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -117,27 +117,28 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
       </div>
 
       {/* Main Navbar */}
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '70px', gap: '24px' }}>
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px', gap: '12px' }}>
         {/* Left: Brand Logo & Navigation links */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{ display: 'none', padding: '8px' }}
-            className="mobile-only-btn"
+            style={{ padding: '6px', color: '#111' }}
+            className="mobile-only"
+            aria-label="Open Mobile Menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          {/* BEO Brand Logo */}
+          {/* BEO Brand Logo (Clean & Iconic Single Logo) */}
           <div
             onClick={() => onNavigate('home')}
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', userSelect: 'none' }}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', userSelect: 'none' }}
           >
             <div style={{
               backgroundColor: '#e60012',
               color: '#ffffff',
-              padding: '6px 8px',
+              padding: '6px 12px',
               fontFamily: 'monospace, sans-serif',
               fontWeight: '900',
               fontSize: '1.25rem',
@@ -147,29 +148,15 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               height: '42px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(230,0,18,0.25)'
             }}>
               BEO<br />STORE
             </div>
-            <div style={{
-              height: '42px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#ffffff',
-              padding: '2px 6px',
-              border: '1px solid #e0e0e0'
-            }}>
-              <img
-                src="/beo-logo.png"
-                alt="BEO Modern Fashion Logo"
-                style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
-              />
-            </div>
           </div>
 
-          {/* Navigation Category Links */}
-          <nav style={{ display: 'flex', gap: '24px', alignItems: 'center' }} className="desktop-nav">
+          {/* Navigation Category Links (Desktop Nav with Perfect Spacing) */}
+          <nav className="desktop-nav">
             {navCategories.map((item) => (
               <button
                 key={item.key}
@@ -184,11 +171,12 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
                   fontWeight: '700',
                   fontSize: '0.95rem',
                   letterSpacing: '0.5px',
-                  color: '#111111',
-                  padding: '8px 0',
+                  color: item.highlight ? '#e60012' : '#111111',
+                  padding: '8px 12px',
                   position: 'relative',
                   borderBottom: currentPage === item.key ? '2px solid #e60012' : '2px solid transparent',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {item.label}
@@ -197,8 +185,8 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
           </nav>
         </div>
 
-        {/* Center: Search input */}
-        <div ref={searchRef} style={{ flex: 1, maxWidth: '420px', position: 'relative' }}>
+        {/* Center: Search input (Desktop only) */}
+        <div ref={searchRef} className="desktop-only" style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
           <form onSubmit={handleSearchSubmit}>
             <div style={{
               display: 'flex',
@@ -293,10 +281,10 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
                   />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#888' }}>Mã: {item.code} | {item.gender}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#888' }}>{lang === 'vi' ? 'Mã:' : 'SKU:'} {item.code} | {item.gender}</div>
                   </div>
                   <div style={{ fontSize: '0.85rem', fontWeight: '700', color: item.salePrice ? '#e60012' : '#111' }}>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.salePrice || item.basePrice)}
+                    {formatPrice(item.salePrice || item.basePrice)}
                   </div>
                 </div>
               ))}
@@ -305,10 +293,22 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
         </div>
 
         {/* Right: Actions (Wishlist, Cart, User) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          {/* Wishlist Icon */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Mobile AI Visual Search camera button */}
+          <button
+            onClick={onOpenVisualSearch}
+            className="mobile-only"
+            style={{ padding: '6px', color: '#e60012' }}
+            title="Tìm kiếm bằng hình ảnh (AI Visual Search)"
+            aria-label="Visual Search"
+          >
+            <Camera size={22} />
+          </button>
+
+          {/* Wishlist Icon (Desktop only) */}
           <button
             onClick={() => onNavigate('wishlist')}
+            className="desktop-only"
             style={{ position: 'relative', padding: '6px', color: '#111' }}
             title={t('wishlist')}
           >
@@ -362,8 +362,8 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
             )}
           </button>
 
-          {/* User Profile / Login Dropdown */}
-          <div style={{ position: 'relative' }}>
+          {/* User Profile / Login Dropdown (Desktop only) */}
+          <div className="desktop-only" style={{ position: 'relative' }}>
             {user ? (
               <div>
                 <button
@@ -401,7 +401,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
                     padding: '8px 0'
                   }}>
                     <div style={{ padding: '8px 16px', borderBottom: '1px solid #f0f0f0', fontSize: '0.8rem', color: '#666' }}>
-                      <div>Vai trò:</div>
+                      <div>{lang === 'vi' ? 'Vai trò:' : 'Role:'}</div>
                       <span className="badge-uq red" style={{ marginTop: '4px' }}>{user.role}</span>
                       {user.storeName && (
                         <div style={{ fontSize: '0.75rem', marginTop: '4px', color: '#111', fontWeight: '600' }}>
@@ -533,6 +533,177 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
           </div>
         </div>
       </div>
+
+      {/* ================= MOBILE LOOKBOOK DRAWER ================= */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          zIndex: 2500,
+          display: 'flex'
+        }}>
+          <div
+            className="animate-drawer"
+            style={{
+              width: '85%',
+              maxWidth: '340px',
+              backgroundColor: '#ffffff',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '4px 0 25px rgba(0,0,0,0.2)',
+              overflowY: 'auto'
+            }}
+          >
+            {/* Drawer Header */}
+            <div style={{
+              padding: '16px 20px',
+              backgroundColor: '#111111',
+              color: '#ffffff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <div style={{ fontSize: '1.05rem', fontWeight: '900', letterSpacing: '0.5px' }}>BEO MODERN FASHION</div>
+                <div style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '2px' }}>Flagship Showroom Cần Thơ</div>
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                style={{ color: '#ffffff', padding: '6px' }}
+                aria-label="Close Menu"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Quick Language & Store Banner */}
+            <div style={{
+              padding: '10px 20px',
+              backgroundColor: '#f8f8f9',
+              borderBottom: '1px solid #eee',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '0.8rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#555' }}>
+                <MapPin size={14} color="#e60012" />
+                <span>Cần Thơ (08:00 - 22:00)</span>
+              </div>
+              <button
+                onClick={toggleLanguage}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontWeight: '700',
+                  color: '#111',
+                  backgroundColor: '#fff',
+                  border: '1px solid #ddd',
+                  padding: '2px 8px',
+                  borderRadius: '2px'
+                }}
+              >
+                <Globe size={13} color="#e60012" />
+                <span>{lang === 'vi' ? 'Tiếng Việt' : 'English'}</span>
+              </button>
+            </div>
+
+            {/* Navigation Category List */}
+            <div style={{ padding: '16px 0', flex: 1 }}>
+              <div style={{ padding: '0 20px 8px', fontSize: '0.75rem', fontWeight: '800', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {lang === 'vi' ? 'DANH MỤC THỜI TRANG' : 'FASHION CATEGORIES'}
+              </div>
+
+              {[
+                { label: lang === 'vi' ? 'Thời Trang Nữ (Women)' : 'Women Collection', gender: 'WOMEN' },
+                { label: lang === 'vi' ? 'Thời Trang Nam (Men)' : 'Men Collection', gender: 'MEN' },
+                { label: 'LifeWear Essentials', collection: 'LifeWear' },
+                { label: 'Lookbook SS26 Fashion', view: 'lookbook' },
+                ...(isCustomizerEnabled() ? [{ label: '🎨 BEO Custom Studio', view: 'custom-studio', highlight: true }] : [])
+              ].map((cat, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (cat.view) onNavigate(cat.view);
+                    else onNavigate('products', { gender: cat.gender, collection: cat.collection });
+                  }}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '14px 20px',
+                    fontSize: '0.95rem',
+                    fontWeight: cat.highlight ? '800' : '600',
+                    color: cat.highlight ? '#e60012' : '#111111',
+                    borderBottom: '1px solid #f4f4f4',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    backgroundColor: cat.highlight ? '#fff5f5' : 'transparent'
+                  }}
+                >
+                  <span>{cat.label}</span>
+                  <span style={{ color: '#aaa', fontSize: '0.8rem' }}>›</span>
+                </button>
+              ))}
+
+              {/* Utility shortcuts in drawer */}
+              <div style={{ marginTop: '16px', padding: '0 20px 8px', fontSize: '0.75rem', fontWeight: '800', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {lang === 'vi' ? 'TIỆN ÍCH & HỖ TRỢ' : 'UTILITIES & SUPPORT'}
+              </div>
+
+              <button
+                onClick={() => { setMobileMenuOpen(false); onNavigate('stores'); }}
+                style={{ width: '100%', textAlign: 'left', padding: '12px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '10px', color: '#333' }}
+              >
+                <MapPin size={16} color="#e60012" />
+                <span>{t('store_locator')}</span>
+              </button>
+
+              <button
+                onClick={() => { setMobileMenuOpen(false); onNavigate('orders'); }}
+                style={{ width: '100%', textAlign: 'left', padding: '12px 20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '10px', color: '#333' }}
+              >
+                <ShoppingBasket size={16} color="#0284c7" />
+                <span>{lang === 'vi' ? 'Tra Cứu Đơn Hàng' : 'Track Order'}</span>
+              </button>
+            </div>
+
+            {/* Direct Hotline / Zalo Footer in Drawer */}
+            <div style={{ padding: '16px 20px', backgroundColor: '#f8f8f9', borderTop: '1px solid #eee' }}>
+              <div style={{ fontSize: '0.78rem', color: '#666', marginBottom: '8px' }}>
+                {lang === 'vi' ? 'Hotline hỗ trợ 24/7:' : 'Customer Support Hotline:'}
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <a
+                  href="tel:1900019199999"
+                  className="btn-uq btn-uq-primary"
+                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.78rem', textDecoration: 'none' }}
+                >
+                  📞 1900 0191 99
+                </a>
+                <a
+                  href="https://zalo.me/0567740000"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-uq btn-uq-outline-gray"
+                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.78rem', textDecoration: 'none' }}
+                >
+                  💬 Zalo Chat
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Backdrop dismiss */}
+          <div style={{ flex: 1 }} onClick={() => setMobileMenuOpen(false)} />
+        </div>
+      )}
     </header>
   );
 };

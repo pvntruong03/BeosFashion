@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { X, Ruler, CheckCircle2, Sparkles } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
+  const { lang } = useLanguage();
   const [height, setHeight] = useState(172);
   const [weight, setWeight] = useState(66);
-  const [preference, setPreference] = useState('regular'); // slim, regular, loose
-  const [activeTab, setActiveTab] = useState('advisor'); // advisor, chart
+  const [preference, setPreference] = useState('regular');
+  const [activeTab, setActiveTab] = useState('advisor');
 
   if (!isOpen) return null;
 
@@ -67,10 +69,10 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Ruler size={20} color="#e60012" />
             <span style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>
-              Hướng Dẫn & Gợi Ý Chọn Size
+              {lang === 'vi' ? 'Hướng Dẫn & Gợi Ý Chọn Size' : 'Size Guide & AI Fit Advisor'}
             </span>
           </div>
-          <button onClick={onClose} style={{ padding: '4px', color: '#666' }}>
+          <button onClick={onClose} style={{ padding: '4px', color: '#666', background: 'transparent', border: 'none', cursor: 'pointer' }}>
             <X size={22} />
           </button>
         </div>
@@ -84,11 +86,14 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
               padding: '12px',
               fontWeight: '700',
               fontSize: '0.9rem',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
               borderBottom: activeTab === 'advisor' ? '2px solid #e60012' : '2px solid transparent',
               color: activeTab === 'advisor' ? '#e60012' : '#666'
             }}
           >
-            Trợ Lý Gợi Ý Thông Minh
+            {lang === 'vi' ? 'Trợ Lý Gợi Ý Thông Minh' : 'Smart Fit Advisor'}
           </button>
           <button
             onClick={() => setActiveTab('chart')}
@@ -97,11 +102,14 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
               padding: '12px',
               fontWeight: '700',
               fontSize: '0.9rem',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
               borderBottom: activeTab === 'chart' ? '2px solid #e60012' : '2px solid transparent',
               color: activeTab === 'chart' ? '#e60012' : '#666'
             }}
           >
-            Bảng Kích Cỡ Chi Tiết
+            {lang === 'vi' ? 'Bảng Kích Cỡ Chi Tiết' : 'Measurement Chart'}
           </button>
         </div>
 
@@ -111,7 +119,7 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
             {/* Height Slider */}
             <div style={{ marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Chiều cao của bạn:</span>
+                <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{lang === 'vi' ? 'Chiều cao của bạn:' : 'Your Height:'}</span>
                 <span style={{ fontWeight: '800', color: '#e60012', fontSize: '1rem' }}>{height} cm</span>
               </div>
               <input
@@ -131,7 +139,7 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
             {/* Weight Slider */}
             <div style={{ marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Cân nặng của bạn:</span>
+                <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{lang === 'vi' ? 'Cân nặng của bạn:' : 'Your Weight:'}</span>
                 <span style={{ fontWeight: '800', color: '#e60012', fontSize: '1rem' }}>{weight} kg</span>
               </div>
               <input
@@ -151,13 +159,13 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
             {/* Fit Preference */}
             <div style={{ marginBottom: '28px' }}>
               <div style={{ fontWeight: '600', fontSize: '0.9rem', marginBottom: '10px' }}>
-                Sở thích phom dáng:
+                {lang === 'vi' ? 'Sở thích phom dáng:' : 'Fit Preference:'}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                 {[
-                  { id: 'slim', label: 'Ôm vừa vặn' },
-                  { id: 'regular', label: 'Chuẩn thoải mái' },
-                  { id: 'loose', label: 'Rộng rãi Oversize' },
+                  { id: 'slim', label: lang === 'vi' ? 'Ôm vừa vặn' : 'Slim Fit' },
+                  { id: 'regular', label: lang === 'vi' ? 'Chuẩn thoải mái' : 'Regular Fit' },
+                  { id: 'loose', label: lang === 'vi' ? 'Rộng rãi Oversize' : 'Relaxed / Oversized' },
                 ].map((p) => (
                   <button
                     key={p.id}
@@ -169,7 +177,8 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
                       border: preference === p.id ? '2px solid #111' : '1px solid #ddd',
                       backgroundColor: preference === p.id ? '#111' : '#fff',
                       color: preference === p.id ? '#fff' : '#333',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      cursor: 'pointer'
                     }}
                   >
                     {p.label}
@@ -188,13 +197,13 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#e60012', fontSize: '0.85rem', fontWeight: '700', marginBottom: '4px' }}>
                 <Sparkles size={18} />
-                <span>KẾT QUẢ GỢI Ý DỰA TRÊN 10.000+ KHÁCH HÀNG</span>
+                <span>{lang === 'vi' ? 'KẾT QUẢ GỢI Ý DỰA TRÊN 10.000+ KHÁCH HÀNG' : 'RECOMMENDATION BASED ON 10,000+ FIT PROFILES'}</span>
               </div>
               <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#111', lineHeight: 1.1, margin: '8px 0' }}>
                 SIZE {recommendedSize}
               </div>
               <p style={{ fontSize: '0.85rem', color: '#666' }}>
-                Độ phù hợp: <strong>96%</strong> (Chiều cao {height}cm, cân nặng {weight}kg)
+                {lang === 'vi' ? `Độ phù hợp: 96% (Chiều cao ${height}cm, cân nặng ${weight}kg)` : `Confidence score: 96% (${height}cm, ${weight}kg)`}
               </p>
             </div>
 
@@ -207,7 +216,7 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
               style={{ width: '100%', padding: '14px', fontSize: '1rem' }}
             >
               <CheckCircle2 size={18} />
-              <span>Chọn Size {recommendedSize} Ngay</span>
+              <span>{lang === 'vi' ? `Chọn Size ${recommendedSize} Ngay` : `Select Size ${recommendedSize} Now`}</span>
             </button>
           </div>
         )}
@@ -219,9 +228,9 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
               <thead>
                 <tr style={{ backgroundColor: '#f0f0f0', fontWeight: '700' }}>
                   <th style={{ padding: '10px', border: '1px solid #ddd' }}>Size</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Vòng ngực (cm)</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Chiều dài áo (cm)</th>
-                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>Rộng vai (cm)</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>{lang === 'vi' ? 'Vòng ngực (cm)' : 'Chest (cm)'}</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>{lang === 'vi' ? 'Chiều dài áo (cm)' : 'Length (cm)'}</th>
+                  <th style={{ padding: '10px', border: '1px solid #ddd' }}>{lang === 'vi' ? 'Rộng vai (cm)' : 'Shoulder (cm)'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -244,7 +253,9 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
             </table>
 
             <div style={{ marginTop: '16px', fontSize: '0.8rem', color: '#666', lineHeight: 1.5 }}>
-              * Lưu ý: Thông số kích thước có thể chênh lệch 1-2cm tùy theo phom dáng của từng mẫu sản phẩm cụ thể.
+              {lang === 'vi'
+                ? '* Lưu ý: Thông số kích thước có thể chênh lệch 1-2cm tùy theo phom dáng của từng mẫu sản phẩm cụ thể.'
+                : '* Note: Standard dimensions may vary by 1-2cm depending on individual garment silhouette.'}
             </div>
           </div>
         )}

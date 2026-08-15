@@ -7,7 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 export const ProductCard = ({ product, onNavigate }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
 
   const [selectedVariant, setSelectedVariant] = useState(
     product.variants && product.variants.length > 0 ? product.variants[0] : null
@@ -83,9 +83,9 @@ export const ProductCard = ({ product, onNavigate }) => {
 
         {/* Badges */}
         <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 2 }}>
-          {product.limitedOffer && <span className="badge-uq red">Khuyến Mãi Có Hạn</span>}
-          {product.isNew && <span className="badge-uq black">Mới</span>}
-          {product.bestSeller && !product.limitedOffer && <span className="badge-uq gray">Bán Chạy</span>}
+          {product.limitedOffer && <span className="badge-uq red">{lang === 'vi' ? 'Khuyến Mãi Có Hạn' : 'Limited Offer'}</span>}
+          {product.isNew && <span className="badge-uq black">{lang === 'vi' ? 'Mới' : 'New'}</span>}
+          {product.bestSeller && !product.limitedOffer && <span className="badge-uq gray">{lang === 'vi' ? 'Bán Chạy' : 'Best Seller'}</span>}
         </div>
 
         {/* Wishlist Button */}
@@ -107,6 +107,8 @@ export const ProductCard = ({ product, onNavigate }) => {
             justifyContent: 'center',
             boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
             zIndex: 3,
+            border: 'none',
+            cursor: 'pointer',
             transition: 'var(--transition)'
           }}
         >
@@ -130,7 +132,7 @@ export const ProductCard = ({ product, onNavigate }) => {
             }}
           >
             <div style={{ fontSize: '0.75rem', fontWeight: '700', marginBottom: '6px', color: '#666', textAlign: 'center' }}>
-              CHỌN SIZE ĐỂ THÊM NHANH:
+              {lang === 'vi' ? 'CHỌN SIZE ĐỂ THÊM NHANH:' : 'SELECT SIZE FOR QUICK ADD:'}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
               {product.variants
@@ -160,18 +162,18 @@ export const ProductCard = ({ product, onNavigate }) => {
       </div>
 
       {/* Product Content Details */}
-      <div style={{ padding: '12px 0 6px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '8px 0 4px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Color swatches */}
         {uniqueColors.length > 0 && (
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '8px' }}>
-            {uniqueColors.map((v) => (
+          <div style={{ display: 'flex', gap: '5px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '6px' }}>
+            {uniqueColors.slice(0, 5).map((v) => (
               <button
                 key={v.colorName}
                 onClick={() => handleColorChange(v)}
                 title={v.colorName}
                 style={{
-                  width: '16px',
-                  height: '16px',
+                  width: '14px',
+                  height: '14px',
                   borderRadius: '50%',
                   backgroundColor: v.colorHex,
                   border: selectedVariant?.colorName === v.colorName ? '2px solid #111' : '1px solid #ccc',
@@ -181,14 +183,16 @@ export const ProductCard = ({ product, onNavigate }) => {
                 }}
               />
             ))}
-            <span style={{ fontSize: '0.75rem', color: '#888', marginLeft: '4px' }}>
-              {uniqueColors.length} màu
-            </span>
+            {uniqueColors.length > 5 && (
+              <span style={{ fontSize: '0.7rem', color: '#888' }}>
+                +{uniqueColors.length - 5}
+              </span>
+            )}
           </div>
         )}
 
         {/* Gender / Collection Tag */}
-        <div style={{ fontSize: '0.75rem', color: '#767676', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>
+        <div style={{ fontSize: '0.7rem', color: '#767676', textTransform: 'uppercase', fontWeight: '600', marginBottom: '3px' }}>
           {product.gender} • {product.collection || 'LifeWear'}
         </div>
 
@@ -196,13 +200,13 @@ export const ProductCard = ({ product, onNavigate }) => {
         <div
           onClick={() => onNavigate('product-detail', { id: product.id, slug: product.slug })}
           style={{
-            fontSize: '0.92rem',
+            fontSize: '0.88rem',
             fontWeight: '600',
             color: '#111',
-            lineHeight: 1.35,
-            marginBottom: '6px',
+            lineHeight: 1.3,
+            marginBottom: '4px',
             cursor: 'pointer',
-            minHeight: '2.5em',
+            minHeight: '2.4em',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
@@ -213,23 +217,22 @@ export const ProductCard = ({ product, onNavigate }) => {
         </div>
 
         {/* Pricing */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: 'auto', marginBottom: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap', marginTop: 'auto', marginBottom: '4px' }}>
           {product.salePrice ? (
             <>
-              <span className="text-sale-price">{formatPrice(product.salePrice)}</span>
-              <span className="text-old-price">{formatPrice(product.basePrice)}</span>
+              <span className="text-sale-price" style={{ fontSize: '1.05rem' }}>{formatPrice(product.salePrice)}</span>
+              <span className="text-old-price" style={{ fontSize: '0.82rem' }}>{formatPrice(product.basePrice)}</span>
             </>
           ) : (
-            <span className="text-price">{formatPrice(product.basePrice)}</span>
+            <span className="text-price" style={{ fontSize: '0.98rem' }}>{formatPrice(product.basePrice)}</span>
           )}
         </div>
 
         {/* Rating and Quick Add trigger */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#666' }}>
-            <Star size={14} color="#ffab00" fill="#ffab00" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '2px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.75rem', color: '#666' }}>
+            <Star size={13} color="#ffab00" fill="#ffab00" />
             <span style={{ fontWeight: '700', color: '#111' }}>{product.averageRating || 5.0}</span>
-            <span>({product.reviewCount || 12})</span>
           </div>
 
           <button
@@ -237,18 +240,20 @@ export const ProductCard = ({ product, onNavigate }) => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              fontSize: '0.75rem',
+              gap: '3px',
+              fontSize: '0.7rem',
               fontWeight: '700',
               textTransform: 'uppercase',
               color: '#111',
-              padding: '4px 8px',
+              padding: '3px 6px',
               border: '1px solid #e0e0e0',
-              backgroundColor: '#fafafa'
+              backgroundColor: '#fafafa',
+              borderRadius: '2px',
+              cursor: 'pointer'
             }}
           >
-            <Plus size={12} />
-            <span>Thêm nhanh</span>
+            <Plus size={11} />
+            <span>{lang === 'vi' ? 'Thêm' : 'Add'}</span>
           </button>
         </div>
       </div>

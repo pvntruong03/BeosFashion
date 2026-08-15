@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 
 export const Footer = ({ onNavigate }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { showSuccess } = useToast();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -13,69 +13,69 @@ export const Footer = ({ onNavigate }) => {
     e.preventDefault();
     if (email && email.includes('@')) {
       setSubscribed(true);
-      showSuccess('Cảm ơn bạn! Mã giảm giá 10% của bạn là: BEO10');
+      showSuccess(lang === 'vi' ? 'Cảm ơn bạn! Mã giảm giá 10% của bạn là: BEO10' : 'Thank you! Your 10% discount promo code is: BEO10');
       setEmail('');
     }
   };
 
   return (
-    <footer style={{ backgroundColor: '#f8f8f8', borderTop: '1px solid #e5e5e5', marginTop: '60px' }}>
+    <footer style={{ backgroundColor: '#f8f8f8', borderTop: '1px solid #e5e5e5', marginTop: '40px' }}>
       {/* Value props banner */}
-      <div style={{ borderBottom: '1px solid #e5e5e5', padding: '36px 0', backgroundColor: '#ffffff' }}>
+      <div style={{ borderBottom: '1px solid #e5e5e5', padding: '24px 0', backgroundColor: '#ffffff' }}>
         <div className="container" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '24px'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Truck size={24} color="#e60012" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Truck size={20} color="#e60012" />
             </div>
             <div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>Giao hàng Miễn phí</div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>Cho tất cả đơn hàng từ 500.000đ</div>
+              <div style={{ fontWeight: '700', fontSize: '0.88rem' }}>{lang === 'vi' ? 'Giao hàng Miễn phí' : 'Free Standard Shipping'}</div>
+              <div style={{ fontSize: '0.75rem', color: '#666' }}>{lang === 'vi' ? 'Cho đơn từ 500.000đ' : 'On orders over 500k'}</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <RefreshCw size={24} color="#e60012" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <RefreshCw size={20} color="#e60012" />
             </div>
             <div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>Đổi hàng trong 30 ngày</div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>Đổi size & màu miễn phí tại showroom</div>
+              <div style={{ fontWeight: '700', fontSize: '0.88rem' }}>{lang === 'vi' ? 'Đổi hàng 30 ngày' : '30-Day Returns'}</div>
+              <div style={{ fontSize: '0.75rem', color: '#666' }}>{lang === 'vi' ? 'Đổi size & màu tại showroom' : 'Free size & color exchange'}</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShieldCheck size={24} color="#e60012" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <ShieldCheck size={20} color="#e60012" />
             </div>
             <div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>Chất lượng Chuẩn Nhật Bản</div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>Công nghệ sợi vải AIRism & HEATTECH</div>
+              <div style={{ fontWeight: '700', fontSize: '0.88rem' }}>{lang === 'vi' ? 'Chuẩn Nhật Bản' : 'Japanese Quality'}</div>
+              <div style={{ fontSize: '0.75rem', color: '#666' }}>{lang === 'vi' ? 'Công nghệ AIRism & HEATTECH' : 'AIRism & HEATTECH'}</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '48px', height: '48px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MapPin size={24} color="#e60012" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', backgroundColor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <MapPin size={20} color="#e60012" />
             </div>
             <div>
-              <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>Nhận tại Cửa hàng (Click & Collect)</div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>Lấy hàng nhanh trong vòng 2 giờ</div>
+              <div style={{ fontWeight: '700', fontSize: '0.88rem' }}>{lang === 'vi' ? 'Click & Collect' : 'Click & Collect'}</div>
+              <div style={{ fontSize: '0.75rem', color: '#666' }}>{lang === 'vi' ? 'Nhận hàng sau 2 giờ' : 'Ready within 2 hours'}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Footer Links & Newsletter */}
-      <div className="container" style={{ padding: '48px 24px' }}>
+      <div className="container" style={{ padding: '36px 12px' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '40px',
-          marginBottom: '40px'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '28px',
+          marginBottom: '32px'
         }}>
           {/* Col 1: Brand & Philosophy */}
           <div>
@@ -89,46 +89,54 @@ export const Footer = ({ onNavigate }) => {
               {t('lifewear_story_desc')}
             </p>
             <div style={{ fontSize: '0.85rem', color: '#333', fontWeight: '600' }}>
-              Hotline CSKH: 1900019199999 (08:00 - 22:00)
+              Hotline: 1900019199999 (08:00 - 22:00)
             </div>
           </div>
 
           {/* Col 2: Categories */}
           <div>
-            <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '16px', textTransform: 'uppercase' }}>Danh mục Sản phẩm</div>
+            <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '16px', textTransform: 'uppercase' }}>
+              {lang === 'vi' ? 'Danh mục Sản phẩm' : 'Product Categories'}
+            </div>
             <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: '#555', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <li><button onClick={() => onNavigate('products', { gender: 'MEN' })} style={{ color: '#555' }}>Trang phục Nam</button></li>
-              <li><button onClick={() => onNavigate('products', { gender: 'WOMEN' })} style={{ color: '#555' }}>Trang phục Nữ</button></li>
-              <li><button onClick={() => onNavigate('products', { collection: 'LifeWear' })} style={{ color: '#555' }}>Bộ sưu tập LifeWear</button></li>
-              <li><button onClick={() => onNavigate('products', { collection: 'AIRism' })} style={{ color: '#555' }}>Dòng sản phẩm AIRism</button></li>
-              <li><button onClick={() => onNavigate('products', { collection: 'HEATTECH' })} style={{ color: '#555' }}>Dòng sản phẩm HEATTECH</button></li>
-              <li><button onClick={() => onNavigate('lookbook')} style={{ color: '#555' }}>LifeWear Lookbook</button></li>
+              <li><button onClick={() => onNavigate('products', { gender: 'MEN' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Trang phục Nam' : 'Men Fashion'}</button></li>
+              <li><button onClick={() => onNavigate('products', { gender: 'WOMEN' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Trang phục Nữ' : 'Women Fashion'}</button></li>
+              <li><button onClick={() => onNavigate('products', { collection: 'LifeWear' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Bộ sưu tập LifeWear' : 'LifeWear Collection'}</button></li>
+              <li><button onClick={() => onNavigate('products', { collection: 'AIRism' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Dòng sản phẩm AIRism' : 'AIRism Series'}</button></li>
+              <li><button onClick={() => onNavigate('products', { collection: 'HEATTECH' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Dòng sản phẩm HEATTECH' : 'HEATTECH Series'}</button></li>
+              <li><button onClick={() => onNavigate('lookbook')} style={{ color: '#555' }}>{lang === 'vi' ? 'LifeWear Lookbook' : 'Lookbook Styling'}</button></li>
             </ul>
           </div>
 
           {/* Col 3: Customer Care */}
           <div>
-            <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '16px', textTransform: 'uppercase' }}>Hỗ trợ Khách hàng</div>
+            <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '16px', textTransform: 'uppercase' }}>
+              {lang === 'vi' ? 'Hỗ trợ Khách hàng' : 'Customer Service'}
+            </div>
             <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: '#555', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <li><button onClick={() => onNavigate('stores')} style={{ color: '#555' }}>Showroom BEO (Cần Thơ)</button></li>
-              <li><button onClick={() => onNavigate('orders')} style={{ color: '#555' }}>Theo dõi đơn hàng</button></li>
-              <li><a href="#" style={{ color: '#555' }}>Chính sách đổi trả & bảo hành</a></li>
-              <li><a href="#" style={{ color: '#555' }}>Bảng kích cỡ (Size Guide)</a></li>
-              <li><a href="#" style={{ color: '#555' }}>Chính sách quyền riêng tư</a></li>
+              <li><button onClick={() => onNavigate('stores')} style={{ color: '#555' }}>{lang === 'vi' ? 'Showroom BEO (Cần Thơ)' : 'Flagship Store (Can Tho)'}</button></li>
+              <li><button onClick={() => onNavigate('orders')} style={{ color: '#555' }}>{lang === 'vi' ? 'Theo dõi đơn hàng' : 'Track Your Order'}</button></li>
+              <li><a href="#" style={{ color: '#555' }}>{lang === 'vi' ? 'Chính sách đổi trả & bảo hành' : 'Returns & Warranty Policy'}</a></li>
+              <li><a href="#" style={{ color: '#555' }}>{lang === 'vi' ? 'Bảng kích cỡ (Size Guide)' : 'Size Guide & Conversion'}</a></li>
+              <li><a href="#" style={{ color: '#555' }}>{lang === 'vi' ? 'Chính sách quyền riêng tư' : 'Privacy & Security Policy'}</a></li>
             </ul>
           </div>
 
           {/* Col 4: Newsletter Box */}
           <div>
-            <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '12px', textTransform: 'uppercase' }}>Đăng ký nhận bản tin</div>
+            <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '12px', textTransform: 'uppercase' }}>
+              {lang === 'vi' ? 'Đăng ký nhận bản tin' : 'Join Our Newsletter'}
+            </div>
             <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '16px' }}>
-              Đăng ký ngay hôm nay để nhận <strong>Mã giảm giá 10% (BEO10)</strong> cho đơn hàng đầu tiên cùng thông tin BST mới nhất.
+              {lang === 'vi'
+                ? 'Đăng ký ngay hôm nay để nhận Mã giảm giá 10% (BEO10) cho đơn hàng đầu tiên cùng thông tin BST mới nhất.'
+                : 'Subscribe today and receive a 10% promo code (BEO10) on your first purchase plus latest collection drops.'}
             </p>
 
             {subscribed ? (
               <div style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', padding: '12px', borderRadius: '2px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={18} />
-                <span>Mã giảm giá: <strong>BEO10</strong></span>
+                <span>{lang === 'vi' ? 'Mã giảm giá:' : 'Promo code:'} <strong>BEO10</strong></span>
               </div>
             ) : (
               <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -136,7 +144,7 @@ export const Footer = ({ onNavigate }) => {
                   <input
                     type="email"
                     required
-                    placeholder="Nhập địa chỉ email của bạn"
+                    placeholder={lang === 'vi' ? 'Nhập địa chỉ email của bạn' : 'Enter your email address'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{
@@ -174,12 +182,12 @@ export const Footer = ({ onNavigate }) => {
           color: '#888'
         }}>
           <div>
-            © 2026 BEO FASHION CO., LTD. / BEO VIETNAM. All rights reserved. Powered by Java Spring Boot & React.
+            © 2026 BEO FASHION CO., LTD. / BEO STORE VIETNAM. All rights reserved. Powered by Java Spring Boot & React.
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
-            <span>Điều khoản sử dụng</span>
-            <span>Chính sách bảo mật</span>
-            <span>Cài đặt Cookie</span>
+            <span>{lang === 'vi' ? 'Điều khoản sử dụng' : 'Terms of Use'}</span>
+            <span>{lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy'}</span>
+            <span>{lang === 'vi' ? 'Cài đặt Cookie' : 'Cookie Settings'}</span>
           </div>
         </div>
       </div>

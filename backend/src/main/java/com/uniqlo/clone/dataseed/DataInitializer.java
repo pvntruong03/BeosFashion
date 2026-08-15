@@ -106,7 +106,7 @@ public class DataInitializer implements CommandLineRunner {
 
         // 3. CATEGORIES
         Category catMen = categoryRepository.save(Category.builder()
-                .name("Nam")
+                .name("Men")
                 .slug("men")
                 .gender(Gender.MEN)
                 .displayOrder(1)
@@ -114,7 +114,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catMenTops = categoryRepository.save(Category.builder()
-                .name("Áo Nam")
+                .name("Men's Tops")
                 .slug("men-tops")
                 .gender(Gender.MEN)
                 .parent(catMen)
@@ -122,7 +122,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catMenBottoms = categoryRepository.save(Category.builder()
-                .name("Quần Nam")
+                .name("Men's Bottoms")
                 .slug("men-bottoms")
                 .gender(Gender.MEN)
                 .parent(catMen)
@@ -130,7 +130,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catMenOuterwear = categoryRepository.save(Category.builder()
-                .name("Áo Khoác Nam")
+                .name("Men's Outerwear")
                 .slug("men-outerwear")
                 .gender(Gender.MEN)
                 .parent(catMen)
@@ -138,7 +138,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catMenInnerwear = categoryRepository.save(Category.builder()
-                .name("Đồ Lót & Giữ Nhiệt Nam")
+                .name("Men's Innerwear & HEATTECH")
                 .slug("men-innerwear")
                 .gender(Gender.MEN)
                 .parent(catMen)
@@ -146,7 +146,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catWomen = categoryRepository.save(Category.builder()
-                .name("Nữ")
+                .name("Women")
                 .slug("women")
                 .gender(Gender.WOMEN)
                 .displayOrder(2)
@@ -154,7 +154,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catWomenTops = categoryRepository.save(Category.builder()
-                .name("Áo Nữ")
+                .name("Women's Tops")
                 .slug("women-tops")
                 .gender(Gender.WOMEN)
                 .parent(catWomen)
@@ -162,7 +162,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catWomenBottoms = categoryRepository.save(Category.builder()
-                .name("Quần & Chân Váy Nữ")
+                .name("Women's Bottoms & Skirts")
                 .slug("women-bottoms")
                 .gender(Gender.WOMEN)
                 .parent(catWomen)
@@ -170,7 +170,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catWomenDresses = categoryRepository.save(Category.builder()
-                .name("Đầm & Jumpsuit")
+                .name("Dresses & Jumpsuits")
                 .slug("women-dresses")
                 .gender(Gender.WOMEN)
                 .parent(catWomen)
@@ -178,7 +178,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catWomenOuterwear = categoryRepository.save(Category.builder()
-                .name("Áo Khoác Nữ")
+                .name("Women's Outerwear & Hoodies")
                 .slug("women-outerwear")
                 .gender(Gender.WOMEN)
                 .parent(catWomen)
@@ -186,7 +186,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catWomenInnerwear = categoryRepository.save(Category.builder()
-                .name("Đồ Lót & Bra Top Nữ")
+                .name("Women's Innerwear & Wireless Bras")
                 .slug("women-innerwear")
                 .gender(Gender.WOMEN)
                 .parent(catWomen)
@@ -194,7 +194,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catKids = categoryRepository.save(Category.builder()
-                .name("Trẻ Em")
+                .name("Kids")
                 .slug("kids")
                 .gender(Gender.KIDS)
                 .displayOrder(3)
@@ -202,7 +202,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catKidsTops = categoryRepository.save(Category.builder()
-                .name("Áo Trẻ Em")
+                .name("Kids' Tops")
                 .slug("kids-tops")
                 .gender(Gender.KIDS)
                 .parent(catKids)
@@ -210,7 +210,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catKidsBottoms = categoryRepository.save(Category.builder()
-                .name("Quần Trẻ Em")
+                .name("Kids' Bottoms")
                 .slug("kids-bottoms")
                 .gender(Gender.KIDS)
                 .parent(catKids)
@@ -218,7 +218,7 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         Category catAccessories = categoryRepository.save(Category.builder()
-                .name("Phụ Kiện & Túi")
+                .name("Accessories & Bags")
                 .slug("accessories")
                 .gender(Gender.UNISEX)
                 .displayOrder(4)
@@ -230,13 +230,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 1: AIRism Cotton Oversized T-Shirt (Flagship product)
         Product p1 = createProductWithVariants(
-                "AIRism Cotton Áo Thun Cổ Tròn Dáng Rộng Ngắn Tay",
+                "AIRism Cotton Oversized Crew Neck T-Shirt",
                 "UQ-455359",
                 "airism-cotton-oversized-crew-neck-t-shirt",
-                "Áo thun phong cách Uniqlo U dáng rộng hiện đại. Bề mặt ngoài bằng cotton cao cấp mang lại vẻ ngoài thanh lịch, mặt trong ứng dụng công nghệ AIRism mềm mịn, thoáng khí và thấm hút mồ hôi tối ưu.",
-                "Công nghệ AIRism mát lạnh độc quyền của Uniqlo.\nThiết kế cổ tròn viền gọn gàng, phom dáng oversize thoải mái.\nPhù hợp mặc hàng ngày trong mọi điều kiện thời tiết.",
-                "53% Bông, 47% Polyeste",
-                "Giặt máy nước lạnh, chế độ nhẹ nhàng",
+                "Modern Uniqlo U relaxed fit. High-grade cotton exterior for a clean, elegant drape, bonded with silky AIRism interior for maximum breathability and moisture-wicking comfort.",
+                "Signature Uniqlo AIRism cooling technology.\nNeat ribbed neckline with comfortable oversized silhouette.\nEssential daily LifeWear for any weather.",
+                "53% Cotton, 47% Polyester",
+                "Machine wash cold, gentle cycle",
                 new BigDecimal("399000"),
                 null,
                 catMenTops,
@@ -255,13 +255,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 2: HEATTECH Crew Neck Long Sleeve T-Shirt
         Product p2 = createProductWithVariants(
-                "HEATTECH Áo Cổ Tròn Dài Tay Giữ Nhiệt",
+                "HEATTECH Crew Neck Long Sleeve T-Shirt",
                 "UQ-460670",
                 "heattech-crew-neck-long-sleeve-t-shirt",
-                "Chất liệu HEATTECH kinh điển của Uniqlo chuyển hóa hơi ẩm từ cơ thể thành nhiệt lượng ấm áp, mềm mịn và nhẹ nhàng.",
-                "Công nghệ sợi đặc biệt giữ ấm và ngăn mùi hiệu quả.\nChất liệu co giãn 4 chiều linh hoạt ôm trọn cơ thể.",
-                "38% Polyeste, 32% Rayon, 21% Acrylic, 9% Spandex",
-                "Giặt máy nước ấm, không sấy khô",
+                "Classic bio-warming HEATTECH jersey converts moisture from the body into soothing warmth, engineered with soft, stretch fibers that fit smoothly under any outfit.",
+                "Advanced thermal fibers lock in warmth and neutralize odors.\n4-way stretch fabric contours softly to the body.",
+                "38% Polyester, 32% Rayon, 21% Acrylic, 9% Spandex",
+                "Machine wash warm, do not tumble dry",
                 new BigDecimal("399000"),
                 null,
                 catMenInnerwear,
@@ -278,13 +278,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 3: Smart Ankle Pants (Co giãn 2 chiều)
         Product p3 = createProductWithVariants(
-                "Smart Pants Quần Dài Co Giãn 2 Chiều Dáng Suông",
+                "Smart Ankle Pants 2-Way Stretch",
                 "UQ-463942",
                 "smart-ankle-pants-2-way-stretch",
-                "Chiếc quần đa năng phù hợp cả môi trường công sở lịch sự và dạo phố thường ngày. Chất liệu co giãn 2 chiều mang lại cảm giác thoải mái suốt cả ngày dài.",
-                "Chống nhăn sau khi giặt (Easy Care).\nCạp quần co giãn ẩn mang lại sự tinh tế.",
-                "67% Polyeste, 29% Rayon, 4% Spandex",
-                "Giặt máy chế độ nhẹ, ủi ở nhiệt độ trung bình",
+                "Versatile tailored trousers suitable for business or casual everyday styling. 2-way stretch fabric delivers all-day ease with an easy-care wrinkle-resistant finish.",
+                "Easy-care wrinkle resistance.\nHidden elastic waistband for refined tailoring.",
+                "67% Polyester, 29% Rayon, 4% Spandex",
+                "Machine wash gentle, medium iron",
                 new BigDecimal("799000"),
                 new BigDecimal("699000"),
                 catMenBottoms,
@@ -302,13 +302,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 4: Ultra Light Down Jacket
         Product p4 = createProductWithVariants(
-                "Ultra Light Down Áo Khoác Lông Vũ Siêu Nhẹ",
+                "Ultra Light Down Puffer Jacket",
                 "UQ-460920",
                 "ultra-light-down-jacket",
-                "Áo khoác lông vũ siêu nhẹ kinh điển của Uniqlo. Dễ dàng gấp gọn vào túi đựng đi kèm, bề mặt chống thấm nước nhẹ và giữ nhiệt vượt trội.",
-                "Tỷ lệ 90% lông tơ vũ cao cấp (Down Fill 750+).\nKèm túi đựng mini tiện lợi cho các chuyến du lịch.",
-                "Vải ngoài: 100% Nylon; Lớp lót: 90% Lông tơ, 10% Lông vũ",
-                "Giặt tay nước lạnh với dung dịch giặt chuyên dụng",
+                "Iconic lightweight premium down jacket. Packs neatly into its matching carrying pouch with water-repellent coating and superior 750+ fill power insulation.",
+                "90% premium down cluster ratio (750+ fill power).\nIncludes matching compact carrying pouch.",
+                "Shell: 100% Nylon; Lining: 90% Down, 10% Feathers",
+                "Hand wash cold with down cleaner",
                 new BigDecimal("1499000"),
                 new BigDecimal("1299000"),
                 catMenOuterwear,
@@ -326,13 +326,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 5: UT Graphic T-Shirt
         Product p5 = createProductWithVariants(
-                "UT Áo Thun Graphic Jujutsu Kaisen Cổ Tròn",
+                "UT Anime Graphic Crew Neck T-Shirt",
                 "UQ-467812",
                 "ut-graphic-t-shirt-jujutsu-kaisen",
-                "Bộ sưu tập UT độc quyền hợp tác cùng bộ Anime đình đám Jujutsu Kaisen. Hình in sắc nét thể hiện các nhân vật được yêu thích.",
-                "Chất liệu 100% cotton dày dặn bền đẹp.\nForm áo chuẩn unisex cho cả nam và nữ.",
-                "100% Bông Cotton",
-                "Giặt máy nước lạnh, lộn trái khi giặt",
+                "Exclusive UT collaboration series showcasing celebrated anime artistry. Heavyweight 100% cotton with a unisex silhouette.",
+                "Heavyweight 100% durable cotton.\nStandard unisex fit for versatile styling.",
+                "100% Cotton",
+                "Machine wash cold, wash inside out",
                 new BigDecimal("499000"),
                 null,
                 catMenTops,
@@ -349,13 +349,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 6: Women Supima Cotton Crew Neck T-Shirt
         Product p6 = createProductWithVariants(
-                "Áo Thun Nữ Cotton Supima Cổ Tròn Ngắn Tay",
+                "Women Supima Cotton Crew Neck T-Shirt",
                 "UQ-458721",
                 "women-supima-cotton-crew-neck-t-shirt",
-                "Sử dụng 100% sợi Supima quý hiếm chiếm chưa đến 1% sản lượng bông toàn cầu. Vải có độ bóng nhẹ tự nhiên, mềm mại vượt trội trên da.",
-                "Độ co giãn và giữ phom xuất sắc sau nhiều lần giặt.\nCổ áo thanh mảnh nữ tính.",
-                "100% Bông Cotton Supima",
-                "Giặt máy nước lạnh nhẹ nhàng",
+                "Crafted from 100% rare Supima cotton representing less than 1% of global cotton output. Features a lustrous natural sheen and delicate feminine crew neckline.",
+                "Exceptional shape retention after multiple washes.\nSlim feminine collar design.",
+                "100% Supima Cotton",
+                "Machine wash cold gentle",
                 new BigDecimal("299000"),
                 null,
                 catWomenTops,
@@ -373,13 +373,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 7: Women Pleated Wide Pants
         Product p7 = createProductWithVariants(
-                "Quần Xếp Ly Dáng Rộng Pleated Wide Pants Nữ",
+                "Women Pleated Wide-Leg Pants",
                 "UQ-460311",
                 "women-pleated-wide-pants",
-                "Item hot hit làm mưa làm gió khắp mạng xã hội. Ống quần suông rộng tôn dáng, xếp ly đôi phía trước tạo hiệu ứng kéo dài chân tinh tế.",
-                "Chất vải rủ sang trọng, ít nhăn.\nCạp chun ẩn co giãn tiện lợi.",
-                "66% Polyeste, 28% Rayon, 6% Spandex",
-                "Giặt máy nước lạnh, ủi hơi nước nhẹ",
+                "Viral wide-leg silhouette with front double pleats creating an elongated leg line. Fluid, wrinkle-resistant drape with an elasticated waistband.",
+                "Luxurious drape with low-maintenance finish.\nHidden elastic waistband for easy wear.",
+                "66% Polyester, 28% Rayon, 6% Spandex",
+                "Machine wash cold, light steam iron",
                 new BigDecimal("999000"),
                 new BigDecimal("799000"),
                 catWomenBottoms,
@@ -396,13 +396,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 8: Women AIRism UV Protection Mesh Hoodie
         Product p8 = createProductWithVariants(
-                "Áo Khoác Vải Mắt Lưới AIRism Chống Tia UV Nữ",
+                "Women AIRism UV Protection Mesh Hoodie",
                 "UQ-464850",
                 "women-airism-uv-protection-mesh-hoodie",
-                "Bảo vệ làn da tức thì dưới ánh nắng hè với chỉ số chống tia cực tím UPF50+. Vải mắt lưới AIRism siêu thoáng mát, có lỗ xỏ ngón tay cái che phủ mu bàn tay.",
-                "Ngăn chặn hơn 90% tia UV.\nKhô nhanh và mát lạnh suốt cả ngày.",
-                "75% Polyeste, 13% Spandex, 12% Cupro",
-                "Giặt máy nước lạnh",
+                "Instant UPF 50+ sun barrier in breathable AIRism mesh fabric with extended thumbhole cuffs to shield the back of hands from harsh UV rays.",
+                "Blocks over 90% of harmful UV rays.\nFast-drying and cool to the touch.",
+                "75% Polyester, 13% Spandex, 12% Cupro",
+                "Machine wash cold",
                 new BigDecimal("599000"),
                 null,
                 catWomenOuterwear,
@@ -420,13 +420,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 9: Premium Linen Long Sleeve Shirt Men
         Product p9 = createProductWithVariants(
-                "Áo Sơ Mi Vải Linen Premium Dài Tay Nam",
+                "Men Premium Linen Long Sleeve Shirt",
                 "UQ-465188",
                 "premium-linen-long-sleeve-shirt-men",
-                "Được may từ 100% sợi lanh cao cấp có nguồn gốc từ Tây Âu. Càng giặt chất vải càng mềm mịn và mang nét đẹp tự nhiên mộc mạc.",
-                "Thoáng khí tự nhiên, thấm hút mồ hôi vượt trội.\nPhom dáng suông rộng rãi thoải mái.",
-                "100% Vải Lanh (Linen)",
-                "Giặt máy nước lạnh, phơi trong bóng râm",
+                "Woven from 100% Western European flax linen. Becomes softer and gains refined character with every wash, offering natural cooling and airflow.",
+                "Naturally breathable with superior moisture absorption.\nRelaxed regular fit silhouette.",
+                "100% Western European Linen",
+                "Machine wash cold, line dry in shade",
                 new BigDecimal("899000"),
                 new BigDecimal("749000"),
                 catMenTops,
@@ -444,13 +444,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 10: Ultra Stretch Slim Fit Jeans Men
         Product p10 = createProductWithVariants(
-                "Quần Jeans Co Giãn Siêu Thoải Mái Ultra Stretch Slim Fit Nam",
+                "Men Ultra Stretch Slim Fit Jeans",
                 "UQ-463933",
                 "ultra-stretch-slim-fit-jeans-men",
-                "Độ co giãn đột phá lên tới hơn 40% giúp bạn vận động linh hoạt không chút gò bó. Phom dáng ống ôm vừa vặn tôn dáng vẻ nam tính hiện đại.",
-                "Công nghệ dệt denim Kaihara Nhật Bản trứ danh.\nMàu nhuộm chàm tự nhiên bền đẹp.",
-                "93% Bông, 5% Polyeste, 2% Spandex",
-                "Giặt riêng ở lần giặt đầu, lộn trái khi giặt",
+                "Breakthrough 40%+ stretch elasticity for unrestricted mobility. Engineered with world-renowned Kaihara Japanese denim and authentic indigo dye.",
+                "Renowned Kaihara Japanese denim weaving.\nAuthentic natural indigo dye.",
+                "93% Cotton, 5% Polyester, 2% Spandex",
+                "Wash separately on first wash, wash inside out",
                 new BigDecimal("999000"),
                 null,
                 catMenBottoms,
@@ -467,13 +467,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 11: DRY-EX Polo Shirt Men
         Product p11 = createProductWithVariants(
-                "Áo Polo DRY-EX Cổ Bẻ Thể Thao Nam",
+                "Men DRY-EX Performance Polo Shirt",
                 "UQ-456778",
                 "dry-ex-short-sleeve-polo-shirt-men",
-                "Công nghệ vải DRY-EX khô siêu tốc được các vận động viên hàng đầu tin dùng. Thấm hút mồ hôi và khuếch tán cực nhanh giữ cho cơ thể luôn khô ráo.",
-                "Cổ áo dệt rib tinh xảo chống xù lông.\nCấu trúc mắt lưới thông khí ở các vùng dễ toát mồ hôi.",
-                "100% Polyeste tái chế thân thiện môi trường",
-                "Giặt máy nước lạnh",
+                "Athletic-grade rapid-drying DRY-EX technology engineered to wick away sweat instantaneously. Knit collar maintains its sharp structure after repeated washing.",
+                "Rib knit collar resists pilling.\nEngineered mesh ventilation zones.",
+                "100% Recycled Polyester",
+                "Machine wash cold",
                 new BigDecimal("499000"),
                 new BigDecimal("399000"),
                 catMenTops,
@@ -491,13 +491,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 12: Extra Fine Merino Cardigan Women
         Product p12 = createProductWithVariants(
-                "Áo Cardigan Vải Len Cừu Extra Fine Merino Nữ",
+                "Women Extra Fine Merino Crew Cardigan",
                 "UQ-461083",
                 "extra-fine-merino-crew-neck-cardigan-women",
-                "Được dệt từ 100% sợi len cừu Merino siêu mảnh 19.5 micron cực kỳ mềm mại, không gây ngứa hay kích ứng da. Bề mặt có độ bóng mượt sang trọng.",
-                "Công nghệ xử lý chống co rút, có thể giặt máy.\nHàng cúc xà cừ tinh tế.",
-                "100% Len Cừu Merino Cao Cấp",
-                "Giặt máy với lưới giặt, chế độ len",
+                "Spun from 19.5-micron ultra-fine 100% Merino wool for non-itchy, whisper-soft warmth. Machine washable with lustrous mother-of-pearl buttons.",
+                "Shrink-resistant processing for machine washability.\nNatural mother-of-pearl buttons.",
+                "100% Extra Fine Merino Wool",
+                "Machine wash with laundry net, wool cycle",
                 new BigDecimal("899000"),
                 null,
                 catWomenTops,
@@ -515,13 +515,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 13: Rayon Printed Floral Dress Women
         Product p13 = createProductWithVariants(
-                "Đầm Rayon Họa Tiết Hoa Nhí Thắt Nơ Eo Nữ",
+                "Women Printed Floral Rayon Dress",
                 "UQ-466820",
                 "rayon-printed-floral-short-sleeve-dress-women",
-                "Chất liệu Rayon mềm rủ tôn lên nét duyên dáng thướt tha. Họa tiết hoa nhí phong cách vintage trang nhã đi cùng dây thắt eo tạo điểm nhấn hoàn hảo.",
-                "Vải ít nhăn và giữ màu tươi sáng sau khi giặt.\nCổ áo chữ V thanh thoát.",
-                "100% Sợi Rayon cao cấp",
-                "Giặt máy nước lạnh, ủi hơi nước",
+                "Delicate vintage floral motif on supple rayon fabric. Soft silhouette with a waist tie and flattering V-neck cut for timeless elegance.",
+                "Crease-resistant fabric with long-lasting vibrant color.\nGraceful V-neckline.",
+                "100% Premium Rayon",
+                "Machine wash cold, steam iron",
                 new BigDecimal("999000"),
                 new BigDecimal("799000"),
                 catWomenDresses,
@@ -539,13 +539,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 14: Chino Shorts Men
         Product p14 = createProductWithVariants(
-                "Quần Short Kaki Chino Co Giãn Thoải Mái Nam",
+                "Men Stretch Chino Shorts",
                 "UQ-455490",
                 "stretch-chino-shorts-men",
-                "Chiếc quần short hoàn hảo cho những chuyến du lịch và hoạt động mùa hè. Chất liệu kaki dệt chéo mềm mại có bổ sung sợi co giãn mang lại sự năng động.",
-                "Độ dài ngang gối chuẩn mực thanh lịch.\nTúi sâu tiện lợi đựng điện thoại và ví.",
-                "97% Bông Cotton, 3% Spandex",
-                "Giặt máy nước lạnh",
+                "Classic warm-weather chino shorts with knee-length cut. Soft twill weave with stretch flexibility for active weekends.",
+                "Standard above-knee length.\nDeep functional pockets for essentials.",
+                "97% Cotton, 3% Spandex",
+                "Machine wash cold",
                 new BigDecimal("499000"),
                 null,
                 catMenBottoms,
@@ -563,13 +563,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 15: Tailored Relaxed Blazer Women
         Product p15 = createProductWithVariants(
-                "Áo Blazer Phom Rộng Phong Cách Thanh Lịch Nữ",
+                "Women Tailored Relaxed Blazer Jacket",
                 "UQ-460855",
                 "tailored-relaxed-blazer-jacket-women",
-                "Item thời thượng mang phong cách menswear sang trọng cho phái đẹp. Cầu vai nhẹ nhàng tạo phom đứng dáng thanh thoát chuẩn quý cô công sở hiện đại.",
-                "Chất vải dệt cao cấp chống nhăn.\nLớp lót lụa mềm êm ái khi cử động.",
-                "68% Polyeste, 28% Rayon, 4% Spandex",
-                "Giặt khô chuyên dụng hoặc giặt tay nhẹ",
+                "Elevated menswear-inspired relaxed tailoring with subtle shoulder pads for crisp definition. Premium crease-resistant twill with silky lining.",
+                "Premium wrinkle-resistant fabric weave.\nSoft silk-feel lining for fluid motion.",
+                "68% Polyester, 28% Rayon, 4% Spandex",
+                "Dry clean or delicate hand wash",
                 new BigDecimal("1499000"),
                 new BigDecimal("1299000"),
                 catWomenOuterwear,
@@ -587,13 +587,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 16: Kids Graphic T-Shirt
         Product p16 = createProductWithVariants(
-                "Áo Thun Cotton Họa Tiết Hoạt Hình Trẻ Em Kids",
+                "Kids Graphic Cotton T-Shirt",
                 "UQ-463200",
                 "kids-graphic-short-sleeve-t-shirt",
-                "100% sợi bông cotton tự nhiên an toàn và êm dịu cho làn da nhạy cảm của bé. Hình in ngộ nghĩnh nhiều màu sắc sinh động kích thích sự sáng tạo.",
-                "Đường may bo viền êm ái không cọ xát da bé.\nVải thấm hút mồ hôi cho bé thỏa sức chạy nhảy.",
-                "100% Bông Cotton Tự Nhiên",
-                "Giặt máy nước lạnh",
+                "100% natural cotton gentle on sensitive young skin. Cheerful cartoon prints with soft taped neck seams to prevent scratching.",
+                "Soft seam binding avoids skin chafing.\nBreathable cotton for active play.",
+                "100% Natural Cotton",
+                "Machine wash cold",
                 new BigDecimal("199000"),
                 null,
                 catKidsTops,
@@ -611,13 +611,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 17: Kids Sweat Jogger Pants
         Product p17 = createProductWithVariants(
-                "Quần Nỉ Bo Gấu Dễ Vận Động Trẻ Em Kids Jogger",
+                "Kids Easy-Care Sweat Jogger Pants",
                 "UQ-463211",
                 "kids-sweat-jogger-pants",
-                "Quần nỉ mềm mại có cạp chun co giãn và dây rút điều chỉnh bên trong. Ống quần bo gấu gọn gàng giúp bé vui chơi chạy nhảy an toàn không vấp ngã.",
-                "Lớp nỉ lót bên trong êm mịn và giữ ấm nhẹ nhàng.\nTúi 2 bên tiện lợi.",
-                "100% Bông Cotton mềm",
-                "Giặt máy nước ấm",
+                "Plush cotton-blend fleece jogger pants with elasticated waistband and ribbed cuffs designed for active playtime.",
+                "Soft fleece lining provides gentle warmth.\nConvenient side pockets.",
+                "100% Soft Cotton",
+                "Machine wash warm",
                 new BigDecimal("349000"),
                 new BigDecimal("299000"),
                 catKidsBottoms,
@@ -635,13 +635,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 18: Pocketable UV Protection Parka Men
         Product p18 = createProductWithVariants(
-                "Áo Khoác Gió Kháng Nước Siêu Nhẹ Pocketable Parka Nam",
+                "Men Pocketable UV Protection Parka",
                 "UQ-453773",
                 "pocketable-uv-protection-parka-men",
-                "Chiếc áo khoác gió mỏng nhẹ gấp gọn tiện lợi, có chỉ số chống nắng UPF50+ và lớp phủ trượt nước bền bỉ bảo vệ bạn trước những cơn mưa bất chợt.",
-                "Trọng lượng siêu nhẹ chỉ 120g.\nKèm túi đựng nhỏ gọn bỏ vừa túi xách.",
-                "100% Polyeste tái chế kháng nước",
-                "Giặt máy nước lạnh, không dùng chất tẩy mạnh",
+                "Featherlight 120g windbreaker with UPF 50+ rating and durable water-repellent (DWR) finish. Packs into its pocket-sized carry pouch.",
+                "Ultra-lightweight 120g construction.\nPacks into miniature travel pouch.",
+                "100% Recycled Water-Repellent Polyester",
+                "Machine wash cold, do not bleach",
                 new BigDecimal("799000"),
                 null,
                 catMenOuterwear,
@@ -659,13 +659,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 19: Round Mini Shoulder Bag Unisex
         Product p19 = createProductWithVariants(
-                "Túi Đeo Chéo Bán Nguyệt Mini Round Shoulder Bag Unisex",
+                "Round Mini Shoulder Bag Unisex",
                 "UQ-464484",
                 "round-mini-shoulder-bag-unisex",
-                "Chiếc túi đeo chéo hiện tượng toàn cầu với sức chứa đáng kinh ngạc. Thiết kế ôm trọn cơ thể, chất vải nylon trượt nước cùng trọng lượng siêu nhẹ.",
-                "Bên trong chia ngăn thông minh đựng vừa bình nước 500ml và ví dài.\nDây đeo có thể điều chỉnh độ dài linh hoạt.",
-                "Vải ngoài: 100% Nylon; Lớp lót: 100% Polyeste",
-                "Lau sạch bằng khăn ẩm",
+                "Global viral sensation bag with deceptive capacity. Contoured half-moon shape hugs the body, made of water-resistant lightweight nylon.",
+                "Cleverly fits 500ml water bottles and full-sized wallets.\nAdjustable nylon strap for customized drop.",
+                "Shell: 100% Nylon; Lining: 100% Polyester",
+                "Wipe clean with damp cloth",
                 new BigDecimal("299000"),
                 null,
                 catAccessories,
@@ -684,13 +684,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // Product 20: AIRism Wireless Bra Top Women
         Product p20 = createProductWithVariants(
-                "Áo Bra Top Không Gọng Vải AIRism Nâng Ngực Nữ",
+                "Women AIRism Seamless Wireless Bra",
                 "UQ-464332",
                 "airism-wireless-bra-seamless-women",
-                "Thiết kế 2 trong 1 tích hợp cúp ngực nâng đỡ tự nhiên mà không cần gọng kim loại. Vải AIRism mềm mịn như làn da thứ 2, mát lạnh và thấm hút mồ hôi tối ưu.",
-                "Cúp áo đệm mút 3D định hình vòng 1 chuẩn đẹp.\nĐường viền không đường may (Seamless) không hằn vết dưới trang phục.",
-                "85% Polyeste, 15% Spandex",
-                "Giặt máy với túi giặt đồ lót",
+                "2-in-1 design with built-in 3D molded cups for natural lift without underwire pinch. Seamless bonded edges stay invisible under clothing.",
+                "3D molded bra cups shape natural, flattering bust line.\nSeamless laser-cut edges eliminate show-through.",
+                "85% Polyester, 15% Spandex",
+                "Machine wash with laundry mesh bag",
                 new BigDecimal("499000"),
                 new BigDecimal("399000"),
                 catWomenInnerwear,

@@ -6,12 +6,11 @@ import { ReceiptModal } from '../components/ReceiptModal';
 import { VietQrPaymentCard } from '../components/VietQrPaymentCard';
 
 export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
   const [order, setOrder] = useState(initialOrder);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   useEffect(() => {
-    // Fire celebration confetti
     try {
       confetti({
         particleCount: 80,
@@ -26,9 +25,9 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
   if (!order) {
     return (
       <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
-        <h2>Không tìm thấy thông tin đơn hàng</h2>
+        <h2>{lang === 'vi' ? 'Không tìm thấy thông tin đơn hàng' : 'Order Information Not Found'}</h2>
         <button onClick={() => onNavigate('home')} className="btn-uq btn-uq-primary" style={{ marginTop: '16px' }}>
-          Về trang chủ
+          {lang === 'vi' ? 'Về trang chủ' : 'Return to Home'}
         </button>
       </div>
     );
@@ -50,11 +49,33 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
   };
 
   const steps = [
-    { title: 'Đặt hàng', desc: 'Đã nhận đơn', active: true, done: true },
-    { title: 'Xác nhận', desc: order.status === 'CONFIRMED' || order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED' ? 'Đã thanh toán' : 'Chờ thanh toán', active: true, done: order.status === 'CONFIRMED' || order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED' },
-    { title: 'Đóng gói', desc: 'Đang chuẩn bị hàng', active: order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED', done: order.status === 'SHIPPING' || order.status === 'DELIVERED' },
-    { title: 'Vận chuyển', desc: 'Bàn giao shipper', active: order.status === 'SHIPPING' || order.status === 'DELIVERED', done: order.status === 'DELIVERED' },
-    { title: 'Hoàn tất', desc: 'Đã nhận hàng', active: order.status === 'DELIVERED' || order.status === 'COMPLETED', done: order.status === 'DELIVERED' || order.status === 'COMPLETED' },
+    { title: lang === 'vi' ? 'Đặt hàng' : 'Placed', desc: lang === 'vi' ? 'Đã nhận đơn' : 'Received', active: true, done: true },
+    {
+      title: lang === 'vi' ? 'Xác nhận' : 'Confirmed',
+      desc: order.status === 'CONFIRMED' || order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED'
+        ? (lang === 'vi' ? 'Đã thanh toán' : 'Paid')
+        : (lang === 'vi' ? 'Chờ thanh toán' : 'Pending'),
+      active: true,
+      done: order.status === 'CONFIRMED' || order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED'
+    },
+    {
+      title: lang === 'vi' ? 'Đóng gói' : 'Packing',
+      desc: lang === 'vi' ? 'Đang chuẩn bị hàng' : 'Processing',
+      active: order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED',
+      done: order.status === 'SHIPPING' || order.status === 'DELIVERED'
+    },
+    {
+      title: lang === 'vi' ? 'Vận chuyển' : 'Shipping',
+      desc: lang === 'vi' ? 'Bàn giao shipper' : 'In Transit',
+      active: order.status === 'SHIPPING' || order.status === 'DELIVERED',
+      done: order.status === 'DELIVERED'
+    },
+    {
+      title: lang === 'vi' ? 'Hoàn tất' : 'Delivered',
+      desc: lang === 'vi' ? 'Đã nhận hàng' : 'Completed',
+      active: order.status === 'DELIVERED' || order.status === 'COMPLETED',
+      done: order.status === 'DELIVERED' || order.status === 'COMPLETED'
+    },
   ];
 
   return (
@@ -75,12 +96,14 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
           <CheckCircle2 size={42} />
         </div>
 
-        <span className="badge-uq red" style={{ marginBottom: '8px' }}>ĐẶT HÀNG THÀNH CÔNG</span>
+        <span className="badge-uq red" style={{ marginBottom: '8px' }}>
+          {lang === 'vi' ? 'ĐẶT HÀNG THÀNH CÔNG' : 'ORDER PLACED SUCCESSFULLY'}
+        </span>
         <h1 className="heading-display" style={{ fontSize: '2rem', marginTop: '6px', marginBottom: '8px' }}>
-          Cảm ơn bạn đã mua sắm tại BEO!
+          {lang === 'vi' ? 'Cảm ơn bạn đã mua sắm tại BEO STORE!' : 'Thank you for shopping at BEO STORE!'}
         </h1>
         <p style={{ fontSize: '0.95rem', color: '#666' }}>
-          Mã đơn hàng: <strong style={{ color: '#111', fontSize: '1.1rem' }}>{order.orderNumber}</strong>
+          {lang === 'vi' ? 'Mã đơn hàng:' : 'Order Number:'} <strong style={{ color: '#111', fontSize: '1.1rem' }}>{order.orderNumber}</strong>
         </p>
       </div>
 
@@ -92,7 +115,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
       {/* Timeline Status Card */}
       <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e5e5', padding: '28px', marginBottom: '32px' }}>
         <div style={{ fontWeight: '800', fontSize: '0.95rem', textTransform: 'uppercase', marginBottom: '24px', textAlign: 'center' }}>
-          TIẾN ĐỘ XỬ LÝ ĐƠN HÀNG
+          {lang === 'vi' ? 'TIẾN ĐỘ XỬ LÝ ĐƠN HÀNG' : 'ORDER FULFILLMENT STATUS'}
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
@@ -135,25 +158,31 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
       <div style={{ backgroundColor: '#fafafa', border: '1px solid #e5e5e5', padding: '28px', marginBottom: '32px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '24px' }}>
           <div>
-            <div style={{ fontSize: '0.8rem', color: '#777', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>Người nhận hàng:</div>
+            <div style={{ fontSize: '0.8rem', color: '#777', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>
+              {lang === 'vi' ? 'Người nhận hàng:' : 'Recipient:'}
+            </div>
             <div style={{ fontWeight: '700' }}>{order.customerName}</div>
             <div style={{ fontSize: '0.85rem', color: '#555' }}>{order.customerPhone}</div>
             <div style={{ fontSize: '0.85rem', color: '#555' }}>{order.customerEmail}</div>
           </div>
 
           <div>
-            <div style={{ fontSize: '0.8rem', color: '#777', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>Địa chỉ giao hàng:</div>
+            <div style={{ fontSize: '0.8rem', color: '#777', textTransform: 'uppercase', fontWeight: '700', marginBottom: '4px' }}>
+              {lang === 'vi' ? 'Địa chỉ giao hàng:' : 'Delivery Address:'}
+            </div>
             <div style={{ fontWeight: '700' }}>{order.shippingAddress}</div>
             <div style={{ fontSize: '0.85rem', color: '#555' }}>{order.shippingCity}</div>
             <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
-              Phương thức: <strong>{order.payment?.paymentMethod || 'VNPay / Tiền mặt'}</strong>
+              {lang === 'vi' ? 'Phương thức:' : 'Payment:'} <strong>{order.payment?.paymentMethod || 'Bank Transfer / Cash'}</strong>
             </div>
           </div>
         </div>
 
         {/* Ordered items */}
         <div style={{ borderTop: '1px solid #e0e0e0', paddingTop: '16px', marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '0.85rem', marginBottom: '12px' }}>SẢN PHẨM ĐÃ ĐẶT:</div>
+          <div style={{ fontWeight: '700', fontSize: '0.85rem', marginBottom: '12px' }}>
+            {lang === 'vi' ? 'SẢN PHẨM ĐÃ ĐẶT:' : 'ORDERED ITEMS:'}
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {order.items?.map((it, idx) => (
               <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
@@ -168,7 +197,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
 
         {/* Final amount */}
         <div style={{ borderTop: '1px solid #e0e0e0', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.1rem', fontWeight: '900' }}>
-          <span>TỔNG THANH TOÁN:</span>
+          <span>{lang === 'vi' ? 'TỔNG THANH TOÁN:' : 'ORDER TOTAL:'}</span>
           <span style={{ color: '#e60012' }}>{formatPrice(order.finalAmount)}</span>
         </div>
       </div>
@@ -181,7 +210,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
           style={{ padding: '12px 24px' }}
         >
           <Printer size={16} />
-          <span>In Hóa Đơn Điện Tử</span>
+          <span>{lang === 'vi' ? 'In Hóa Đơn Điện Tử' : 'Print E-Receipt'}</span>
         </button>
 
         <button
@@ -189,7 +218,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
           className="btn-uq btn-uq-secondary"
           style={{ padding: '12px 24px' }}
         >
-          <span>Xem Lịch Sử Đơn Hàng</span>
+          <span>{lang === 'vi' ? 'Xem Lịch Sử Đơn Hàng' : 'View Order History'}</span>
         </button>
 
         <button
@@ -197,7 +226,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
           className="btn-uq btn-uq-red"
           style={{ padding: '12px 24px' }}
         >
-          <span>Tiếp tục Mua sắm</span>
+          <span>{lang === 'vi' ? 'Tiếp tục Mua sắm' : 'Continue Shopping'}</span>
           <ArrowRight size={16} />
         </button>
       </div>

@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Star, CheckCircle, ThumbsUp, Camera, MessageSquare, Plus, Filter, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 
 const SAMPLE_FALLBACK_REVIEWS = [
   {
     id: 1,
-    userName: 'Nguyễn Văn Hùng',
+    userName: 'Alex Johnson',
     userAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
     rating: 5,
-    title: 'Chất vải AIRism cực kỳ mát và thấm hút mồ hôi tốt',
-    comment: 'Mình cao 1m73 nặng 67kg chọn size L mặc vừa vặn y như may đo. Đường may tỉ mỉ, giặt máy không bị xù lông hay mất phom. Sẽ ủng hộ BEO tiếp!',
+    title: 'Extremely cooling AIRism fabric with great sweat absorption',
+    comment: 'I am 173cm, 67kg and chose Size L—fits perfectly like bespoke tailoring. Clean seams, no shrinkage or pilling after multiple machine washes. Definitely ordering again!',
     fitRating: 'TRUE_TO_SIZE',
     purchasedColor: '09 BLACK',
     purchasedSize: 'L',
@@ -25,11 +26,11 @@ const SAMPLE_FALLBACK_REVIEWS = [
   },
   {
     id: 2,
-    userName: 'Trần Thị Mai Phương',
+    userName: 'Sophia Miller',
     userAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
     rating: 5,
-    title: 'Màu sắc nhã nhặn, sang xịn mịn!',
-    comment: 'Giao hàng hỏa tốc tại Cần Thơ chỉ mất hơn 1 tiếng là nhận được. Đóng gói hộp rất chỉn chu, có cả thiệp cảm ơn. Áo mặc đi làm hay đi chơi đều rất lịch sự.',
+    title: 'Elegant color and luxury soft feel!',
+    comment: 'Super fast delivery in Can Tho—arrived in just over an hour. Premium box packaging with a thank you card. Perfect for both office work and casual weekend outings.',
     fitRating: 'TRUE_TO_SIZE',
     purchasedColor: '00 WHITE',
     purchasedSize: 'M',
@@ -42,11 +43,11 @@ const SAMPLE_FALLBACK_REVIEWS = [
   },
   {
     id: 3,
-    userName: 'Lê Hoàng Long',
+    userName: 'David Lee',
     userAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80',
     rating: 5,
-    title: 'Đáng đồng tiền bát gạo, phom dáng chuẩn',
-    comment: 'Chất liệu co giãn nhẹ nhàng, không nhăn nhúm sau khi giặt. Form áo ôm vai tôn dáng cực kỳ. Đã mua thêm 2 chiếc màu khác.',
+    title: 'Worth every penny, silhouette is sharp',
+    comment: 'Gentle elasticity that maintains shape without wrinkling. Shoulder fit flatters posture nicely. Bought 2 more in different colors.',
     fitRating: 'TRUE_TO_SIZE',
     purchasedColor: '69 NAVY',
     purchasedSize: 'XL',
@@ -60,33 +61,34 @@ const SAMPLE_FALLBACK_REVIEWS = [
 export const ProductReviewsSection = ({ productId, productName }) => {
   const { user } = useAuth();
   const { showSuccess, showError, showInfo } = useToast();
+  const { lang } = useLanguage();
 
   const [reviews, setReviews] = useState(SAMPLE_FALLBACK_REVIEWS);
-  const [selectedFilter, setSelectedFilter] = useState('ALL'); // 'ALL', '5_STAR', 'WITH_PHOTOS', 'VERIFIED'
+  const [selectedFilter, setSelectedFilter] = useState('ALL');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
 
   // Review Form state
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
-  const [fitRating, setFitRating] = useState('TRUE_TO_SIZE');
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
-  const [purchasedSize, setPurchasedSize] = useState('L');
+  const [fitRating, setFitRating] = useState('TRUE_TO_SIZE');
   const [purchasedColor, setPurchasedColor] = useState('09 BLACK');
+  const [purchasedSize, setPurchasedSize] = useState('L');
   const [imageUrl, setImageUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!productId) return;
     const fetchReviews = async () => {
-      if (!productId) return;
       try {
         const res = await api.get(`/reviews/product/${productId}`);
         if (res.data && res.data.length > 0) {
           setReviews(res.data);
         }
       } catch (err) {
-        // Fallback to sample reviews for smooth demonstration
+        console.error('Error loading product reviews:', err);
       }
     };
     fetchReviews();
@@ -94,57 +96,58 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
+    if (!user) {
+      showError(lang === 'vi' ? 'Vui lòng đăng nhập để gửi đánh giá sản phẩm!' : 'Please sign in to submit a review!');
+      return;
+    }
     if (!comment.trim()) {
-      showError('Vui lòng nhập nội dung nhận xét của bạn');
+      showError(lang === 'vi' ? 'Vui lòng nhập nội dung đánh giá!' : 'Please enter your review comment!');
       return;
     }
 
     setSubmitting(true);
     try {
-      if (user) {
-        const payload = {
-          productId: Number(productId),
-          rating,
-          title: title || 'Sản phẩm rất tuyệt vời',
-          comment,
-          fitRating,
-          purchasedSize,
-          purchasedColor,
-        };
-        await api.post('/reviews', payload);
-      }
-
-      // Optimistic review addition
-      const newReview = {
-        id: Date.now(),
-        userName: user?.fullName || 'Khách Hàng BEO',
-        userAvatar: user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
+      const payload = {
+        productId,
         rating,
-        title: title || 'Đánh giá sản phẩm',
-        comment,
+        title: title.trim() || (lang === 'vi' ? 'Đánh giá sản phẩm' : 'Product Review'),
+        comment: comment.trim(),
         fitRating,
-        purchasedSize,
         purchasedColor,
-        verifiedPurchase: true,
-        createdAt: new Date().toISOString(),
-        helpfulCount: 1,
+        purchasedSize,
         images: imageUrl ? [imageUrl] : []
       };
 
-      setReviews([newReview, ...reviews]);
-      showSuccess('Cảm ơn bạn đã gửi đánh giá! Nhận xét đã được đăng công khai.');
+      const res = await api.post('/reviews', payload);
+      const newRev = res.data || {
+        id: Date.now(),
+        userName: user.fullName || user.email.split('@')[0],
+        userAvatar: user.avatar,
+        rating,
+        title: payload.title,
+        comment: payload.comment,
+        fitRating,
+        purchasedColor,
+        purchasedSize,
+        verifiedPurchase: true,
+        createdAt: new Date().toISOString(),
+        helpfulCount: 0,
+        images: payload.images
+      };
+
+      setReviews([newRev, ...reviews]);
+      showSuccess(lang === 'vi' ? 'Cảm ơn bạn! Đánh giá đã được gửi thành công.' : 'Thank you! Your review has been submitted.');
       setIsFormOpen(false);
       setTitle('');
       setComment('');
       setImageUrl('');
     } catch (err) {
-      showError(err.message || 'Lỗi khi gửi đánh giá');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi gửi đánh giá' : 'Failed to submit review'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Filtered reviews
   const filteredReviews = reviews.filter((r) => {
     if (selectedFilter === '5_STAR') return r.rating === 5;
     if (selectedFilter === 'WITH_PHOTOS') return r.images && r.images.length > 0;
@@ -163,11 +166,11 @@ export const ProductReviewsSection = ({ productId, productName }) => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h2 style={{ fontSize: '1.3rem', fontWeight: '900', textTransform: 'uppercase', margin: 0 }}>
-              Đánh Giá & Nhận Xét Thực Tế ({reviews.length})
+              {lang === 'vi' ? `Đánh Giá & Nhận Xét Thực Tế (${reviews.length})` : `Verified Customer Reviews (${reviews.length})`}
             </h2>
           </div>
           <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
-            Trải nghiệm chân thực từ khách hàng đã mua sản phẩm tại BEO Modern Fashion
+            {lang === 'vi' ? 'Trải nghiệm chân thực từ khách hàng đã mua sản phẩm tại BEO STORE' : 'Authentic feedback from verified customers who purchased at BEO STORE'}
           </p>
         </div>
 
@@ -188,7 +191,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
           }}
         >
           {isFormOpen ? <Filter size={16} /> : <Plus size={16} />}
-          <span>{isFormOpen ? 'Thu Gọn Form' : 'Viết Đánh Giá Mới'}</span>
+          <span>{isFormOpen ? (lang === 'vi' ? 'Thu Gọn Form' : 'Collapse Form') : (lang === 'vi' ? 'Viết Đánh Giá Mới' : 'Write a Review')}</span>
         </button>
       </div>
 
@@ -205,14 +208,14 @@ export const ProductReviewsSection = ({ productId, productName }) => {
           }}
         >
           <div style={{ fontWeight: '900', fontSize: '1.05rem', textTransform: 'uppercase', marginBottom: '16px' }}>
-            Gửi Nhận Xét Về: {productName}
+            {lang === 'vi' ? `Gửi Nhận Xét Về: ${productName}` : `Write a Review for: ${productName}`}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             {/* Star Rating Picker */}
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px' }}>
-                1. Đánh giá chất lượng:
+                {lang === 'vi' ? '1. Đánh giá chất lượng:' : '1. Quality Rating:'}
               </label>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -232,7 +235,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
                   </button>
                 ))}
                 <span style={{ fontSize: '0.85rem', fontWeight: '800', marginLeft: '8px', alignSelf: 'center', color: '#e60012' }}>
-                  {rating === 5 ? '5/5 Rất Hài Lòng' : `${rating}/5 Sao`}
+                  {rating === 5 ? (lang === 'vi' ? '5/5 Rất Hài Lòng' : '5/5 Excellent') : `${rating}/5 Stars`}
                 </span>
               </div>
             </div>
@@ -240,16 +243,16 @@ export const ProductReviewsSection = ({ productId, productName }) => {
             {/* Fit Feedback */}
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px' }}>
-                2. Độ vừa vặn của phom áo:
+                {lang === 'vi' ? '2. Độ vừa vặn của phom áo:' : '2. How does it fit?'}
               </label>
               <select
                 value={fitRating}
                 onChange={(e) => setFitRating(e.target.value)}
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', fontSize: '0.85rem', fontWeight: '600' }}
               >
-                <option value="RUNS_SMALL">Hơi ôm / Chật hơn bình thường</option>
-                <option value="TRUE_TO_SIZE">Chuẩn vừa vặn (True to size)</option>
-                <option value="RUNS_LARGE">Hơi rộng / Rộng rãi thoải mái</option>
+                <option value="RUNS_SMALL">{lang === 'vi' ? 'Hơi ôm / Chật hơn bình thường' : 'Runs Small'}</option>
+                <option value="TRUE_TO_SIZE">{lang === 'vi' ? 'Chuẩn vừa vặn (True to size)' : 'True to Size'}</option>
+                <option value="RUNS_LARGE">{lang === 'vi' ? 'Hơi rộng / Rộng rãi thoải mái' : 'Runs Large / Relaxed'}</option>
               </select>
             </div>
           </div>
@@ -257,12 +260,12 @@ export const ProductReviewsSection = ({ productId, productName }) => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px' }}>
-                3. Màu & Size bạn đã chọn:
+                {lang === 'vi' ? '3. Màu & Size bạn đã chọn:' : '3. Purchased Color & Size:'}
               </label>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
                   type="text"
-                  placeholder="VD: 09 BLACK"
+                  placeholder="e.g. 09 BLACK"
                   value={purchasedColor}
                   onChange={(e) => setPurchasedColor(e.target.value)}
                   style={{ flex: 1, padding: '8px 12px', border: '1px solid #ccc', fontSize: '0.85rem' }}
@@ -279,11 +282,11 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px' }}>
-                4. Tiêu đề ngắn gọn:
+                {lang === 'vi' ? '4. Tiêu đề ngắn gọn:' : '4. Headline:'}
               </label>
               <input
                 type="text"
-                placeholder="VD: Chất vải rất mát, phom áo chuẩn đẹp"
+                placeholder={lang === 'vi' ? 'VD: Chất vải rất mát, phom áo chuẩn đẹp' : 'e.g. Incredibly soft fabric and perfect cut'}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', fontSize: '0.85rem' }}
@@ -293,11 +296,11 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px' }}>
-              5. Nội dung nhận xét chi tiết:
+              {lang === 'vi' ? '5. Nội dung nhận xét chi tiết:' : '5. Detailed Review:'}
             </label>
             <textarea
               rows={3}
-              placeholder="Chia sẻ cảm nhận của bạn về chất liệu vải, độ bền, cảm giác khi mặc..."
+              placeholder={lang === 'vi' ? 'Chia sẻ cảm nhận của bạn về chất liệu vải, độ bền, cảm giác khi mặc...' : 'Share your thoughts on material quality, durability, comfort...'}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', fontSize: '0.85rem' }}
@@ -307,12 +310,12 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', marginBottom: '6px' }}>
-              6. Đính kèm link ảnh chụp thực tế (Tùy chọn):
+              {lang === 'vi' ? '6. Đính kèm link ảnh chụp thực tế (Tùy chọn):' : '6. Attach Photo URL (Optional):'}
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <input
                 type="url"
-                placeholder="https://images.unsplash.com/... hoặc dán link ảnh"
+                placeholder="https://images.unsplash.com/... or paste image link"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 style={{ flex: 1, padding: '8px 12px', border: '1px solid #ccc', fontSize: '0.85rem' }}
@@ -323,7 +326,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
                 className="btn-uq btn-uq-outline-gray"
                 style={{ padding: '8px 12px', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
               >
-                <Camera size={14} /> Dùng ảnh mẫu
+                <Camera size={14} /> {lang === 'vi' ? 'Dùng ảnh mẫu' : 'Sample Photo'}
               </button>
             </div>
           </div>
@@ -342,7 +345,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
               textTransform: 'uppercase'
             }}
           >
-            {submitting ? 'Đang gửi...' : 'Đăng Đánh Giá Ngay'}
+            {submitting ? (lang === 'vi' ? 'Đang gửi...' : 'Submitting...') : (lang === 'vi' ? 'Đăng Đánh Giá Ngay' : 'Submit Review')}
           </button>
         </form>
       )}
@@ -368,7 +371,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
             ))}
           </div>
           <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: '700' }}>
-            Dựa trên {reviews.length} đánh giá
+            {lang === 'vi' ? `Dựa trên ${reviews.length} đánh giá` : `Based on ${reviews.length} reviews`}
           </div>
         </div>
 
@@ -393,10 +396,16 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
         {/* Right: Fit Satisfaction */}
         <div style={{ borderLeft: '1px solid #eee', paddingLeft: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontWeight: '800', fontSize: '0.85rem', marginBottom: '6px' }}>Độ Vừa Vặn Thực Tế:</div>
-          <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#2e7d32' }}>96% Vừa Vặn Chuẩn Size</div>
+          <div style={{ fontWeight: '800', fontSize: '0.85rem', marginBottom: '6px' }}>
+            {lang === 'vi' ? 'Độ Vừa Vặn Thực Tế:' : 'Fit Feedback:'}
+          </div>
+          <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#2e7d32' }}>
+            {lang === 'vi' ? '96% Vừa Vặn Chuẩn Size' : '96% True to Size'}
+          </div>
           <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
-            Khách hàng khuyên nên chọn đúng size thường mặc theo bảng kích thước BEO.
+            {lang === 'vi'
+              ? 'Khách hàng khuyên nên chọn đúng size thường mặc theo bảng kích thước BEO.'
+              : 'Customers recommend ordering your standard size according to the size guide.'}
           </div>
         </div>
       </div>
@@ -404,10 +413,10 @@ export const ProductReviewsSection = ({ productId, productName }) => {
       {/* Filter Tabs */}
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '20px' }}>
         {[
-          { id: 'ALL', label: `Tất cả (${reviews.length})` },
-          { id: '5_STAR', label: '5 Sao ★★★★★' },
-          { id: 'WITH_PHOTOS', label: 'Có Hình Ảnh 📷' },
-          { id: 'VERIFIED', label: 'Đã Mua Hàng Thật ✔' }
+          { id: 'ALL', label: lang === 'vi' ? `Tất cả (${reviews.length})` : `All (${reviews.length})` },
+          { id: '5_STAR', label: '5 Stars ★★★★★' },
+          { id: 'WITH_PHOTOS', label: lang === 'vi' ? 'Có Hình Ảnh 📷' : 'With Photos 📷' },
+          { id: 'VERIFIED', label: lang === 'vi' ? 'Đã Mua Hàng Thật ✔' : 'Verified Purchase ✔' }
         ].map((f) => (
           <button
             key={f.id}
@@ -452,12 +461,12 @@ export const ProductReviewsSection = ({ productId, productName }) => {
                     <span>{rev.userName}</span>
                     {rev.verifiedPurchase && (
                       <span style={{ fontSize: '0.72rem', color: '#2e7d32', display: 'flex', alignItems: 'center', gap: '2px', fontWeight: '700' }}>
-                        <CheckCircle size={12} /> Đã Mua Hàng
+                        <CheckCircle size={12} /> {lang === 'vi' ? 'Đã Mua Hàng' : 'Verified Buyer'}
                       </span>
                     )}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#777', marginTop: '2px' }}>
-                    Phân loại: <strong>{rev.purchasedColor}</strong> • Size: <strong>{rev.purchasedSize}</strong>
+                    {lang === 'vi' ? 'Phân loại:' : 'Variation:'} <strong>{rev.purchasedColor}</strong> • Size: <strong>{rev.purchasedSize}</strong>
                   </div>
                 </div>
               </div>
@@ -509,9 +518,9 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
             {/* Footer Date & Helpful vote */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: '#888' }}>
-              <span>{new Date(rev.createdAt).toLocaleDateString('vi-VN')}</span>
+              <span>{new Date(rev.createdAt).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US')}</span>
               <button
-                onClick={() => showInfo('Cảm ơn bạn đã bình chọn nhận xét hữu ích!')}
+                onClick={() => showInfo(lang === 'vi' ? 'Cảm ơn bạn đã bình chọn nhận xét hữu ích!' : 'Thank you for your feedback!')}
                 style={{
                   border: 'none',
                   background: 'transparent',
@@ -525,7 +534,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
                 }}
               >
                 <ThumbsUp size={13} />
-                <span>Hữu ích ({rev.helpfulCount || 12})</span>
+                <span>{lang === 'vi' ? `Hữu ích (${rev.helpfulCount || 12})` : `Helpful (${rev.helpfulCount || 12})`}</span>
               </button>
             </div>
           </div>

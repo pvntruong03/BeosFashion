@@ -11,6 +11,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { VisualSearchModal } from './components/VisualSearchModal';
 import { AuthRequiredModal } from './components/AuthRequiredModal';
 import { AiChatWidget } from './components/AiChatWidget';
+import { MobileBottomNav } from './components/MobileBottomNav';
 
 import { HomePage } from './pages/HomePage';
 import { ProductListingPage } from './pages/ProductListingPage';
@@ -217,6 +218,13 @@ const AppContent = () => {
 
       {/* Global Footer */}
       <Footer onNavigate={handleNavigate} />
+
+      {/* Mobile Bottom Navigation Bar (Fixed Glassmorphic on Phone/Tablet) */}
+      <MobileBottomNav
+        onNavigate={handleNavigate}
+        currentPage={currentView}
+        onOpenVisualSearch={() => setIsVisualSearchOpen(true)}
+      />
     </div>
   );
 };

@@ -29,7 +29,7 @@ import { exportOrdersToExcel, exportProductsToExcel } from '../utils/excelExport
 import api from '../services/api';
 
 export const AdminDashboardPage = ({ onNavigate }) => {
-  const { formatPrice } = useLanguage();
+  const { formatPrice, lang } = useLanguage();
   const { showSuccess, showError } = useToast();
 
   const [activeTab, setActiveTab] = useState(() => {
@@ -73,7 +73,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const [prodFormCategoryId, setProdFormCategoryId] = useState(1);
   const [prodFormGender, setProdFormGender] = useState('MEN');
   const [prodFormCollection, setProdFormCollection] = useState('AIRism');
-  const [prodFormMaterial, setProdFormMaterial] = useState('100% Cotton');
+  const [prodFormMaterial, setProdFormMaterial] = useState('100% Supima Cotton');
   const [prodFormDesc, setProdFormDesc] = useState('');
   const [prodFormImage, setProdFormImage] = useState('');
   const [prodFormFeatured, setProdFormFeatured] = useState(true);
@@ -93,18 +93,26 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const [coupMax, setCoupMax] = useState(100000);
   const [coupLimit, setCoupLimit] = useState(500);
 
-  // Orders Management Filters
+  // Orders Management Filters & Pagination
   const [orderStatusFilter, setOrderStatusFilter] = useState('ALL');
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersPerPage, setOrdersPerPage] = useState(20);
+
+  // Products Management Filters & Pagination
+  const [adminProdSearch, setAdminProdSearch] = useState('');
+  const [adminProductsPage, setAdminProductsPage] = useState(1);
+  const [adminProductsPerPage, setAdminProductsPerPage] = useState(20);
 
   const [receiptOrder, setReceiptOrder] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
-  // VietQR Config State
+  // VietQR Bank Config State
   const [bankConfig, setBankConfig] = useState({
     bankId: 'vietinbank',
-    bankName: 'VietinBank (Ngân hàng TMCP Công Thương Việt Nam)',
-    accountNo: '113366668888',
-    accountName: 'BEO FASHION VIETNAM',
+    bankName: 'VietinBank (ICB)',
+    accountNo: '109876543210',
+    accountName: 'CONG TY TNHH BEO STORE VIETNAM',
     template: 'compact2'
   });
   const [savingBankConfig, setSavingBankConfig] = useState(false);
@@ -112,48 +120,50 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
     try {
-      const [resStats, resProds, resOrders, resUsers, resCoups, resCats, resBank] = await Promise.all([
-        api.get('/admin/dashboard/stats'),
+      const [resStats, resProds, resOrds, resUsers, resCoups, resCats, resBank] = await Promise.all([
+        api.get('/admin/stats').catch(() => api.get('/admin/dashboard/stats')),
         api.get('/products?sizePerPage=100'),
-        api.get('/admin/orders?size=100'),
+        api.get('/admin/orders?page=0&size=500'),
         api.get('/admin/users'),
         api.get('/admin/coupons'),
         api.get('/categories'),
-        api.get('/payments/vietqr/config'),
+        api.get('/admin/bank-config').catch(() => api.get('/payments/vietqr/config')).catch(() => ({ data: null })),
       ]);
 
-      if (resStats.data) setStats(resStats.data);
-      if (resProds.data) setProducts(resProds.data.content || []);
-      if (resOrders.data) setOrders(resOrders.data.content || []);
-      if (resUsers.data) setUsersList(resUsers.data);
-      if (resCoups.data) setCoupons(resCoups.data);
-      if (resCats.data) setCategories(resCats.data);
-      if (resBank.data) setBankConfig(resBank.data);
+      if (resStats?.data) setStats(resStats.data);
+      if (resProds?.data) {
+        const pArr = Array.isArray(resProds.data) ? resProds.data : (resProds.data.content || []);
+        setProducts(pArr);
+      }
+      if (resOrds?.data) {
+        const oArr = Array.isArray(resOrds.data) ? resOrds.data : (resOrds.data.content || []);
+        setOrders(oArr);
+      }
+      if (resUsers?.data) {
+        const uArr = Array.isArray(resUsers.data) ? resUsers.data : (resUsers.data.content || []);
+        setUsersList(uArr);
+      }
+      if (resCoups?.data) {
+        const cArr = Array.isArray(resCoups.data) ? resCoups.data : (resCoups.data.content || []);
+        setCoupons(cArr);
+      }
+      if (resCats?.data) {
+        const catArr = Array.isArray(resCats.data) ? resCats.data : (resCats.data.content || []);
+        setCategories(catArr);
+      }
+      if (resBank?.data) setBankConfig(resBank.data);
     } catch (err) {
-      console.error('Error fetching admin data:', err);
+      console.error('Error fetching admin dashboard data:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const handleSaveBankConfig = async (e) => {
-    e.preventDefault();
-    setSavingBankConfig(true);
-    try {
-      await api.put('/payments/vietqr/config', bankConfig);
-      showSuccess('Cập nhật thông tin tài khoản nhận tiền VietQR thành công!');
-    } catch (err) {
-      showError(err.message || 'Lỗi khi lưu cấu hình ngân hàng');
-    } finally {
-      setSavingBankConfig(false);
-    }
-  };
-
   useEffect(() => {
     fetchAdminData();
   }, [fetchAdminData]);
 
-  // --- PRODUCT MANAGEMENT ---
+  // Product CRUD
   const handleOpenCreateProduct = () => {
     setEditingProduct(null);
     setProdFormName('');
@@ -162,9 +172,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     setProdFormSalePrice('');
     setProdFormCategoryId(categories[0]?.id || 1);
     setProdFormGender('MEN');
-    setProdFormCollection('LifeWear Essentials');
-    setProdFormMaterial('100% Cotton cao cấp');
-    setProdFormDesc('Thiết kế chuẩn Nhật Bản mang lại sự thoải mái tối ưu.');
+    setProdFormCollection('AIRism');
+    setProdFormMaterial('100% Supima Cotton');
+    setProdFormDesc('Precision Japanese LifeWear tailoring for everyday comfort and durability.');
     setProdFormImage('https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80');
     setProdFormFeatured(true);
     setProdFormNew(true);
@@ -179,8 +189,8 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     setProdFormSalePrice(prod.salePrice !== null && prod.salePrice !== undefined ? prod.salePrice : '');
     setProdFormCategoryId(prod.categoryId || (categories[0]?.id || 1));
     setProdFormGender(prod.gender || 'MEN');
-    setProdFormCollection(prod.collection || 'LifeWear Essentials');
-    setProdFormMaterial(prod.material || '100% Cotton cao cấp');
+    setProdFormCollection(prod.collection || 'AIRism');
+    setProdFormMaterial(prod.material || '100% Supima Cotton');
     setProdFormDesc(prod.description || '');
     setProdFormImage(prod.primaryImageUrl || '');
     setProdFormFeatured(prod.featured || false);
@@ -191,7 +201,6 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
-      // Build variant matrix
       const variants = [];
       const colorHexMap = {
         '09 BLACK': '#111111',
@@ -234,57 +243,33 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
       if (editingProduct) {
         await api.put(`/admin/products/${editingProduct.id}`, payload);
-        showSuccess('Cập nhật sản phẩm thành công!');
+        showSuccess(lang === 'vi' ? 'Cập nhật sản phẩm thành công!' : 'Product updated successfully!');
       } else {
         await api.post('/admin/products', payload);
-        showSuccess('Tạo mới sản phẩm với ma trận biến thể thành công!');
+        showSuccess(lang === 'vi' ? 'Tạo mới sản phẩm với ma trận biến thể thành công!' : 'Created new product with full variant matrix!');
       }
 
       setIsProductModalOpen(false);
       fetchAdminData();
     } catch (err) {
-      showError(err.message || 'Lỗi khi lưu sản phẩm');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi lưu sản phẩm' : 'Failed to save product'));
     }
   };
-
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const confirmDeleteProduct = async () => {
     if (!deleteConfirmId) return;
     try {
       await api.delete(`/admin/products/${deleteConfirmId}`);
-      showSuccess('Đã chuyển sản phẩm sang trạng thái ngừng kinh doanh');
+      showSuccess(lang === 'vi' ? 'Đã cập nhật trạng thái sản phẩm thành công' : 'Product deactivated successfully');
       setDeleteConfirmId(null);
       fetchAdminData();
     } catch (err) {
-      showError(err.message || 'Lỗi khi xóa sản phẩm');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi xóa/ngừng bán sản phẩm' : 'Failed to deactivate product'));
       setDeleteConfirmId(null);
     }
   };
 
-  // --- ORDER STATUS UPDATE ---
-  const handleUpdateAdminOrderStatus = async (orderId, newStatus) => {
-    try {
-      await api.put(`/admin/orders/${orderId}/status`, { status: newStatus });
-      showSuccess(`Đã cập nhật trạng thái đơn hàng sang ${newStatus}`);
-      fetchAdminData();
-    } catch (err) {
-      showError(err.message || 'Lỗi khi cập nhật trạng thái đơn hàng');
-    }
-  };
-
-  // --- USER ROLE MANAGEMENT ---
-  const handleUpdateUserRole = async (userId, newRole) => {
-    try {
-      await api.put(`/admin/users/${userId}/role`, { role: newRole });
-      showSuccess(`Đã cập nhật phân quyền người dùng sang ${newRole}`);
-      fetchAdminData();
-    } catch (err) {
-      showError(err.message || 'Lỗi khi cập nhật quyền');
-    }
-  };
-
-  // --- COUPON CRUD OPERATIONS ---
+  // Coupons CRUD
   const handleOpenCreateCoupon = () => {
     setEditingCoupon(null);
     setCoupCode('');
@@ -297,15 +282,15 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     setIsCouponModalOpen(true);
   };
 
-  const handleOpenEditCoupon = (coupon) => {
-    setEditingCoupon(coupon);
-    setCoupCode(coupon.code);
-    setCoupDesc(coupon.description || '');
-    setCoupType(coupon.discountType);
-    setCoupVal(coupon.discountValue);
-    setCoupMin(coupon.minOrderAmount || 0);
-    setCoupMax(coupon.maxDiscountAmount || 0);
-    setCoupLimit(coupon.usageLimit || 500);
+  const handleOpenEditCoupon = (coup) => {
+    setEditingCoupon(coup);
+    setCoupCode(coup.code || '');
+    setCoupDesc(coup.description || '');
+    setCoupType(coup.discountType || 'PERCENT');
+    setCoupVal(coup.discountValue || 10);
+    setCoupMin(coup.minOrderAmount || 0);
+    setCoupMax(coup.maxDiscountAmount || 100000);
+    setCoupLimit(coup.usageLimit || 1000);
     setIsCouponModalOpen(true);
   };
 
@@ -313,54 +298,114 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     e.preventDefault();
     try {
       const payload = {
-        code: coupCode.toUpperCase().trim(),
-        description: coupDesc,
+        code: coupCode.trim().toUpperCase(),
+        description: coupDesc.trim(),
         discountType: coupType,
         discountValue: Number(coupVal),
         minOrderAmount: Number(coupMin),
-        maxDiscountAmount: coupType === 'PERCENT' ? Number(coupMax) : null,
+        maxDiscountAmount: coupType === 'PERCENT' ? (coupMax ? Number(coupMax) : null) : null,
         usageLimit: Number(coupLimit),
         active: true
       };
 
       if (editingCoupon) {
         await api.put(`/admin/coupons/${editingCoupon.id}`, payload);
-        showSuccess(`Cập nhật mã khuyến mãi ${payload.code} thành công!`);
+        showSuccess(lang === 'vi' ? 'Cập nhật mã giảm giá thành công!' : 'Coupon updated successfully!');
       } else {
         await api.post('/admin/coupons', payload);
-        showSuccess(`Tạo mã khuyến mãi ${payload.code} thành công!`);
+        showSuccess(lang === 'vi' ? 'Tạo mới mã giảm giá thành công!' : 'Coupon created successfully!');
       }
 
       setIsCouponModalOpen(false);
-      setEditingCoupon(null);
       fetchAdminData();
     } catch (err) {
-      showError(err.message || 'Lỗi khi lưu mã khuyến mãi');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi lưu mã giảm giá' : 'Failed to save coupon'));
     }
   };
 
   const handleDeleteCoupon = async (id) => {
     try {
       await api.delete(`/admin/coupons/${id}`);
-      showSuccess('Đã xóa mã khuyến mãi thành công');
+      showSuccess(lang === 'vi' ? 'Đã xóa mã khuyến mãi thành công' : 'Coupon deleted successfully');
       setDeleteCouponId(null);
       fetchAdminData();
     } catch (err) {
-      showError(err.message || 'Lỗi khi xóa mã khuyến mãi');
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi xóa mã khuyến mãi' : 'Failed to delete coupon'));
+      setDeleteCouponId(null);
     }
   };
 
-  // Filtered Orders calculation based on status classifier & search query
-  const filteredOrders = orders.filter((ord) => {
+  // Orders Admin Status Update
+  const handleUpdateAdminOrderStatus = async (orderId, newStatus) => {
+    try {
+      await api.put(`/admin/orders/${orderId}/status`, {
+        status: newStatus,
+        notes: `Admin status update to ${newStatus}`
+      });
+      showSuccess(lang === 'vi' ? `Đã chuyển đơn hàng sang trạng thái ${newStatus}` : `Order status updated to ${newStatus}`);
+      fetchAdminData();
+    } catch (err) {
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi cập nhật trạng thái đơn hàng' : 'Failed to update order status'));
+    }
+  };
+
+  // Users Role Update
+  const handleUpdateUserRole = async (userId, newRole) => {
+    try {
+      await api.put(`/admin/users/${userId}/role`, { role: newRole });
+      showSuccess(lang === 'vi' ? 'Cập nhật phân quyền người dùng thành công!' : 'User role updated successfully!');
+      fetchAdminData();
+    } catch (err) {
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi cập nhật quyền người dùng' : 'Failed to update user role'));
+    }
+  };
+
+  // Bank Config Save
+  const handleSaveBankConfig = async (e) => {
+    e.preventDefault();
+    setSavingBankConfig(true);
+    try {
+      await api.post('/admin/bank-config', bankConfig);
+      showSuccess(lang === 'vi' ? 'Đã cập nhật cấu hình tài khoản nhận tiền VietQR!' : 'VietQR beneficiary configuration saved!');
+    } catch (err) {
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi lưu cấu hình ngân hàng' : 'Failed to save bank configuration'));
+    } finally {
+      setSavingBankConfig(false);
+    }
+  };
+
+  // Filtered Orders & Pagination
+  const filteredOrders = (Array.isArray(orders) ? orders : []).filter((ord) => {
+    if (!ord) return false;
     const matchesStatus = orderStatusFilter === 'ALL' || ord.status === orderStatusFilter;
     const q = orderSearchQuery.toLowerCase().trim();
     const matchesSearch = !q ||
       (ord.orderNumber && ord.orderNumber.toLowerCase().includes(q)) ||
       (ord.customerName && ord.customerName.toLowerCase().includes(q)) ||
       (ord.customerPhone && ord.customerPhone.includes(q)) ||
-      (ord.shippingCity && ord.shippingCity.toLowerCase().includes(q));
+      (ord.shippingAddress && ord.shippingAddress.toLowerCase().includes(q));
     return matchesStatus && matchesSearch;
   });
+
+  const totalOrdersCount = filteredOrders.length;
+  const totalOrderPages = Math.max(1, Math.ceil(totalOrdersCount / ordersPerPage));
+  const currentOrdersPage = Math.min(Math.max(1, ordersPage), totalOrderPages);
+  const paginatedOrders = filteredOrders.slice(
+    (currentOrdersPage - 1) * ordersPerPage,
+    currentOrdersPage * ordersPerPage
+  );
+
+  // Admin Products Pagination
+  const filteredAdminProducts = (Array.isArray(products) ? products : []).filter(
+    (p) => !adminProdSearch || p.name.toLowerCase().includes(adminProdSearch.toLowerCase()) || p.code.toLowerCase().includes(adminProdSearch.toLowerCase())
+  );
+  const totalAdminProductsCount = filteredAdminProducts.length;
+  const totalAdminProductPages = Math.max(1, Math.ceil(totalAdminProductsCount / adminProductsPerPage));
+  const currentAdminProductsPage = Math.min(Math.max(1, adminProductsPage), totalAdminProductPages);
+  const paginatedAdminProducts = filteredAdminProducts.slice(
+    (currentAdminProductsPage - 1) * adminProductsPerPage,
+    currentAdminProductsPage * adminProductsPerPage
+  );
 
   return (
     <div style={{ backgroundColor: '#f4f5f7', minHeight: 'calc(100vh - 70px)', padding: '24px 0' }}>
@@ -378,23 +423,25 @@ export const AdminDashboardPage = ({ onNavigate }) => {
           marginBottom: '20px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '1.1rem', lineHeight: 1 }}>UNI<br/>QLO</div>
+            <div style={{ backgroundColor: '#e60012', color: '#fff', padding: '6px 8px', fontWeight: '900', fontSize: '1.1rem', lineHeight: 1 }}>BEO<br/>STORE</div>
             <div>
               <h1 style={{ fontSize: '1.3rem', fontWeight: '800', margin: 0 }}>
-                HỆ THỐNG QUẢN TRỊ TOÀN DIỆN (ADMIN CMS)
+                {lang === 'vi' ? 'HỆ THỐNG QUẢN TRỊ TOÀN DIỆN (ADMIN CMS)' : 'ENTERPRISE SYSTEM MANAGEMENT (ADMIN CMS)'}
               </h1>
               <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '2px' }}>
-                Tổng quan doanh thu, danh mục hàng hóa, nhân sự và đơn hàng toàn quốc
+                {lang === 'vi'
+                  ? 'Tổng quan doanh thu, danh mục hàng hóa, nhân sự và đơn hàng toàn quốc'
+                  : 'Executive analytics, product matrices, role permissions, and omnichannel order fulfillment'}
               </div>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '10px' }}>
             <button onClick={() => onNavigate('staff')} className="btn-uq btn-uq-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-              Mở Staff POS Portal
+              {lang === 'vi' ? 'Mở Staff POS Portal' : 'Store POS Portal'}
             </button>
             <button onClick={() => onNavigate('home')} className="btn-uq btn-uq-outline-gray" style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}>
-              Về Storefront
+              {lang === 'vi' ? 'Về Storefront' : 'Storefront'}
             </button>
           </div>
         </div>
@@ -402,12 +449,12 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         {/* Tab Switcher */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '20px' }}>
           {[
-            { id: 'overview', label: '1. Tổng Quan Doanh Thu & KPI', icon: <TrendingUp size={16} /> },
-            { id: 'products', label: `2. Quản Lý Sản Phẩm (${products.length})`, icon: <ShoppingBag size={16} /> },
-            { id: 'orders', label: `3. Toàn Bộ Đơn Hàng (${orders.length})`, icon: <Package size={16} /> },
-            { id: 'users', label: `4. Phân Quyền Nhân Sự & User (${usersList.length})`, icon: <Users size={16} /> },
-            { id: 'coupons', label: `5. Mã Khuyến Mãi (${coupons.length})`, icon: <Tag size={16} /> },
-            { id: 'bank-config', label: '6. Cấu Hình VietQR Nhận Tiền', icon: <QrCode size={16} /> },
+            { id: 'overview', label: lang === 'vi' ? '1. Tổng Quan Doanh Thu & KPI' : '1. Overview & Revenue Analytics', icon: <TrendingUp size={16} /> },
+            { id: 'products', label: lang === 'vi' ? `2. Quản Lý Sản Phẩm (${products.length})` : `2. Products (${products.length})`, icon: <ShoppingBag size={16} /> },
+            { id: 'orders', label: lang === 'vi' ? `3. Toàn Bộ Đơn Hàng (${orders.length})` : `3. Omnichannel Orders (${orders.length})`, icon: <Package size={16} /> },
+            { id: 'users', label: lang === 'vi' ? `4. Phân Quyền Nhân Sự & User (${usersList.length})` : `4. Access & Roles (${usersList.length})`, icon: <Users size={16} /> },
+            { id: 'coupons', label: lang === 'vi' ? `5. Mã Khuyến Mãi (${coupons.length})` : `5. Coupons & Promo (${coupons.length})`, icon: <Tag size={16} /> },
+            { id: 'bank-config', label: lang === 'vi' ? '6. Cấu Hình VietQR Nhận Tiền' : '6. VietQR Gateway Settings', icon: <QrCode size={16} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -422,6 +469,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 backgroundColor: activeTab === tab.id ? '#ffffff' : '#e8eaed',
                 color: activeTab === tab.id ? '#e60012' : '#333',
                 borderTop: activeTab === tab.id ? '3px solid #e60012' : '3px solid transparent',
+                borderLeft: 'none',
+                borderRight: 'none',
+                borderBottom: 'none',
+                cursor: 'pointer',
                 whiteSpace: 'nowrap'
               }}
             >
@@ -437,42 +488,50 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             {/* KPI Stat Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               <div style={{ backgroundColor: '#ffffff', padding: '20px', border: '1px solid #e0e0e0' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>TỔNG DOANH THU HỆ THỐNG</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>
+                  {lang === 'vi' ? 'TỔNG DOANH THU HỆ THỐNG' : 'TOTAL SYSTEM REVENUE'}
+                </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#e60012', marginTop: '6px' }}>
                   {formatPrice(stats?.totalRevenue || 0)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#00875a', marginTop: '4px', fontWeight: '700' }}>
-                  ↑ +18.5% so với cùng kỳ tháng trước
+                  ↑ +18.5% {lang === 'vi' ? 'so với cùng kỳ tháng trước' : 'vs last month'}
                 </div>
               </div>
 
               <div style={{ backgroundColor: '#ffffff', padding: '20px', border: '1px solid #e0e0e0' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>TỔNG SỐ ĐƠN HÀNG</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>
+                  {lang === 'vi' ? 'TỔNG SỐ ĐƠN HÀNG' : 'TOTAL ORDERS'}
+                </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#111', marginTop: '6px' }}>
                   {stats?.totalOrders || 0}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
-                  Bao gồm đơn Online & POS tại quầy
+                  {lang === 'vi' ? 'Bao gồm đơn Online & POS tại quầy' : 'Online web & POS in-store orders'}
                 </div>
               </div>
 
               <div style={{ backgroundColor: '#ffffff', padding: '20px', border: '1px solid #e0e0e0' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>TỔNG KHÁCH HÀNG & USER</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>
+                  {lang === 'vi' ? 'TỔNG KHÁCH HÀNG & USER' : 'REGISTERED USERS'}
+                </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#111', marginTop: '6px' }}>
                   {stats?.totalCustomers || 0}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#00875a', marginTop: '4px', fontWeight: '700' }}>
-                  100% tài khoản đã kích hoạt
+                  {lang === 'vi' ? '100% tài khoản đã kích hoạt' : '100% active verified accounts'}
                 </div>
               </div>
 
               <div style={{ backgroundColor: '#ffffff', padding: '20px', border: '1px solid #e0e0e0' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>CẢNH BÁO TỒN KHO THẤP</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>
+                  {lang === 'vi' ? 'CẢNH BÁO TỒN KHO THẤP' : 'LOW STOCK ALERTS'}
+                </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#ffab00', marginTop: '6px' }}>
                   {stats?.lowStockItemsCount || 0}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
-                  Biến thể cần nhập bổ sung
+                  {lang === 'vi' ? 'Biến thể cần nhập bổ sung' : 'Variants requiring replenishment'}
                 </div>
               </div>
             </div>
@@ -484,15 +543,16 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', color: '#111' }}>
-                      Biểu Đồ Doanh Thu 7 Ngày Gần Nhất
+                      {lang === 'vi' ? 'Biểu Đồ Doanh Thu 7 Ngày Gần Nhất' : '7-Day Revenue & Sales Trend'}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>
-                      Thống kê doanh thu bán hàng & số lượng đơn qua từng ngày
+                      {lang === 'vi' ? 'Thống kê doanh thu bán hàng & số lượng đơn qua từng ngày' : 'Daily gross revenue and order frequency tracking'}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: '700', backgroundColor: '#fff0f0', color: '#e60012', padding: '3px 8px', borderRadius: '3px', border: '1px solid #ffd0d0' }}>
-                      Tổng 7 ngày: {formatPrice(stats?.revenueLast7Days?.reduce((s, d) => s + (Number(d.revenue) || 0), 0) || 0)}
+                      {lang === 'vi' ? 'Tổng 7 ngày: ' : '7-Day Total: '}
+                      {formatPrice(stats?.revenueLast7Days?.reduce((s, d) => s + (Number(d.revenue) || 0), 0) || 0)}
                     </span>
                   </div>
                 </div>
@@ -512,7 +572,6 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                       borderRadius: '4px',
                       position: 'relative'
                     }}>
-                      {/* Subtle background guides */}
                       <div style={{ position: 'absolute', top: '25%', left: 0, right: 0, height: '1px', borderTop: '1px dashed #e0e0e0', pointerEvents: 'none' }} />
                       <div style={{ position: 'absolute', top: '60%', left: 0, right: 0, height: '1px', borderTop: '1px dashed #e0e0e0', pointerEvents: 'none' }} />
 
@@ -520,7 +579,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                         const isToday = idx === (stats.revenueLast7Days.length - 1);
                         const rev = Number(d.revenue) || 0;
                         const barHeight = Math.max(Math.round((rev / max7DayRevenue) * 115), 10);
-                        const formattedShortRev = rev >= 1000000 ? `${(rev / 1000000).toFixed(1)}Tr` : `${Math.round(rev / 1000)}k`;
+                        const formattedShortRev = rev >= 1000000 ? `${(rev / 1000000).toFixed(1)}M` : `${Math.round(rev / 1000)}k`;
 
                         return (
                           <div
@@ -535,9 +594,8 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                               zIndex: 1,
                               cursor: 'pointer'
                             }}
-                            title={`📅 Ngày ${d.date}\n💰 Doanh thu: ${formatPrice(rev)}\n📦 Số đơn: ${d.orderCount || 0} đơn`}
+                            title={`📅 Date: ${d.date}\n💰 Revenue: ${formatPrice(rev)}\n📦 Orders: ${d.orderCount || 0}`}
                           >
-                            {/* Value label on top of bar */}
                             <span style={{
                               fontSize: '0.7rem',
                               fontWeight: '800',
@@ -548,7 +606,6 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                               {formattedShortRev}
                             </span>
 
-                            {/* Bar Column */}
                             <div
                               style={{
                                 width: '32px',
@@ -569,7 +626,6 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                               }}
                             />
 
-                            {/* Date label below bar */}
                             <div style={{ marginTop: '8px', textAlign: 'center' }}>
                               <span style={{
                                 fontSize: '0.72rem',
@@ -584,7 +640,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                                 color: '#767676',
                                 fontWeight: '600'
                               }}>
-                                {d.orderCount || 0} đơn
+                                {d.orderCount || 0} {lang === 'vi' ? 'đơn' : 'orders'}
                               </span>
                             </div>
                           </div>
@@ -598,36 +654,40 @@ export const AdminDashboardPage = ({ onNavigate }) => {
               {/* Single Central Store Information & Operations */}
               <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
                 <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '16px' }}>
-                  Cửa Hàng BEO Modern Fashion & Vận Hành
+                  {lang === 'vi' ? 'Cửa Hàng BEO Modern Fashion & Vận Hành' : 'Flagship Store Operations & Metrics'}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ padding: '16px', backgroundColor: '#fafafa', border: '1px solid #eee', borderRadius: '4px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <strong style={{ fontSize: '1.05rem', color: '#111' }}>BEO Modern Fashion Showroom</strong>
-                      <span className="badge-uq red">FLAGSHIP STORE</span>
+                      <strong style={{ fontSize: '1.05rem', color: '#111' }}>BEO STORE Flagship Showroom</strong>
+                      <span className="badge-uq red">FLAGSHIP SHOWROOM</span>
                     </div>
                     <div style={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.5, marginBottom: '8px' }}>
-                      📍 209 Đường 30 Tháng 4, P. Xuân Khánh, Q. Ninh Kiều, TP. Cần Thơ
+                      📍 209 30th April Street, Xuan Khanh, Can Tho City, Vietnam
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#666', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                       <span>📞 Hotline: <strong>1900019199999</strong></span>
                       <span>💬 Zalo: <strong>0567740000</strong></span>
-                      <span>⏰ Mở cửa: <strong>08:00 - 22:00</strong></span>
+                      <span>⏰ {lang === 'vi' ? 'Mở cửa:' : 'Hours:'} <strong>08:00 - 22:00</strong></span>
                     </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div style={{ padding: '14px', backgroundColor: '#fff0f0', border: '1px solid #ffd0d0', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#e60012', textTransform: 'uppercase' }}>DOANH THU CỬA HÀNG</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#e60012', textTransform: 'uppercase' }}>
+                        {lang === 'vi' ? 'DOANH THU CỬA HÀNG' : 'STORE REVENUE'}
+                      </div>
                       <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#e60012', marginTop: '4px' }}>
                         {formatPrice(stats?.totalRevenue || 0)}
                       </div>
                     </div>
                     <div style={{ padding: '14px', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '4px' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase' }}>ĐƠN HÀNG ĐÃ XỬ LÝ</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase' }}>
+                        {lang === 'vi' ? 'ĐƠN HÀNG ĐÃ XỬ LÝ' : 'ORDERS FULFILLED'}
+                      </div>
                       <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0284c7', marginTop: '4px' }}>
-                        {stats?.totalOrders || 0} Đơn
+                        {stats?.totalOrders || 0} {lang === 'vi' ? 'Đơn' : 'Orders'}
                       </div>
                     </div>
                   </div>
@@ -642,116 +702,264 @@ export const AdminDashboardPage = ({ onNavigate }) => {
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>Danh Sách Sản Phẩm ({products.length})</div>
-                <div style={{ fontSize: '0.85rem', color: '#666' }}>Quản lý danh mục, giá bán và ma trận biến thể</div>
+                <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>
+                  {lang === 'vi' ? `Danh Sách Sản Phẩm (${filteredAdminProducts.length} sản phẩm)` : `Catalog & Product Inventory (${filteredAdminProducts.length})`}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                  {lang === 'vi' ? 'Quản lý danh mục, giá bán và ma trận biến thể' : 'Manage styles, price points, and variant matrices'}
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', width: '220px' }}>
+                  <input
+                    type="text"
+                    placeholder={lang === 'vi' ? 'Tìm theo tên, mã SP...' : 'Search by name, SKU...'}
+                    value={adminProdSearch}
+                    onChange={(e) => {
+                      setAdminProdSearch(e.target.value);
+                      setAdminProductsPage(1);
+                    }}
+                    style={{ width: '100%', padding: '8px 12px 8px 30px', border: '1px solid #ccc', outline: 'none', fontSize: '0.82rem' }}
+                  />
+                  <Search size={14} color="#888" style={{ position: 'absolute', left: '10px', top: '10px' }} />
+                </div>
                 <button
-                  onClick={() => exportProductsToExcel(products)}
+                  onClick={() => exportProductsToExcel(filteredAdminProducts)}
                   className="btn-uq btn-uq-outline-black"
                   style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}
                 >
                   <Download size={15} />
-                  <span>Xuất Excel Sản Phẩm</span>
+                  <span>{lang === 'vi' ? 'Xuất Excel Sản Phẩm' : 'Export Excel'}</span>
                 </button>
                 <button onClick={handleOpenCreateProduct} className="btn-uq btn-uq-red">
                   <Plus size={16} />
-                  <span>Thêm Sản Phẩm Mới</span>
+                  <span>{lang === 'vi' ? 'Thêm Sản Phẩm Mới' : 'Add New Product'}</span>
                 </button>
               </div>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '10px' }}>ẢNH / TÊN</th>
-                  <th style={{ padding: '10px' }}>MÃ SP</th>
-                  <th style={{ padding: '10px' }}>GIỚI TÍNH</th>
-                  <th style={{ padding: '10px' }}>BST</th>
-                  <th style={{ padding: '10px' }}>GIÁ NIÊM YẾT</th>
-                  <th style={{ padding: '10px' }}>SỐ BIẾN THỂ</th>
-                  <th style={{ padding: '10px', textAlign: 'right' }}>THAO TÁC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((prod) => (
-                  <tr key={prod.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '10px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <img src={prod.primaryImageUrl} alt={prod.name} style={{ width: '40px', height: '48px', objectFit: 'cover' }} />
-                        <strong>{prod.name}</strong>
-                      </div>
-                    </td>
-                    <td style={{ padding: '10px', fontFamily: 'monospace' }}>{prod.code}</td>
-                    <td style={{ padding: '10px' }}>{prod.gender}</td>
-                    <td style={{ padding: '10px' }}>{prod.collection || 'LifeWear'}</td>
-                    <td style={{ padding: '10px', fontWeight: '700' }}>
-                      {prod.salePrice ? (
-                        <div>
-                          <span style={{ color: '#e60012' }}>{formatPrice(prod.salePrice)}</span>
-                          <span style={{ fontSize: '0.75rem', color: '#999', textDecoration: 'line-through', marginLeft: '4px' }}>
-                            {formatPrice(prod.basePrice)}
-                          </span>
-                        </div>
-                      ) : (
-                        formatPrice(prod.basePrice)
-                      )}
-                    </td>
-                    <td style={{ padding: '10px', fontWeight: '700' }}>{prod.variants?.length || 0} SKUs</td>
-                    <td style={{ padding: '10px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                        <button
-                          onClick={() => handleOpenEditProduct(prod)}
-                          className="btn-uq btn-uq-outline-gray"
-                          style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                          title="Chỉnh sửa sản phẩm"
+            {filteredAdminProducts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: '#fafafa', border: '1px dashed #ddd' }}>
+                {lang === 'vi' ? 'Không tìm thấy sản phẩm nào phù hợp với từ khóa tìm kiếm.' : 'No products matched current search keyword.'}
+              </div>
+            ) : (
+              <>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'ẢNH / TÊN' : 'PRODUCT'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'MÃ SP' : 'CODE'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'GIỚI TÍNH' : 'GENDER'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'BST' : 'COLLECTION'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'GIÁ NIÊM YẾT' : 'RETAIL PRICE'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'SỐ BIẾN THỂ' : 'VARIANTS'}</th>
+                      <th style={{ padding: '10px', textAlign: 'right' }}>{lang === 'vi' ? 'THAO TÁC' : 'ACTIONS'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedAdminProducts.map((prod) => (
+                      <tr key={prod.id} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <img src={prod.primaryImageUrl} alt={prod.name} style={{ width: '40px', height: '48px', objectFit: 'cover' }} />
+                            <strong>{prod.name}</strong>
+                          </div>
+                        </td>
+                        <td style={{ padding: '10px', fontFamily: 'monospace' }}>{prod.code}</td>
+                        <td style={{ padding: '10px' }}>{prod.gender}</td>
+                        <td style={{ padding: '10px' }}>{prod.collection || 'LifeWear'}</td>
+                        <td style={{ padding: '10px', fontWeight: '700' }}>
+                          {prod.salePrice ? (
+                            <div>
+                              <span style={{ color: '#e60012' }}>{formatPrice(prod.salePrice)}</span>
+                              <span style={{ fontSize: '0.75rem', color: '#999', textDecoration: 'line-through', marginLeft: '4px' }}>
+                                {formatPrice(prod.basePrice)}
+                              </span>
+                            </div>
+                          ) : (
+                            formatPrice(prod.basePrice)
+                          )}
+                        </td>
+                        <td style={{ padding: '10px', fontWeight: '700' }}>{prod.variants?.length || 0} SKUs</td>
+                        <td style={{ padding: '10px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={() => handleOpenEditProduct(prod)}
+                              className="btn-uq btn-uq-outline-gray"
+                              style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              title="Edit"
+                            >
+                              <Edit2 size={12} />
+                              <span>{lang === 'vi' ? 'Sửa' : 'Edit'}</span>
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirmId(prod.id)}
+                              style={{ color: '#d9383a', padding: '4px 8px', cursor: 'pointer', border: '1px solid #ffcdd2', backgroundColor: '#fff5f5' }}
+                              title="Deactivate"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Admin Products Pagination Controls (1, 2, 3, 4...) */}
+                {totalAdminProductsCount > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    marginTop: '24px',
+                    paddingTop: '16px',
+                    borderTop: '1px solid #eee'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: '#555' }}>
+                      <span>
+                        {lang === 'vi'
+                          ? `Hiển thị ${(currentAdminProductsPage - 1) * adminProductsPerPage + 1}–${Math.min(currentAdminProductsPage * adminProductsPerPage, totalAdminProductsCount)} trong số ${totalAdminProductsCount} sản phẩm`
+                          : `Showing ${(currentAdminProductsPage - 1) * adminProductsPerPage + 1}–${Math.min(currentAdminProductsPage * adminProductsPerPage, totalAdminProductsCount)} of ${totalAdminProductsCount} products`}
+                      </span>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#888' }}>{lang === 'vi' ? 'Số mục/trang:' : 'Per page:'}</span>
+                        <select
+                          value={adminProductsPerPage}
+                          onChange={(e) => {
+                            setAdminProductsPerPage(Number(e.target.value));
+                            setAdminProductsPage(1);
+                          }}
+                          style={{
+                            padding: '4px 8px',
+                            fontSize: '0.8rem',
+                            border: '1px solid #ccc',
+                            borderRadius: '2px',
+                            backgroundColor: '#fff',
+                            cursor: 'pointer',
+                            outline: 'none'
+                          }}
                         >
-                          <Edit2 size={12} />
-                          <span>Sửa</span>
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirmId(prod.id)}
-                          style={{ color: '#d9383a', padding: '4px 8px', cursor: 'pointer', border: '1px solid #ffcdd2', backgroundColor: '#fff5f5' }}
-                          title="Ngừng bán / Xóa"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                        </select>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+
+                    {/* Page Navigation Buttons */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <button
+                        onClick={() => setAdminProductsPage((p) => Math.max(1, p - 1))}
+                        disabled={currentAdminProductsPage === 1}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '0.8rem',
+                          fontWeight: '700',
+                          border: '1px solid #ccc',
+                          backgroundColor: currentAdminProductsPage === 1 ? '#f5f5f5' : '#ffffff',
+                          color: currentAdminProductsPage === 1 ? '#aaa' : '#111',
+                          cursor: currentAdminProductsPage === 1 ? 'not-allowed' : 'pointer',
+                          borderRadius: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>‹</span>
+                        <span>{lang === 'vi' ? 'Trước' : 'Prev'}</span>
+                      </button>
+
+                      {Array.from({ length: totalAdminProductPages }, (_, i) => i + 1)
+                        .filter((p) => p === 1 || p === totalAdminProductPages || Math.abs(p - currentAdminProductsPage) <= 2)
+                        .map((p, idx, arr) => {
+                          const prev = arr[idx - 1];
+                          const showEllipsis = prev && p - prev > 1;
+                          return (
+                            <React.Fragment key={p}>
+                              {showEllipsis && <span style={{ padding: '0 4px', color: '#888' }}>...</span>}
+                              <button
+                                onClick={() => setAdminProductsPage(p)}
+                                style={{
+                                  minWidth: '34px',
+                                  height: '32px',
+                                  fontSize: '0.82rem',
+                                  fontWeight: currentAdminProductsPage === p ? '800' : '600',
+                                  border: currentAdminProductsPage === p ? '2px solid #e60012' : '1px solid #ccc',
+                                  backgroundColor: currentAdminProductsPage === p ? '#e60012' : '#ffffff',
+                                  color: currentAdminProductsPage === p ? '#ffffff' : '#333333',
+                                  cursor: 'pointer',
+                                  borderRadius: '2px',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                {p}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+
+                      <button
+                        onClick={() => setAdminProductsPage((p) => Math.min(totalAdminProductPages, p + 1))}
+                        disabled={currentAdminProductsPage === totalAdminProductPages}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '0.8rem',
+                          fontWeight: '700',
+                          border: '1px solid #ccc',
+                          backgroundColor: currentAdminProductsPage === totalAdminProductPages ? '#f5f5f5' : '#ffffff',
+                          color: currentAdminProductsPage === totalAdminProductPages ? '#aaa' : '#111',
+                          cursor: currentAdminProductsPage === totalAdminProductPages ? 'not-allowed' : 'pointer',
+                          borderRadius: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>{lang === 'vi' ? 'Sau' : 'Next'}</span>
+                        <span>›</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
         {/* ================= TAB 3: ORDERS MANAGEMENT ================= */}
         {activeTab === 'orders' && (
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
-            {/* Header & Controls */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
               <div>
                 <div style={{ fontWeight: '800', fontSize: '1.15rem', textTransform: 'uppercase', color: '#111' }}>
-                  Quản Lý Toàn Bộ Đơn Hàng ({filteredOrders.length} / {orders.length} đơn)
+                  {lang === 'vi' ? `Quản Lý Toàn Bộ Đơn Hàng (${filteredOrders.length} / ${orders.length} đơn)` : `Omnichannel Orders Management (${filteredOrders.length} / ${orders.length})`}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#666', marginTop: '2px' }}>
-                  Theo dõi, lọc phân loại trạng thái và chuyển bước xử lý đơn hàng toàn hệ thống
+                  {lang === 'vi' ? 'Theo dõi, lọc phân loại trạng thái và chuyển bước xử lý đơn hàng toàn hệ thống' : 'Filter by fulfillment status and transition order lifecycles in real-time'}
                 </div>
               </div>
 
-              {/* Status Classifier Dropdown - Exact styling matching user requirement */}
+              {/* Status Classifier Dropdown */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Filter size={16} color="#e60012" />
                   <span style={{ fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', color: '#111' }}>
-                    Phân Loại Trạng Thái:
+                    {lang === 'vi' ? 'Phân Loại Trạng Thái:' : 'Filter Status:'}
                   </span>
                 </div>
                 <select
                   value={orderStatusFilter}
-                  onChange={(e) => setOrderStatusFilter(e.target.value)}
+                  onChange={(e) => {
+                    setOrderStatusFilter(e.target.value);
+                    setOrdersPage(1);
+                  }}
                   style={{
-                    padding: '9px 14px',
+                    padding: '8px 12px',
                     fontSize: '0.85rem',
                     fontWeight: '800',
                     border: '2px solid #111',
@@ -764,14 +972,14 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     boxShadow: 'var(--shadow-sm)'
                   }}
                 >
-                  <option value="ALL">TẤT CẢ TRẠNG THÁI (Toàn bộ {orders.length} đơn)</option>
-                  <option value="PENDING">PENDING (Chờ xác nhận)</option>
-                  <option value="CONFIRMED">CONFIRMED (Đã xác nhận)</option>
-                  <option value="PACKING">PACKING (Đang đóng gói)</option>
-                  <option value="SHIPPING">SHIPPING (Đang giao hàng)</option>
-                  <option value="DELIVERED">DELIVERED (Đã giao thành công)</option>
-                  <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
-                  <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
+                  <option value="ALL">{lang === 'vi' ? `TẤT CẢ TRẠNG THÁI (${(orders || []).length} đơn)` : `ALL STATUSES (${(orders || []).length})`}</option>
+                  <option value="PENDING">PENDING ({lang === 'vi' ? 'Chờ xác nhận' : 'Pending'})</option>
+                  <option value="CONFIRMED">CONFIRMED ({lang === 'vi' ? 'Đã xác nhận' : 'Confirmed'})</option>
+                  <option value="PACKING">PACKING ({lang === 'vi' ? 'Đang đóng gói' : 'Packing'})</option>
+                  <option value="SHIPPING">SHIPPING ({lang === 'vi' ? 'Đang giao hàng' : 'In Transit'})</option>
+                  <option value="DELIVERED">DELIVERED ({lang === 'vi' ? 'Đã giao thành công' : 'Delivered'})</option>
+                  <option value="COMPLETED">COMPLETED ({lang === 'vi' ? 'Hoàn tất' : 'Completed'})</option>
+                  <option value="CANCELLED">CANCELLED ({lang === 'vi' ? 'Hủy đơn & hoàn kho' : 'Cancelled & Restocked'})</option>
                 </select>
 
                 <button
@@ -780,28 +988,31 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                   style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '9px 14px' }}
                 >
                   <Download size={15} />
-                  <span>Xuất Excel ({filteredOrders.length})</span>
+                  <span>{lang === 'vi' ? `Xuất Excel (${filteredOrders.length})` : `Export Excel (${filteredOrders.length})`}</span>
                 </button>
               </div>
             </div>
 
-            {/* Quick Status Chips / Count Pills */}
+            {/* Quick Status Chips */}
             <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '16px', borderBottom: '1px solid #eee' }}>
               {[
-                { id: 'ALL', label: 'Tất cả', count: orders.length, color: '#111' },
-                { id: 'PENDING', label: 'Chờ xác nhận', count: orders.filter((o) => o.status === 'PENDING').length, color: '#f57c00' },
-                { id: 'CONFIRMED', label: 'Đã xác nhận', count: orders.filter((o) => o.status === 'CONFIRMED').length, color: '#00875a' },
-                { id: 'PACKING', label: 'Đang đóng gói', count: orders.filter((o) => o.status === 'PACKING').length, color: '#0052cc' },
-                { id: 'SHIPPING', label: 'Đang giao hàng', count: orders.filter((o) => o.status === 'SHIPPING').length, color: '#6554c0' },
-                { id: 'DELIVERED', label: 'Đã giao thành công', count: orders.filter((o) => o.status === 'DELIVERED').length, color: '#00875a' },
-                { id: 'COMPLETED', label: 'Hoàn tất', count: orders.filter((o) => o.status === 'COMPLETED').length, color: '#2e7d32' },
-                { id: 'CANCELLED', label: 'Hủy đơn', count: orders.filter((o) => o.status === 'CANCELLED').length, color: '#e60012' }
+                { id: 'ALL', label: lang === 'vi' ? 'Tất cả' : 'All', count: (orders || []).length, color: '#111' },
+                { id: 'PENDING', label: lang === 'vi' ? 'Chờ xác nhận' : 'Pending', count: (orders || []).filter((o) => o.status === 'PENDING').length, color: '#f57c00' },
+                { id: 'CONFIRMED', label: lang === 'vi' ? 'Đã xác nhận' : 'Confirmed', count: (orders || []).filter((o) => o.status === 'CONFIRMED').length, color: '#00875a' },
+                { id: 'PACKING', label: lang === 'vi' ? 'Đang đóng gói' : 'Packing', count: (orders || []).filter((o) => o.status === 'PACKING').length, color: '#0052cc' },
+                { id: 'SHIPPING', label: lang === 'vi' ? 'Đang giao hàng' : 'In Transit', count: (orders || []).filter((o) => o.status === 'SHIPPING').length, color: '#6554c0' },
+                { id: 'DELIVERED', label: lang === 'vi' ? 'Đã giao thành công' : 'Delivered', count: (orders || []).filter((o) => o.status === 'DELIVERED').length, color: '#00875a' },
+                { id: 'COMPLETED', label: lang === 'vi' ? 'Hoàn tất' : 'Completed', count: (orders || []).filter((o) => o.status === 'COMPLETED').length, color: '#2e7d32' },
+                { id: 'CANCELLED', label: lang === 'vi' ? 'Hủy đơn' : 'Cancelled', count: (orders || []).filter((o) => o.status === 'CANCELLED').length, color: '#e60012' }
               ].map((chip) => {
                 const isSelected = orderStatusFilter === chip.id;
                 return (
                   <button
                     key={chip.id}
-                    onClick={() => setOrderStatusFilter(chip.id)}
+                    onClick={() => {
+                      setOrderStatusFilter(chip.id);
+                      setOrdersPage(1);
+                    }}
                     style={{
                       padding: '6px 12px',
                       fontSize: '0.78rem',
@@ -840,14 +1051,20 @@ export const AdminDashboardPage = ({ onNavigate }) => {
               <Search size={16} color="#888" />
               <input
                 type="text"
-                placeholder="Tìm kiếm theo mã đơn (UQ-...), tên khách hàng, số điện thoại, tỉnh thành..."
+                placeholder={lang === 'vi' ? 'Tìm kiếm theo mã đơn (UQ-...), tên khách hàng, số điện thoại, tỉnh thành...' : 'Search by Order ID (UQ-...), customer name, phone, city...'}
                 value={orderSearchQuery}
-                onChange={(e) => setOrderSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setOrderSearchQuery(e.target.value);
+                  setOrdersPage(1);
+                }}
                 style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem' }}
               />
               {orderSearchQuery && (
                 <button
-                  onClick={() => setOrderSearchQuery('')}
+                  onClick={() => {
+                    setOrderSearchQuery('');
+                    setOrdersPage(1);
+                  }}
                   style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#999' }}
                 >
                   <X size={14} />
@@ -859,102 +1076,225 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             {filteredOrders.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 24px', color: '#888', backgroundColor: '#fafafa', border: '1px dashed #ddd' }}>
                 <div style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '4px' }}>
-                  Không tìm thấy đơn hàng nào phù hợp với bộ lọc
+                  {lang === 'vi' ? 'Không tìm thấy đơn hàng nào phù hợp với bộ lọc' : 'No orders matched current filter criteria'}
                 </div>
                 <div style={{ fontSize: '0.8rem' }}>
-                  Thử chọn trạng thái "TẤT CẢ TRẠNG THÁI" hoặc xóa từ khóa tìm kiếm.
+                  {lang === 'vi' ? 'Thử chọn trạng thái "TẤT CẢ TRẠNG THÁI" hoặc xóa từ khóa tìm kiếm.' : 'Try selecting "ALL STATUSES" or clearing search keyword.'}
                 </div>
               </div>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
-                    <th style={{ padding: '10px' }}>MÃ ĐƠN</th>
-                    <th style={{ padding: '10px' }}>KHÁCH HÀNG</th>
-                    <th style={{ padding: '10px' }}>CHI NHÁNH</th>
-                    <th style={{ padding: '10px' }}>LOẠI ĐƠN</th>
-                    <th style={{ padding: '10px' }}>TỔNG TIỀN</th>
-                    <th style={{ padding: '10px' }}>TRẠNG THÁI</th>
-                    <th style={{ padding: '10px', textAlign: 'right' }}>THAO TÁC</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map((ord) => (
-                    <tr key={ord.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '10px', fontWeight: '800' }}>
-                        <span style={{ fontFamily: 'monospace', color: '#111' }}>{ord.orderNumber}</span>
-                      </td>
-                      <td style={{ padding: '10px' }}>
-                        <div style={{ fontWeight: '700' }}>{ord.customerName}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#666' }}>{ord.customerPhone}</div>
-                      </td>
-                      <td style={{ padding: '10px' }}>{ord.storeName || 'Online'}</td>
-                      <td style={{ padding: '10px' }}>
-                        <span className="badge-uq gray" style={{ fontSize: '0.72rem' }}>{ord.orderType}</span>
-                      </td>
-                      <td style={{ padding: '10px', fontWeight: '800', color: '#e60012' }}>{formatPrice(ord.finalAmount)}</td>
-                      <td style={{ padding: '10px' }}>
+              <>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'MÃ ĐƠN' : 'ORDER ID'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'KHÁCH HÀNG' : 'CUSTOMER'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'CHI NHÁNH' : 'LOCATION'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'LOẠI ĐƠN' : 'TYPE'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'TỔNG TIỀN' : 'AMOUNT'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'TRẠNG THÁI' : 'STATUS'}</th>
+                      <th style={{ padding: '10px', textAlign: 'right' }}>{lang === 'vi' ? 'THAO TÁC' : 'ACTION'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedOrders.map((ord) => (
+                      <tr key={ord.id} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '10px', fontWeight: '800' }}>
+                          <span style={{ fontFamily: 'monospace', color: '#111' }}>{ord.orderNumber}</span>
+                        </td>
+                        <td style={{ padding: '10px' }}>
+                          <div style={{ fontWeight: '700' }}>{ord.customerName}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#666' }}>{ord.customerPhone}</div>
+                        </td>
+                        <td style={{ padding: '10px' }}>{ord.storeName || 'Online'}</td>
+                        <td style={{ padding: '10px' }}>
+                          <span className="badge-uq gray" style={{ fontSize: '0.72rem' }}>{ord.orderType}</span>
+                        </td>
+                        <td style={{ padding: '10px', fontWeight: '800', color: '#e60012' }}>{formatPrice(ord.finalAmount)}</td>
+                        <td style={{ padding: '10px' }}>
+                          <select
+                            value={ord.status}
+                            onChange={(e) => handleUpdateAdminOrderStatus(ord.id, e.target.value)}
+                            style={{
+                              padding: '6px 10px',
+                              fontSize: '0.78rem',
+                              fontWeight: '800',
+                              border:
+                                ord.status === 'CANCELLED'
+                                  ? '1px solid #ffcdd2'
+                                  : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
+                                  ? '1px solid #c8e6c9'
+                                  : ord.status === 'PACKING' || ord.status === 'SHIPPING'
+                                  ? '1px solid #bbdefb'
+                                  : '1px solid #ffe0b2',
+                              backgroundColor:
+                                ord.status === 'CANCELLED'
+                                  ? '#fff0f0'
+                                  : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
+                                  ? '#e8f5e9'
+                                  : ord.status === 'PACKING' || ord.status === 'SHIPPING'
+                                  ? '#e3f2fd'
+                                  : '#fff8e1',
+                              color:
+                                ord.status === 'CANCELLED'
+                                  ? '#e60012'
+                                  : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
+                                  ? '#2e7d32'
+                                  : ord.status === 'PACKING' || ord.status === 'SHIPPING'
+                                  ? '#1565c0'
+                                  : '#e65100',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              borderRadius: '3px'
+                            }}
+                          >
+                            <option value="PENDING">PENDING ({lang === 'vi' ? 'Chờ xác nhận' : 'Pending'})</option>
+                            <option value="CONFIRMED">CONFIRMED ({lang === 'vi' ? 'Đã xác nhận' : 'Confirmed'})</option>
+                            <option value="PACKING">PACKING ({lang === 'vi' ? 'Đang đóng gói' : 'Packing'})</option>
+                            <option value="SHIPPING">SHIPPING ({lang === 'vi' ? 'Đang giao hàng' : 'In Transit'})</option>
+                            <option value="DELIVERED">DELIVERED ({lang === 'vi' ? 'Đã giao thành công' : 'Delivered'})</option>
+                            <option value="COMPLETED">COMPLETED ({lang === 'vi' ? 'Hoàn tất' : 'Completed'})</option>
+                            <option value="CANCELLED">CANCELLED ({lang === 'vi' ? 'Hủy đơn & hoàn kho' : 'Cancelled & Restocked'})</option>
+                          </select>
+                        </td>
+                        <td style={{ padding: '10px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={() => setReceiptOrder(ord)}
+                              className="btn-uq btn-uq-outline-gray"
+                              style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <Printer size={12} />
+                              <span>{lang === 'vi' ? 'Hóa đơn' : 'Receipt'}</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Modern Pagination Controls (1, 2, 3, 4...) */}
+                {totalOrdersCount > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    marginTop: '20px',
+                    paddingTop: '16px',
+                    borderTop: '1px solid #eee'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.85rem', color: '#555' }}>
+                      <span>
+                        {lang === 'vi'
+                          ? `Hiển thị ${(currentOrdersPage - 1) * ordersPerPage + 1}–${Math.min(currentOrdersPage * ordersPerPage, totalOrdersCount)} trong số ${totalOrdersCount} đơn hàng`
+                          : `Showing ${(currentOrdersPage - 1) * ordersPerPage + 1}–${Math.min(currentOrdersPage * ordersPerPage, totalOrdersCount)} of ${totalOrdersCount} orders`}
+                      </span>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#888' }}>{lang === 'vi' ? 'Số đơn/trang:' : 'Per page:'}</span>
                         <select
-                          value={ord.status}
-                          onChange={(e) => handleUpdateAdminOrderStatus(ord.id, e.target.value)}
+                          value={ordersPerPage}
+                          onChange={(e) => {
+                            setOrdersPerPage(Number(e.target.value));
+                            setOrdersPage(1);
+                          }}
                           style={{
-                            padding: '6px 10px',
-                            fontSize: '0.78rem',
-                            fontWeight: '800',
-                            border:
-                              ord.status === 'CANCELLED'
-                                ? '1px solid #ffcdd2'
-                                : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
-                                ? '1px solid #c8e6c9'
-                                : ord.status === 'PACKING' || ord.status === 'SHIPPING'
-                                ? '1px solid #bbdefb'
-                                : '1px solid #ffe0b2',
-                            backgroundColor:
-                              ord.status === 'CANCELLED'
-                                ? '#fff0f0'
-                                : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
-                                ? '#e8f5e9'
-                                : ord.status === 'PACKING' || ord.status === 'SHIPPING'
-                                ? '#e3f2fd'
-                                : '#fff8e1',
-                            color:
-                              ord.status === 'CANCELLED'
-                                ? '#e60012'
-                                : ord.status === 'CONFIRMED' || ord.status === 'DELIVERED' || ord.status === 'COMPLETED'
-                                ? '#2e7d32'
-                                : ord.status === 'PACKING' || ord.status === 'SHIPPING'
-                                ? '#1565c0'
-                                : '#e65100',
-                            outline: 'none',
+                            padding: '4px 8px',
+                            fontSize: '0.8rem',
+                            border: '1px solid #ccc',
+                            borderRadius: '2px',
+                            backgroundColor: '#fff',
                             cursor: 'pointer',
-                            borderRadius: '3px'
+                            outline: 'none'
                           }}
                         >
-                          <option value="PENDING">PENDING (Chờ xác nhận)</option>
-                          <option value="CONFIRMED">CONFIRMED (Đã xác nhận)</option>
-                          <option value="PACKING">PACKING (Đang đóng gói)</option>
-                          <option value="SHIPPING">SHIPPING (Đang giao hàng)</option>
-                          <option value="DELIVERED">DELIVERED (Đã giao thành công)</option>
-                          <option value="COMPLETED">COMPLETED (Hoàn tất)</option>
-                          <option value="CANCELLED">CANCELLED (Hủy đơn & hoàn kho)</option>
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
                         </select>
-                      </td>
-                      <td style={{ padding: '10px', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                          <button
-                            onClick={() => setReceiptOrder(ord)}
-                            className="btn-uq btn-uq-outline-gray"
-                            style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                          >
-                            <Printer size={12} />
-                            <span>Hóa đơn</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+
+                    {/* Page Navigation Buttons */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <button
+                        onClick={() => setOrdersPage((p) => Math.max(1, p - 1))}
+                        disabled={currentOrdersPage === 1}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '0.8rem',
+                          fontWeight: '700',
+                          border: '1px solid #ccc',
+                          backgroundColor: currentOrdersPage === 1 ? '#f5f5f5' : '#ffffff',
+                          color: currentOrdersPage === 1 ? '#aaa' : '#111',
+                          cursor: currentOrdersPage === 1 ? 'not-allowed' : 'pointer',
+                          borderRadius: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>‹</span>
+                        <span>{lang === 'vi' ? 'Trước' : 'Prev'}</span>
+                      </button>
+
+                      {Array.from({ length: totalOrderPages }, (_, i) => i + 1)
+                        .filter((p) => p === 1 || p === totalOrderPages || Math.abs(p - currentOrdersPage) <= 2)
+                        .map((p, idx, arr) => {
+                          const prev = arr[idx - 1];
+                          const showEllipsis = prev && p - prev > 1;
+                          return (
+                            <React.Fragment key={p}>
+                              {showEllipsis && <span style={{ padding: '0 4px', color: '#888' }}>...</span>}
+                              <button
+                                onClick={() => setOrdersPage(p)}
+                                style={{
+                                  minWidth: '34px',
+                                  height: '32px',
+                                  fontSize: '0.82rem',
+                                  fontWeight: currentOrdersPage === p ? '800' : '600',
+                                  border: currentOrdersPage === p ? '2px solid #e60012' : '1px solid #ccc',
+                                  backgroundColor: currentOrdersPage === p ? '#e60012' : '#ffffff',
+                                  color: currentOrdersPage === p ? '#ffffff' : '#333333',
+                                  cursor: 'pointer',
+                                  borderRadius: '2px',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                {p}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+
+                      <button
+                        onClick={() => setOrdersPage((p) => Math.min(totalOrderPages, p + 1))}
+                        disabled={currentOrdersPage === totalOrderPages}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '0.8rem',
+                          fontWeight: '700',
+                          border: '1px solid #ccc',
+                          backgroundColor: currentOrdersPage === totalOrderPages ? '#f5f5f5' : '#ffffff',
+                          color: currentOrdersPage === totalOrderPages ? '#aaa' : '#111',
+                          cursor: currentOrdersPage === totalOrderPages ? 'not-allowed' : 'pointer',
+                          borderRadius: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>{lang === 'vi' ? 'Sau' : 'Next'}</span>
+                        <span>›</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -963,17 +1303,17 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         {activeTab === 'users' && (
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
             <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase', marginBottom: '20px' }}>
-              Quản Lý Người Dùng & Phân Quyền Hệ Thống
+              {lang === 'vi' ? 'Quản Lý Người Dùng & Phân Quyền Hệ Thống' : 'Access Authorization & Role Management'}
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '10px' }}>HỌ VÀ TÊN</th>
+                  <th style={{ padding: '10px' }}>{lang === 'vi' ? 'HỌ VÀ TÊN' : 'FULL NAME'}</th>
                   <th style={{ padding: '10px' }}>EMAIL</th>
-                  <th style={{ padding: '10px' }}>SỐ ĐIỆN THOẠI</th>
-                  <th style={{ padding: '10px' }}>VAI TRÒ HIỆN TẠI</th>
-                  <th style={{ padding: '10px', textAlign: 'right' }}>CHUYỂN PHÂN QUYỀN</th>
+                  <th style={{ padding: '10px' }}>{lang === 'vi' ? 'SỐ ĐIỆN THOẠI' : 'PHONE'}</th>
+                  <th style={{ padding: '10px' }}>{lang === 'vi' ? 'VAI TRÒ HIỆN TẠI' : 'CURRENT ROLE'}</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>{lang === 'vi' ? 'CHUYỂN PHÂN QUYỀN' : 'ROLE SWITCHER'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -991,9 +1331,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                         onChange={(e) => handleUpdateUserRole(u.id, e.target.value)}
                         style={{ padding: '4px 8px', border: '1px solid #ccc', fontSize: '0.8rem', outline: 'none' }}
                       >
-                        <option value="ROLE_CUSTOMER">ROLE_CUSTOMER (Khách hàng)</option>
-                        <option value="ROLE_STAFF_MANAGER">ROLE_STAFF_MANAGER (Quản lý chi nhánh)</option>
-                        <option value="ROLE_ADMIN">ROLE_ADMIN (Quản trị viên Admin)</option>
+                        <option value="ROLE_CUSTOMER">ROLE_CUSTOMER (Customer)</option>
+                        <option value="ROLE_STAFF_MANAGER">ROLE_STAFF_MANAGER (Store Manager)</option>
+                        <option value="ROLE_ADMIN">ROLE_ADMIN (System Admin)</option>
                       </select>
                     </td>
                   </tr>
@@ -1009,30 +1349,30 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <div style={{ fontWeight: '800', fontSize: '1.1rem', textTransform: 'uppercase' }}>
-                  Quản Lý Mã Giảm Giá & Số Lượng Khuyến Mãi
+                  {lang === 'vi' ? 'Quản Lý Mã Giảm Giá & Số Lượng Khuyến Mãi' : 'Coupons & Promotional Code Inventory'}
                 </div>
                 <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '2px' }}>
-                  Thiết lập giới hạn số lượng mã, theo dõi tỷ lệ đã sử dụng và số lượng còn lại
+                  {lang === 'vi' ? 'Thiết lập giới hạn số lượng mã, theo dõi tỷ lệ đã sử dụng và số lượng còn lại' : 'Configure code quota limits, redemption counters, and usage velocity'}
                 </div>
               </div>
               <button onClick={handleOpenCreateCoupon} className="btn-uq btn-uq-red">
                 <Plus size={16} />
-                <span>Tạo Mã Mới</span>
+                <span>{lang === 'vi' ? 'Tạo Mã Mới' : 'Create New Coupon'}</span>
               </button>
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '10px' }}>MÃ VOUCHER</th>
-                  <th style={{ padding: '10px' }}>MÔ TẢ</th>
-                  <th style={{ padding: '10px' }}>MỨC GIẢM</th>
-                  <th style={{ padding: '10px' }}>ĐƠN TỐI THIỂU</th>
-                  <th style={{ padding: '10px', textAlign: 'center' }}>TỔNG SỐ LƯỢNG</th>
-                  <th style={{ padding: '10px', textAlign: 'center' }}>ĐÃ DÙNG</th>
-                  <th style={{ padding: '10px', textAlign: 'center' }}>SỐ LƯỢNG CÒN LẠI</th>
-                  <th style={{ padding: '10px', textAlign: 'center' }}>TRẠNG THÁI</th>
-                  <th style={{ padding: '10px', textAlign: 'right' }}>THAO TÁC</th>
+                  <th style={{ padding: '10px' }}>{lang === 'vi' ? 'MÃ VOUCHER' : 'CODE'}</th>
+                  <th style={{ padding: '10px' }}>{lang === 'vi' ? 'MÔ TẢ' : 'DESCRIPTION'}</th>
+                  <th style={{ padding: '10px' }}>{lang === 'vi' ? 'MỨC GIẢM' : 'DISCOUNT'}</th>
+                  <th style={{ padding: '10px' }}>{lang === 'vi' ? 'ĐƠN TỐI THIỂU' : 'MIN SPEND'}</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>{lang === 'vi' ? 'TỔNG SỐ LƯỢNG' : 'TOTAL QUOTA'}</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>{lang === 'vi' ? 'ĐÃ DÙNG' : 'REDEEMED'}</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>{lang === 'vi' ? 'SỐ LƯỢNG CÒN LẠI' : 'REMAINING'}</th>
+                  <th style={{ padding: '10px', textAlign: 'center' }}>{lang === 'vi' ? 'TRẠNG THÁI' : 'STATUS'}</th>
+                  <th style={{ padding: '10px', textAlign: 'right' }}>{lang === 'vi' ? 'THAO TÁC' : 'ACTION'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1060,18 +1400,18 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                       </td>
                       <td style={{ padding: '10px' }}>{c.description}</td>
                       <td style={{ padding: '10px', fontWeight: '700' }}>
-                        {c.discountType === 'PERCENT' ? `${c.discountValue}% (Tối đa ${formatPrice(c.maxDiscountAmount || 100000)})` : formatPrice(c.discountValue)}
+                        {c.discountType === 'PERCENT' ? `${c.discountValue}% (${lang === 'vi' ? 'Tối đa ' : 'Cap '}${formatPrice(c.maxDiscountAmount || 100000)})` : formatPrice(c.discountValue)}
                       </td>
                       <td style={{ padding: '10px' }}>{formatPrice(c.minOrderAmount || 0)}</td>
                       
                       {/* Total Usage Limit */}
                       <td style={{ padding: '10px', textAlign: 'center', fontWeight: '800', fontSize: '0.95rem' }}>
-                        {limit.toLocaleString('vi-VN')} mã
+                        {limit.toLocaleString()}
                       </td>
 
                       {/* Used Count with Mini Progress */}
                       <td style={{ padding: '10px', textAlign: 'center' }}>
-                        <div style={{ fontWeight: '700' }}>{used.toLocaleString('vi-VN')} lượt</div>
+                        <div style={{ fontWeight: '700' }}>{used.toLocaleString()}</div>
                         <div style={{ width: '80px', height: '4px', backgroundColor: '#e0e0e0', margin: '4px auto 0', borderRadius: '2px', overflow: 'hidden' }}>
                           <div style={{ width: `${usagePercent}%`, height: '100%', backgroundColor: usagePercent > 90 ? '#e60012' : '#0052cc' }} />
                         </div>
@@ -1080,12 +1420,12 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                       {/* Remaining Count */}
                       <td style={{ padding: '10px', textAlign: 'center' }}>
                         {isOutOfStock ? (
-                          <span className="badge-uq red" style={{ fontWeight: '800' }}>HẾT MÃ (0)</span>
+                          <span className="badge-uq red" style={{ fontWeight: '800' }}>{lang === 'vi' ? 'HẾT MÃ (0)' : 'DEPLETED (0)'}</span>
                         ) : remaining <= 10 ? (
-                          <span className="badge-uq red" style={{ fontWeight: '800' }}>Sắp hết ({remaining})</span>
+                          <span className="badge-uq red" style={{ fontWeight: '800' }}>{lang === 'vi' ? `Sắp hết (${remaining})` : `Low (${remaining})`}</span>
                         ) : (
                           <span className="badge-uq gray" style={{ color: '#00875a', fontWeight: '800' }}>
-                            {remaining.toLocaleString('vi-VN')} mã
+                            {remaining.toLocaleString()}
                           </span>
                         )}
                       </td>
@@ -1093,11 +1433,11 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                       {/* Status */}
                       <td style={{ padding: '10px', textAlign: 'center' }}>
                         {isOutOfStock ? (
-                          <span style={{ fontSize: '0.75rem', color: '#999', fontWeight: '600' }}>Hết lượt dùng</span>
+                          <span style={{ fontSize: '0.75rem', color: '#999', fontWeight: '600' }}>{lang === 'vi' ? 'Hết lượt dùng' : 'Depleted'}</span>
                         ) : c.active ? (
-                          <span className="badge-uq gray" style={{ color: '#00875a' }}>Đang mở</span>
+                          <span className="badge-uq gray" style={{ color: '#00875a' }}>{lang === 'vi' ? 'Đang mở' : 'Active'}</span>
                         ) : (
-                          <span className="badge-uq red">Đã tắt</span>
+                          <span className="badge-uq red">{lang === 'vi' ? 'Đã tắt' : 'Inactive'}</span>
                         )}
                       </td>
 
@@ -1108,15 +1448,15 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                             onClick={() => handleOpenEditCoupon(c)}
                             className="btn-uq btn-uq-outline-gray"
                             style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                            title="Chỉnh sửa số lượng / mã"
+                            title="Edit"
                           >
                             <Edit2 size={12} />
-                            <span>Sửa</span>
+                            <span>{lang === 'vi' ? 'Sửa' : 'Edit'}</span>
                           </button>
                           <button
                             onClick={() => setDeleteCouponId(c.id)}
                             style={{ color: '#d9383a', padding: '4px 8px', cursor: 'pointer', border: '1px solid #ffcdd2', backgroundColor: '#fff5f5' }}
-                            title="Xóa mã khuyến mãi"
+                            title="Delete"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -1136,11 +1476,13 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <Building size={24} color="#e60012" />
               <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, textTransform: 'uppercase' }}>
-                Cấu Hình Tài Khoản Nhận Tiền VietQR (Napas247)
+                {lang === 'vi' ? 'Cấu Hình Tài Khoản Nhận Tiền VietQR (Napas247)' : 'VietQR Beneficiary Settlement Gateway Settings'}
               </h2>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '24px' }}>
-              Tất cả mã QR thanh toán sinh ra tại trang Checkout và In-Store POS sẽ tự động khớp theo cấu hình ngân hàng bên dưới.
+              {lang === 'vi'
+                ? 'Tất cả mã QR thanh toán sinh ra tại trang Checkout và In-Store POS sẽ tự động khớp theo cấu hình ngân hàng bên dưới.'
+                : 'All dynamic QR codes generated during Checkout and POS automatically reconcile to this bank account.'}
             </p>
 
             <div style={{
@@ -1153,20 +1495,20 @@ export const AdminDashboardPage = ({ onNavigate }) => {
               <form onSubmit={handleSaveBankConfig} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Mã Ngân Hàng (Bank ID theo chuẩn VietQR) *
+                    {lang === 'vi' ? 'Mã Ngân Hàng (Bank ID theo chuẩn VietQR) *' : 'Beneficiary Bank ID (VietQR standard) *'}
                   </label>
                   <select
                     value={bankConfig.bankId}
                     onChange={(e) => {
                       const bankMap = {
-                        'vietinbank': 'VietinBank (Ngân hàng TMCP Công Thương Việt Nam)',
-                        'vcb': 'Vietcombank (Ngân hàng TMCP Ngoại Thương Việt Nam)',
-                        'mbbank': 'MB Bank (Ngân hàng TMCP Quân Đội)',
-                        'techcombank': 'Techcombank (Ngân hàng TMCP Kỹ Thương Việt Nam)',
-                        'acb': 'ACB (Ngân hàng TMCP Á Châu)',
-                        'tpbank': 'TPBank (Ngân hàng TMCP Tiên Phong)',
-                        'vpbank': 'VPBank (Ngân hàng TMCP Việt Nam Thịnh Vượng)',
-                        'bidv': 'BIDV (Ngân hàng TMCP Đầu tư và Phát triển Việt Nam)',
+                        'vietinbank': 'VietinBank (ICB)',
+                        'vcb': 'Vietcombank (VCB)',
+                        'mbbank': 'MB Bank (MB)',
+                        'techcombank': 'Techcombank (TCB)',
+                        'acb': 'ACB',
+                        'tpbank': 'TPBank',
+                        'vpbank': 'VPBank',
+                        'bidv': 'BIDV',
                       };
                       setBankConfig({
                         ...bankConfig,
@@ -1189,7 +1531,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Tên đầy đủ Ngân hàng *
+                    {lang === 'vi' ? 'Tên đầy đủ Ngân hàng *' : 'Bank Full Name *'}
                   </label>
                   <input
                     type="text"
@@ -1202,7 +1544,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Số Tài Khoản Nhận Tiền *
+                    {lang === 'vi' ? 'Số Tài Khoản Nhận Tiền *' : 'Beneficiary Account Number *'}
                   </label>
                   <input
                     type="text"
@@ -1215,7 +1557,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Tên Chủ Tài Khoản (In hoa không dấu) *
+                    {lang === 'vi' ? 'Tên Chủ Tài Khoản (In hoa không dấu) *' : 'Account Holder Name (Uppercase) *'}
                   </label>
                   <input
                     type="text"
@@ -1228,17 +1570,17 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
-                    Mẫu Giao Diện VietQR (Template)
+                    {lang === 'vi' ? 'Mẫu Giao Diện VietQR (Template)' : 'VietQR Image Template'}
                   </label>
                   <select
                     value={bankConfig.template || 'compact2'}
                     onChange={(e) => setBankConfig({ ...bankConfig, template: e.target.value })}
                     style={{ width: '100%', padding: '10px 12px', border: '1px solid #ccc', outline: 'none' }}
                   >
-                    <option value="compact2">Compact 2 (Gọn gàng kèm logo & số tiền - Khuyên dùng)</option>
-                    <option value="compact">Compact (Đầy đủ thông tin khung viền)</option>
-                    <option value="qr_only">QR Only (Chỉ hình mã QR)</option>
-                    <option value="print">Print (Khổ in hóa đơn POS nhiệt)</option>
+                    <option value="compact2">{lang === 'vi' ? 'Compact 2 (Gọn gàng kèm logo & số tiền - Khuyên dùng)' : 'Compact 2 (Recommended - with brand & amount)'}</option>
+                    <option value="compact">{lang === 'vi' ? 'Compact (Đầy đủ thông tin khung viền)' : 'Compact (Full bordered)'}</option>
+                    <option value="qr_only">{lang === 'vi' ? 'QR Only (Chỉ hình mã QR)' : 'QR Only (Direct code)'}</option>
+                    <option value="print">{lang === 'vi' ? 'Print (Khổ in hóa đơn POS nhiệt)' : 'Print (Thermal slip layout)'}</option>
                   </select>
                 </div>
 
@@ -1249,14 +1591,14 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                   style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '10px' }}
                 >
                   <Save size={16} />
-                  <span>{savingBankConfig ? 'Đang lưu...' : 'Lưu Cấu Hình Ngân Hàng'}</span>
+                  <span>{savingBankConfig ? (lang === 'vi' ? 'Đang lưu...' : 'Saving...') : (lang === 'vi' ? 'Lưu Cấu Hình Ngân Hàng' : 'Save Gateway Configuration')}</span>
                 </button>
               </form>
 
               {/* Right: Live VietQR Preview */}
               <div style={{ backgroundColor: '#fafafa', border: '1px solid #eee', padding: '24px', textAlign: 'center' }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '14px', color: '#111' }}>
-                  XEM TRƯỚC MẪU MÃ QR TỰ ĐỘNG
+                  {lang === 'vi' ? 'XEM TRƯỚC MẪU MÃ QR TỰ ĐỘNG' : 'DYNAMIC VIETQR LIVE PREVIEW'}
                 </div>
 
                 <img
@@ -1275,10 +1617,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 />
 
                 <div style={{ fontSize: '0.8rem', color: '#555', lineHeight: 1.5, textAlign: 'left', backgroundColor: '#fff', padding: '12px', border: '1px solid #eee' }}>
-                  <div>• Ngân hàng: <strong>{bankConfig.bankName}</strong></div>
-                  <div>• STK: <strong style={{ fontFamily: 'monospace' }}>{bankConfig.accountNo}</strong></div>
-                  <div>• Chủ TK: <strong>{bankConfig.accountName}</strong></div>
-                  <div>• Cú pháp tự động: <code style={{ color: '#0052cc' }}>Thanh toan don hang [MÃ_ĐƠN]</code></div>
+                  <div>• {lang === 'vi' ? 'Ngân hàng:' : 'Bank:'} <strong>{bankConfig.bankName}</strong></div>
+                  <div>• {lang === 'vi' ? 'STK:' : 'Account No:'} <strong style={{ fontFamily: 'monospace' }}>{bankConfig.accountNo}</strong></div>
+                  <div>• {lang === 'vi' ? 'Chủ TK:' : 'Account Holder:'} <strong>{bankConfig.accountName}</strong></div>
+                  <div>• {lang === 'vi' ? 'Cú pháp tự động:' : 'Payment Memo:'} <code style={{ color: '#0052cc' }}>Thanh toan don hang [ORDER_ID]</code></div>
                 </div>
               </div>
             </div>
@@ -1308,14 +1650,20 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div style={{ fontWeight: '800', fontSize: '1.2rem', textTransform: 'uppercase' }}>
-                  Thêm Sản Phẩm Mới & Tạo Ma Trận Biến Thể
+                  {editingProduct
+                    ? (lang === 'vi' ? 'Chỉnh Sửa Thông Tin Sản Phẩm' : 'Edit Product Details')
+                    : (lang === 'vi' ? 'Thêm Sản Phẩm Mới & Tạo Ma Trận Biến Thể' : 'Add New Product & Generate Variant Matrix')}
                 </div>
-                <button onClick={() => setIsProductModalOpen(false)}><X size={22} /></button>
+                <button onClick={() => setIsProductModalOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                  <X size={22} />
+                </button>
               </div>
 
               <form onSubmit={handleSaveProduct} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Tên sản phẩm *</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                    {lang === 'vi' ? 'Tên sản phẩm *' : 'Product Name *'}
+                  </label>
                   <input
                     type="text"
                     required
@@ -1327,7 +1675,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Mã sản phẩm *</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Mã sản phẩm *' : 'Product Code *'}
+                    </label>
                     <input
                       type="text"
                       required
@@ -1337,7 +1687,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Giá niêm yết (VND) *</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Giá niêm yết (VND) *' : 'Base Price (VND) *'}
+                    </label>
                     <input
                       type="number"
                       required
@@ -1347,7 +1699,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Giá khuyến mãi (Tùy chọn)</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Giá khuyến mãi (Tùy chọn)' : 'Sale Price (Optional)'}
+                    </label>
                     <input
                       type="number"
                       value={prodFormSalePrice}
@@ -1359,19 +1713,23 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Giới tính *</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Giới tính *' : 'Gender *'}
+                    </label>
                     <select
                       value={prodFormGender}
                       onChange={(e) => setProdFormGender(e.target.value)}
                       style={{ width: '100%', padding: '10px', border: '1px solid #ccc', outline: 'none' }}
                     >
-                      <option value="MEN">Nam (MEN)</option>
-                      <option value="WOMEN">Nữ (WOMEN)</option>
-                      <option value="UNISEX">Unisex (Nam & Nữ)</option>
+                      <option value="MEN">MEN</option>
+                      <option value="WOMEN">WOMEN</option>
+                      <option value="UNISEX">UNISEX</option>
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Bộ sưu tập *</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Bộ sưu tập *' : 'Collection *'}
+                    </label>
                     <input
                       type="text"
                       value={prodFormCollection}
@@ -1380,7 +1738,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Chất liệu *</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Chất liệu *' : 'Material *'}
+                    </label>
                     <input
                       type="text"
                       value={prodFormMaterial}
@@ -1391,7 +1751,21 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>URL hình ảnh đại diện *</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                    {lang === 'vi' ? 'Mô tả sản phẩm' : 'Product Description'}
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={prodFormDesc}
+                    onChange={(e) => setProdFormDesc(e.target.value)}
+                    style={{ width: '100%', padding: '10px', border: '1px solid #ccc', outline: 'none' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                    {lang === 'vi' ? 'URL hình ảnh đại diện *' : 'Primary Image URL *'}
+                  </label>
                   <input
                     type="url"
                     required
@@ -1404,14 +1778,16 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 {/* Variant Matrix Checkboxes */}
                 <div style={{ backgroundColor: '#fafafa', padding: '14px', border: '1px solid #eee' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '8px' }}>
-                    MA TRẬN BIẾN THỂ TỰ ĐỘNG (VARIANT MATRIX GENERATOR):
+                    {lang === 'vi' ? 'MA TRẬN BIẾN THỂ TỰ ĐỘNG (VARIANT MATRIX GENERATOR):' : 'AUTOMATIC SKU VARIANT MATRIX GENERATOR:'}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '8px' }}>
-                    Hệ thống sẽ tự động tạo {selectedColorsForMatrix.length * selectedSizesForMatrix.length} SKU và gán mã vạch:
+                    {lang === 'vi'
+                      ? `Hệ thống sẽ tự động tạo ${selectedColorsForMatrix.length * selectedSizesForMatrix.length} SKU và gán mã vạch:`
+                      : `Generates ${selectedColorsForMatrix.length * selectedSizesForMatrix.length} unique SKUs and Barcodes:`}
                   </div>
 
                   <div style={{ marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>Màu sắc: </span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>{lang === 'vi' ? 'Màu sắc: ' : 'Colors: '}</span>
                     {['09 BLACK', '00 WHITE', '68 BLUE', '32 BEIGE', '03 GRAY'].map((c) => (
                       <label key={c} style={{ marginRight: '10px', fontSize: '0.8rem' }}>
                         <input
@@ -1429,7 +1805,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                   </div>
 
                   <div>
-                    <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>Kích cỡ: </span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>{lang === 'vi' ? 'Kích cỡ: ' : 'Sizes: '}</span>
                     {['S', 'M', 'L', 'XL', 'XXL'].map((s) => (
                       <label key={s} style={{ marginRight: '10px', fontSize: '0.8rem' }}>
                         <input
@@ -1449,10 +1825,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '12px' }}>
                   <button type="button" onClick={() => setIsProductModalOpen(false)} className="btn-uq btn-uq-outline-gray" style={{ padding: '10px 18px' }}>
-                    Hủy
+                    {lang === 'vi' ? 'Hủy' : 'Cancel'}
                   </button>
                   <button type="submit" className="btn-uq btn-uq-red" style={{ padding: '10px 24px' }}>
-                    Lưu & Khởi Tạo Biến Thể
+                    {editingProduct ? (lang === 'vi' ? 'Lưu Thay Đổi Sản Phẩm' : 'Save Changes') : (lang === 'vi' ? 'Lưu & Khởi Tạo Biến Thể' : 'Create Product & SKUs')}
                   </button>
                 </div>
               </form>
@@ -1475,7 +1851,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             <div style={{ width: '100%', maxWidth: '520px', backgroundColor: '#fff', padding: '24px', boxShadow: 'var(--shadow-lg)', borderRadius: '4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '12px' }}>
                 <div style={{ fontWeight: '800', fontSize: '1.15rem', color: '#111', textTransform: 'uppercase' }}>
-                  {editingCoupon ? `Chỉnh Sửa Mã: ${editingCoupon.code}` : 'Tạo Mã Giảm Giá Mới'}
+                  {editingCoupon
+                    ? (lang === 'vi' ? `Chỉnh Sửa Mã: ${editingCoupon.code}` : `Edit Coupon: ${editingCoupon.code}`)
+                    : (lang === 'vi' ? 'Tạo Mã Giảm Giá Mới' : 'Create New Promotional Coupon')}
                 </div>
                 <button onClick={() => setIsCouponModalOpen(false)} style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
                   <X size={20} />
@@ -1484,11 +1862,13 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
               <form onSubmit={handleSaveCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Mã Voucher *</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                    {lang === 'vi' ? 'Mã Voucher *' : 'Voucher Code *'}
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="VD: BEO20, SUMMER50K..."
+                    placeholder="e.g. BEO20, SUMMER50K..."
                     value={coupCode}
                     onChange={(e) => setCoupCode(e.target.value.toUpperCase())}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontWeight: '700', letterSpacing: '1px' }}
@@ -1496,11 +1876,13 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Mô tả khuyến mãi *</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                    {lang === 'vi' ? 'Mô tả khuyến mãi *' : 'Promotion Description *'}
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="Giảm giá 10% đơn từ 300.000đ"
+                    placeholder={lang === 'vi' ? 'Giảm giá 10% đơn từ 300.000đ' : '10% discount on orders from 300,000 VND'}
                     value={coupDesc}
                     onChange={(e) => setCoupDesc(e.target.value)}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.85rem' }}
@@ -1509,19 +1891,21 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Loại giảm</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Loại giảm' : 'Discount Type'}
+                    </label>
                     <select
                       value={coupType}
                       onChange={(e) => setCoupType(e.target.value)}
                       style={{ width: '100%', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontSize: '0.85rem', fontWeight: '600' }}
                     >
-                      <option value="PERCENT">Phần trăm (%)</option>
-                      <option value="FIXED_AMOUNT">Số tiền cố định (VND)</option>
+                      <option value="PERCENT">{lang === 'vi' ? 'Phần trăm (%)' : 'Percentage (%)'}</option>
+                      <option value="FIXED_AMOUNT">{lang === 'vi' ? 'Số tiền cố định (VND)' : 'Fixed Amount (VND)'}</option>
                     </select>
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
-                      {coupType === 'PERCENT' ? 'Giá trị giảm (%) *' : 'Số tiền giảm (VND) *'}
+                      {coupType === 'PERCENT' ? (lang === 'vi' ? 'Giá trị giảm (%) *' : 'Discount Rate (%) *') : (lang === 'vi' ? 'Số tiền giảm (VND) *' : 'Discount Value (VND) *')}
                     </label>
                     <input
                       type="number"
@@ -1536,7 +1920,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Đơn hàng tối thiểu (VND)</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Đơn hàng tối thiểu (VND)' : 'Min Order Amount (VND)'}
+                    </label>
                     <input
                       type="number"
                       min="0"
@@ -1547,12 +1933,14 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>Giảm tối đa (VND)</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
+                      {lang === 'vi' ? 'Giảm tối đa (VND)' : 'Max Discount Cap (VND)'}
+                    </label>
                     <input
                       type="number"
                       min="0"
                       step="10000"
-                      placeholder="Không giới hạn"
+                      placeholder={lang === 'vi' ? 'Không giới hạn' : 'No cap'}
                       value={coupMax}
                       onChange={(e) => setCoupMax(e.target.value)}
                       disabled={coupType !== 'PERCENT'}
@@ -1564,30 +1952,32 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 {/* QUANTITY / USAGE LIMIT */}
                 <div style={{ padding: '12px', backgroundColor: '#fcf8e3', border: '1px solid #faebcc', borderRadius: '4px' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '800', color: '#8a6d3b', marginBottom: '4px' }}>
-                    🏷️ SỐ LƯỢNG MÃ KHUYẾN MÃI (LƯỢT SỬ DỤNG TỐI ĐA) *
+                    🏷️ {lang === 'vi' ? 'SỐ LƯỢNG MÃ KHUYẾN MÃI (LƯỢT SỬ DỤNG TỐI ĐA) *' : 'COUPON QUOTA (MAX REDEMPTION LIMIT) *'}
                   </label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <input
                       type="number"
                       required
                       min="1"
-                      placeholder="VD: 100, 500, 1000..."
+                      placeholder="e.g. 100, 500, 1000..."
                       value={coupLimit}
                       onChange={(e) => setCoupLimit(e.target.value)}
                       style={{ width: '160px', padding: '9px 12px', border: '1px solid #ccc', outline: 'none', fontWeight: '800', fontSize: '1rem', color: '#111' }}
                     />
                     <span style={{ fontSize: '0.8rem', color: '#666' }}>
-                      {editingCoupon ? `Đã sử dụng: ${editingCoupon.usedCount || 0} lượt` : 'Số lượng mã phát hành cho khách hàng'}
+                      {editingCoupon
+                        ? (lang === 'vi' ? `Đã sử dụng: ${editingCoupon.usedCount || 0} lượt` : `Redeemed: ${editingCoupon.usedCount || 0} times`)
+                        : (lang === 'vi' ? 'Số lượng mã phát hành cho khách hàng' : 'Total promotional vouchers available')}
                     </span>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '14px' }}>
                   <button type="button" onClick={() => setIsCouponModalOpen(false)} className="btn-uq btn-uq-outline-gray" style={{ padding: '9px 18px' }}>
-                    Hủy Bỏ
+                    {lang === 'vi' ? 'Hủy Bỏ' : 'Cancel'}
                   </button>
                   <button type="submit" className="btn-uq btn-uq-red" style={{ padding: '9px 24px', fontWeight: '800' }}>
-                    {editingCoupon ? 'Cập Nhật Mã Giảm Giá' : 'Tạo Mã Khuyến Mãi'}
+                    {editingCoupon ? (lang === 'vi' ? 'Cập Nhật Mã Giảm Giá' : 'Save Coupon') : (lang === 'vi' ? 'Tạo Mã Khuyến Mãi' : 'Create Coupon')}
                   </button>
                 </div>
               </form>
@@ -1605,10 +1995,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         {/* Delete / Deactivate Confirm Modal */}
         <ConfirmModal
           isOpen={!!deleteConfirmId}
-          title="Ngừng kinh doanh sản phẩm"
-          message="Bạn có chắc chắn muốn ngưng kinh doanh sản phẩm này? Sản phẩm sẽ bị ẩn khỏi trang bán hàng trực tuyến của khách hàng."
-          confirmText="Đồng ý ngưng bán"
-          cancelText="Hủy bỏ"
+          title={lang === 'vi' ? 'Ngừng kinh doanh sản phẩm' : 'Deactivate Product Listing'}
+          message={lang === 'vi' ? 'Bạn có chắc chắn muốn ngưng kinh doanh sản phẩm này? Sản phẩm sẽ bị ẩn khỏi trang bán hàng trực tuyến của khách hàng.' : 'Are you sure you want to remove this product from the customer storefront?'}
+          confirmText={lang === 'vi' ? 'Đồng ý ngưng bán' : 'Confirm Deactivation'}
+          cancelText={lang === 'vi' ? 'Hủy bỏ' : 'Cancel'}
           isDanger={true}
           onConfirm={confirmDeleteProduct}
           onCancel={() => setDeleteConfirmId(null)}
@@ -1617,10 +2007,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         {/* Delete Coupon Confirm Modal */}
         <ConfirmModal
           isOpen={!!deleteCouponId}
-          title="Xóa Mã Khuyến Mãi"
-          message="Bạn có chắc chắn muốn xóa mã giảm giá này? Mã sẽ không còn hiệu lực đối với các đơn hàng tiếp theo."
-          confirmText="Đồng ý xóa"
-          cancelText="Hủy bỏ"
+          title={lang === 'vi' ? 'Xóa Mã Khuyến Mãi' : 'Delete Coupon'}
+          message={lang === 'vi' ? 'Bạn có chắc chắn muốn xóa mã giảm giá này? Mã sẽ không còn hiệu lực đối với các đơn hàng tiếp theo.' : 'Are you sure you want to delete this coupon? It will no longer be redeemable by customers.'}
+          confirmText={lang === 'vi' ? 'Đồng ý xóa' : 'Confirm Deletion'}
+          cancelText={lang === 'vi' ? 'Hủy bỏ' : 'Cancel'}
           isDanger={true}
           onConfirm={() => handleDeleteCoupon(deleteCouponId)}
           onCancel={() => setDeleteCouponId(null)}

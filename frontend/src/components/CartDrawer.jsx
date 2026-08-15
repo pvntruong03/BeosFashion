@@ -5,7 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 export const CartDrawer = ({ onNavigate }) => {
   const { cart, isCartOpen, setIsCartOpen, updateQuantity, removeItem } = useCart();
-  const { formatPrice, t } = useLanguage();
+  const { formatPrice, t, lang } = useLanguage();
 
   if (!isCartOpen) return null;
 
@@ -64,7 +64,7 @@ export const CartDrawer = ({ onNavigate }) => {
           </div>
           <button
             onClick={() => setIsCartOpen(false)}
-            style={{ padding: '4px', color: '#666' }}
+            style={{ padding: '4px', color: '#666', background: 'transparent', border: 'none', cursor: 'pointer' }}
           >
             <X size={22} />
           </button>
@@ -78,7 +78,11 @@ export const CartDrawer = ({ onNavigate }) => {
               <span style={{ color: '#00875a', fontWeight: '700' }}>{t('free_shipping_achieved')}</span>
             ) : (
               <span>
-                Mua thêm <strong>{formatPrice(remainingForFreeShip)}</strong> để được <strong>Miễn phí vận chuyển</strong>
+                {lang === 'vi' ? (
+                  <>Mua thêm <strong>{formatPrice(remainingForFreeShip)}</strong> để được <strong>Miễn phí vận chuyển</strong></>
+                ) : (
+                  <>Add <strong>{formatPrice(remainingForFreeShip)}</strong> more to get <strong>Free Standard Shipping</strong></>
+                )}
               </span>
             )}
           </div>
@@ -98,7 +102,9 @@ export const CartDrawer = ({ onNavigate }) => {
             <div style={{ textAlign: 'center', padding: '60px 20px', color: '#888' }}>
               <ShoppingBag size={48} color="#ccc" style={{ marginBottom: '16px' }} />
               <div style={{ fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>{t('empty_cart')}</div>
-              <p style={{ fontSize: '0.85rem', marginBottom: '24px' }}>Hãy khám phá các sản phẩm LifeWear mới nhất!</p>
+              <p style={{ fontSize: '0.85rem', marginBottom: '24px' }}>
+                {lang === 'vi' ? 'Hãy khám phá các sản phẩm LifeWear mới nhất!' : 'Discover our latest LifeWear essentials!'}
+              </p>
               <button
                 onClick={() => {
                   setIsCartOpen(false);
@@ -107,7 +113,7 @@ export const CartDrawer = ({ onNavigate }) => {
                 className="btn-uq btn-uq-primary"
                 style={{ width: '100%' }}
               >
-                Tiếp tục mua sắm
+                {lang === 'vi' ? 'Tiếp tục mua sắm' : 'Continue Shopping'}
               </button>
             </div>
           ) : (
@@ -148,14 +154,14 @@ export const CartDrawer = ({ onNavigate }) => {
                       <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #ddd' }}>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          style={{ padding: '4px 8px', color: '#555' }}
+                          style={{ padding: '4px 8px', color: '#555', background: 'transparent', border: 'none', cursor: 'pointer' }}
                         >
                           <Minus size={14} />
                         </button>
                         <span style={{ padding: '0 8px', fontSize: '0.85rem', fontWeight: '600' }}>{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          style={{ padding: '4px 8px', color: '#555' }}
+                          style={{ padding: '4px 8px', color: '#555', background: 'transparent', border: 'none', cursor: 'pointer' }}
                         >
                           <Plus size={14} />
                         </button>
@@ -168,8 +174,8 @@ export const CartDrawer = ({ onNavigate }) => {
                         </span>
                         <button
                           onClick={() => removeItem(item.id)}
-                          style={{ color: '#999', padding: '2px' }}
-                          title="Xóa"
+                          style={{ color: '#999', padding: '2px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                          title={lang === 'vi' ? 'Xóa' : 'Remove'}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -191,7 +197,7 @@ export const CartDrawer = ({ onNavigate }) => {
             </div>
 
             <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '16px' }}>
-              Thuế VAT và phí vận chuyển sẽ được tính khi thanh toán
+              {lang === 'vi' ? 'Thuế VAT và phí vận chuyển sẽ được tính khi thanh toán' : 'Taxes and shipping fees calculated at checkout'}
             </div>
 
             <button

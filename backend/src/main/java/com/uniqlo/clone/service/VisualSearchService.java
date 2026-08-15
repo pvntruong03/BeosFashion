@@ -33,57 +33,57 @@ public class VisualSearchService {
 
         // Detect visual tags
         List<String> detectedTags = new ArrayList<>();
-        String detectedColor = "Đa sắc";
-        String detectedCategory = "Thời trang LifeWear";
+        String detectedColor = "Multicolor";
+        String detectedCategory = "LifeWear Apparel";
 
         // Color detection
         if (rawHint.contains("black") || rawHint.contains("đen") || rawHint.contains("dark")) {
             detectedColor = "09 BLACK";
-            detectedTags.add("Màu Đen (09 Black)");
+            detectedTags.add("09 Black Palette");
         } else if (rawHint.contains("white") || rawHint.contains("trắng") || rawHint.contains("light")) {
             detectedColor = "00 WHITE";
-            detectedTags.add("Màu Trắng (00 White)");
+            detectedTags.add("00 White Palette");
         } else if (rawHint.contains("blue") || rawHint.contains("xanh") || rawHint.contains("navy")) {
             detectedColor = "68 BLUE";
-            detectedTags.add("Xanh Navy / Denim");
+            detectedTags.add("Navy / Denim Blue");
         } else if (rawHint.contains("beige") || rawHint.contains("be") || rawHint.contains("khaki") || rawHint.contains("nâu")) {
             detectedColor = "32 BEIGE";
-            detectedTags.add("Màu Be / Nâu");
+            detectedTags.add("Beige / Earth Tones");
         } else if (rawHint.contains("gray") || rawHint.contains("xám")) {
             detectedColor = "03 GRAY";
-            detectedTags.add("Màu Xám (03 Gray)");
+            detectedTags.add("03 Gray Palette");
         }
 
         // Category & Style detection
         if (rawHint.contains("t-shirt") || rawHint.contains("thun") || rawHint.contains("tee") || rawHint.contains("airism")) {
-            detectedCategory = "Áo Thun";
-            detectedTags.add("Áo Thun Cổ Tròn");
-            detectedTags.add("Form Dáng Rộng / Oversized");
-            detectedTags.add("Công nghệ AIRism");
+            detectedCategory = "T-Shirt";
+            detectedTags.add("Crew Neck T-Shirt");
+            detectedTags.add("Relaxed Oversized Fit");
+            detectedTags.add("AIRism Technology");
         } else if (rawHint.contains("polo")) {
-            detectedCategory = "Áo Polo";
-            detectedTags.add("Áo Polo Có Cổ");
-            detectedTags.add("Dry Pique");
+            detectedCategory = "Polo Shirt";
+            detectedTags.add("Collared Polo");
+            detectedTags.add("DRY-EX Performance");
         } else if (rawHint.contains("jacket") || rawHint.contains("khoác") || rawHint.contains("hoodie") || rawHint.contains("parka") || rawHint.contains("down")) {
-            detectedCategory = "Áo Khoác";
-            detectedTags.add("Áo Khoác Chống Nắng UV");
-            detectedTags.add("Siêu Nhẹ / Ultra Light Down");
+            detectedCategory = "Outerwear";
+            detectedTags.add("UV Protection Hoodie");
+            detectedTags.add("Ultra Light Down Puffer");
         } else if (rawHint.contains("shirt") || rawHint.contains("sơ mi") || rawHint.contains("oxford") || rawHint.contains("linen")) {
-            detectedCategory = "Áo Sơ Mi";
-            detectedTags.add("Sơ Mi Oxford Cao Cấp");
-            detectedTags.add("Dài Tay / Tay Ngắn");
+            detectedCategory = "Shirt";
+            detectedTags.add("Premium Linen Shirt");
+            detectedTags.add("Classic Tailoring");
         } else if (rawHint.contains("pant") || rawHint.contains("quần") || rawHint.contains("jean") || rawHint.contains("ankle")) {
-            detectedCategory = "Quần";
+            detectedCategory = "Bottoms & Pants";
             detectedTags.add("Smart Ankle Pants");
-            detectedTags.add("Co Giãn 2 Chiều");
+            detectedTags.add("2-Way Stretch Denim");
         } else if (rawHint.contains("dress") || rawHint.contains("đầm") || rawHint.contains("váy")) {
-            detectedCategory = "Đầm & Váy";
-            detectedTags.add("Đầm Suông Nữ");
-            detectedTags.add("Chất Liệu Rayon Mềm Mại");
+            detectedCategory = "Dress";
+            detectedTags.add("Women Rayon Dress");
+            detectedTags.add("Fluid Drape Silhouette");
         } else {
-            detectedTags.add("Áo Thun Basic");
-            detectedTags.add("Chất Liệu Cotton Cao Cấp");
-            detectedTags.add("Phong Cách Tối Giản");
+            detectedTags.add("Essential LifeWear");
+            detectedTags.add("Supima Cotton");
+            detectedTags.add("Minimalist Aesthetic");
         }
 
         List<Product> allProducts = productRepository.findByActiveTrue();
@@ -91,7 +91,7 @@ public class VisualSearchService {
 
         for (Product product : allProducts) {
             int score = 70; // baseline similarity
-            String matchReason = "Tương đồng phong cách LifeWear tối giản";
+            String matchReason = "Matches minimalist LifeWear aesthetics";
 
             String pName = product.getName().toLowerCase();
             String pCat = product.getCategory() != null ? product.getCategory().getName().toLowerCase() : "";
@@ -100,14 +100,14 @@ public class VisualSearchService {
             // Check category match
             if (pName.contains(detectedCategory.toLowerCase()) || pCat.contains(detectedCategory.toLowerCase())) {
                 score += 15;
-                matchReason = "Khớp kiểu dáng " + detectedCategory;
+                matchReason = "Matched style category: " + detectedCategory;
             }
 
             // Check color in variants
             boolean hasColor = false;
             if (product.getVariants() != null) {
                 for (ProductVariant v : product.getVariants()) {
-                    if (detectedColor != null && !detectedColor.equals("Đa sắc") && v.getColorName() != null &&
+                    if (detectedColor != null && !detectedColor.equals("Multicolor") && v.getColorName() != null &&
                             v.getColorName().toLowerCase().contains(detectedColor.toLowerCase().substring(3))) {
                         hasColor = true;
                         break;
@@ -117,12 +117,12 @@ public class VisualSearchService {
 
             if (hasColor) {
                 score += 10;
-                matchReason += " & Khớp tông màu " + detectedColor;
+                matchReason += " & matched color tone " + detectedColor;
             }
 
             // Keyword match
             for (String tag : detectedTags) {
-                String cleanTag = tag.toLowerCase().replaceAll("[^a-z0-9à-ỹ ]", "");
+                String cleanTag = tag.toLowerCase().replaceAll("[^a-z0-9 ]", "");
                 if (pName.contains(cleanTag) || pDesc.contains(cleanTag)) {
                     score += 4;
                 }

@@ -239,7 +239,9 @@ export const ProductCard = ({ product, onNavigate }) => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '2px', paddingTop: '6px', borderTop: '1px solid #f2eee6', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.75rem', color: '#666' }}>
             <Star size={12} color="#f59e0b" fill="#f59e0b" />
-            <span style={{ fontWeight: '700', color: '#111', fontSize: '0.78rem' }}>{product.averageRating || 5.0}</span>
+            <span style={{ fontWeight: '700', color: '#111', fontSize: '0.78rem' }}>
+              {Number(product.averageRating || 5.0).toFixed(1)}
+            </span>
           </div>
 
           <button

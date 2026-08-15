@@ -92,12 +92,45 @@ public class FiftyProductsSeeder implements CommandLineRunner {
                 p.setDescription(data.description);
                 p.setOverview(data.overview);
                 p.setMaterial(data.material);
+                p.setCareInstruction(data.careInstruction);
                 p.setCategory(data.category);
                 p.setGender(data.gender);
                 p.setCollection(data.collection);
                 p.setPrimaryImageUrl(data.primaryImage);
+                p.setBasePrice(data.basePrice);
+                p.setSalePrice(data.salePrice);
                 p.setActive(true);
                 productRepository.save(p);
+
+                // Update product variants with clean adult images
+                List<ProductVariant> variants = variantRepository.findByProductId(p.getId());
+                if (!data.variants.isEmpty()) {
+                    for (int i = 0; i < variants.size(); i++) {
+                        ProductVariant pv = variants.get(i);
+                        ColorVariantData cvd = data.variants.get(i % data.variants.size());
+                        pv.setImageUrl(cvd.imageUrl);
+                        pv.setColorName(cvd.colorName);
+                        pv.setColorHex(cvd.colorHex);
+                        pv.setActive(true);
+                        variantRepository.save(pv);
+                    }
+                }
+
+                // Refresh product images
+                List<ProductImage> oldImages = imageRepository.findByProductId(p.getId());
+                if (!oldImages.isEmpty()) {
+                    imageRepository.deleteAll(oldImages);
+                }
+                for (ColorVariantData cvd : data.variants) {
+                    imageRepository.save(ProductImage.builder()
+                            .product(p)
+                            .imageUrl(cvd.imageUrl)
+                            .colorName(cvd.colorName)
+                            .altText(data.name + " - " + cvd.colorName)
+                            .displayOrder(0)
+                            .isModelShot(false)
+                            .build());
+                }
                 continue;
             }
 
@@ -817,10 +850,10 @@ public class FiftyProductsSeeder implements CommandLineRunner {
                 "100% Genuine Leather", "Wipe clean with leather conditioner",
                 new BigDecimal("499000"), new BigDecimal("399000"), catAccessories, Gender.UNISEX, "Leather Goods",
                 false, false, true, true,
-                "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new ColorVariantData("09 BLACK", "#111111", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80"),
-                        new ColorVariantData("38 DARK BROWN", "#512E5F", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80")
+                        new ColorVariantData("09 BLACK", "#111111", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&q=80"),
+                        new ColorVariantData("38 DARK BROWN", "#512E5F", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80")
                 )
         ));
 
@@ -850,7 +883,7 @@ public class FiftyProductsSeeder implements CommandLineRunner {
                 List.of(
                         new ColorVariantData("09 BLACK", "#111111", List.of("FREE"), "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80"),
                         new ColorVariantData("30 NATURAL", "#F5EEF8", List.of("FREE"), "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?auto=format&fit=crop&w=800&q=80"),
-                        new ColorVariantData("57 OLIVE", "#556B2F", List.of("FREE"), "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80")
+                        new ColorVariantData("57 OLIVE", "#556B2F", List.of("FREE"), "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80")
                 )
         ));
 
@@ -875,10 +908,10 @@ public class FiftyProductsSeeder implements CommandLineRunner {
                 "100% Cotton Canvas", "Hand wash cold",
                 new BigDecimal("499000"), null, catAccessories, Gender.UNISEX, "UV Protection",
                 false, true, false, false,
-                "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new ColorVariantData("09 BLACK", "#111111", List.of("M", "L"), "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80"),
-                        new ColorVariantData("31 BEIGE", "#E5D3B3", List.of("M", "L"), "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80")
+                        new ColorVariantData("09 BLACK", "#111111", List.of("M", "L"), "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?auto=format&fit=crop&w=800&q=80"),
+                        new ColorVariantData("31 BEIGE", "#E5D3B3", List.of("M", "L"), "https://images.unsplash.com/photo-1534215754734-18e55d13e346?auto=format&fit=crop&w=800&q=80")
                 )
         ));
 

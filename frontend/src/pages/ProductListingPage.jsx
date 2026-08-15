@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Filter, ChevronDown, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Filter, ChevronDown, X, SlidersHorizontal, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
@@ -10,6 +10,9 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(0);
+  const [sizePerPage, setSizePerPage] = useState(12);
 
   // Filter state
   const [gender, setGender] = useState(initialFilters.gender || '');
@@ -38,19 +41,21 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
       if (bestSeller) params.append('bestSeller', 'true');
       params.append('sortBy', sortBy);
       params.append('sortDirection', sortDirection);
-      params.append('sizePerPage', '24');
+      params.append('page', page.toString());
+      params.append('sizePerPage', sizePerPage.toString());
 
       const res = await api.get(`/products?${params.toString()}`);
       if (res.data) {
         setProducts(res.data.content || []);
         setTotalElements(res.data.totalElements || 0);
+        setTotalPages(res.data.totalPages || 1);
       }
     } catch (err) {
       console.error('Error fetching catalog:', err);
     } finally {
       setLoading(false);
     }
-  }, [gender, collection, selectedColor, selectedSize, maxPrice, search, isNew, bestSeller, sortBy, sortDirection]);
+  }, [gender, collection, selectedColor, selectedSize, maxPrice, search, isNew, bestSeller, sortBy, sortDirection, page, sizePerPage]);
 
   useEffect(() => {
     fetchProducts();
@@ -390,11 +395,195 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
               </button>
             </div>
           ) : (
-            <div className="responsive-product-grid">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
-              ))}
-            </div>
+            <>
+              <div className="responsive-product-grid">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} onNavigate={onNavigate} />
+                ))}
+              </div>
+
+              {/* State-of-the-Art Luxury Pagination UI */}
+              {totalPages > 1 && (
+                <div
+                  style={{
+                    marginTop: '48px',
+                    paddingTop: '28px',
+                    borderTop: '1px solid #eae5d8',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '16px',
+                  }}
+                >
+                  {/* Page Status & Per-Page Controls */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      fontSize: '0.85rem',
+                      color: '#666',
+                      flexWrap: 'wrap',
+                      gap: '12px'
+                    }}
+                  >
+                    <div>
+                      {lang === 'vi' ? 'Đang xem trang' : 'Showing page'}{' '}
+                      <strong style={{ color: '#111' }}>{page + 1}</strong> / <strong>{totalPages}</strong>{' '}
+                      ({lang === 'vi' ? 'Tổng cộng' : 'Total'}{' '}
+                      <strong style={{ color: '#e60012' }}>{totalElements}</strong> {lang === 'vi' ? 'sản phẩm' : 'items'})
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#888' }}>
+                        {lang === 'vi' ? 'Hiển thị:' : 'Per page:'}
+                      </span>
+                      {[12, 24, 36].map((sz) => (
+                        <button
+                          key={sz}
+                          onClick={() => {
+                            setSizePerPage(sz);
+                            setPage(0);
+                            window.scrollTo({ top: 120, behavior: 'smooth' });
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '0.8rem',
+                            fontWeight: sizePerPage === sz ? '700' : '500',
+                            border: sizePerPage === sz ? '1.5px solid #111' : '1px solid #ddd',
+                            backgroundColor: sizePerPage === sz ? '#111' : '#fff',
+                            color: sizePerPage === sz ? '#fff' : '#444',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          {sz}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Numbered Pagination Buttons 1, 2, 3... */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => {
+                        if (page > 0) {
+                          setPage(page - 1);
+                          window.scrollTo({ top: 120, behavior: 'smooth' });
+                        }
+                      }}
+                      disabled={page === 0}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 16px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        border: '1px solid #d5d0c5',
+                        backgroundColor: page === 0 ? '#f8f8f8' : '#ffffff',
+                        color: page === 0 ? '#bbb' : '#222',
+                        borderRadius: '6px',
+                        cursor: page === 0 ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                        boxShadow: page === 0 ? 'none' : '0 2px 6px rgba(0,0,0,0.04)'
+                      }}
+                    >
+                      <ChevronLeft size={16} />
+                      <span className="desktop-only">{lang === 'vi' ? 'Trang trước' : 'Previous'}</span>
+                    </button>
+
+                    {/* Number Buttons */}
+                    {(() => {
+                      const pages = [];
+                      if (totalPages <= 7) {
+                        for (let i = 0; i < totalPages; i++) pages.push(i);
+                      } else {
+                        if (page <= 3) {
+                          pages.push(0, 1, 2, 3, 4, '...', totalPages - 1);
+                        } else if (page >= totalPages - 4) {
+                          pages.push(0, '...', totalPages - 5, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1);
+                        } else {
+                          pages.push(0, '...', page - 1, page, page + 1, '...', totalPages - 1);
+                        }
+                      }
+
+                      return pages.map((p, idx) => {
+                        if (p === '...') {
+                          return (
+                            <span key={`dots-${idx}`} style={{ padding: '0 8px', color: '#999', fontSize: '0.9rem' }}>
+                              •••
+                            </span>
+                          );
+                        }
+
+                        const isActive = page === p;
+                        return (
+                          <button
+                            key={`page-${p}`}
+                            onClick={() => {
+                              setPage(p);
+                              window.scrollTo({ top: 120, behavior: 'smooth' });
+                            }}
+                            style={{
+                              minWidth: '40px',
+                              height: '40px',
+                              padding: '0 10px',
+                              fontSize: '0.88rem',
+                              fontWeight: isActive ? '800' : '600',
+                              border: isActive ? '2px solid #e60012' : '1px solid #d5d0c5',
+                              backgroundColor: isActive ? '#e60012' : '#ffffff',
+                              color: isActive ? '#ffffff' : '#222222',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: isActive ? '0 4px 12px rgba(230,0,18,0.25)' : '0 2px 4px rgba(0,0,0,0.03)',
+                              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                            }}
+                          >
+                            {p + 1}
+                          </button>
+                        );
+                      });
+                    })()}
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => {
+                        if (page < totalPages - 1) {
+                          setPage(page + 1);
+                          window.scrollTo({ top: 120, behavior: 'smooth' });
+                        }
+                      }}
+                      disabled={page >= totalPages - 1}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 16px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        border: '1px solid #d5d0c5',
+                        backgroundColor: page >= totalPages - 1 ? '#f8f8f8' : '#ffffff',
+                        color: page >= totalPages - 1 ? '#bbb' : '#222',
+                        borderRadius: '6px',
+                        cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                        boxShadow: page >= totalPages - 1 ? 'none' : '0 2px 6px rgba(0,0,0,0.04)'
+                      }}
+                    >
+                      <span className="desktop-only">{lang === 'vi' ? 'Trang sau' : 'Next'}</span>
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

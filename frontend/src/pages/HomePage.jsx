@@ -15,14 +15,26 @@ export const HomePage = ({ onNavigate }) => {
     const fetchData = async () => {
       try {
         const [resFeatured, resNew, resBest] = await Promise.all([
-          api.get('/products/featured'),
-          api.get('/products/new-arrivals'),
-          api.get('/products/best-sellers'),
+          api.get('/products/featured').catch(() => null),
+          api.get('/products/new-arrivals').catch(() => null),
+          api.get('/products/best-sellers').catch(() => null),
         ]);
 
-        if (resFeatured.data) setFeaturedProducts(resFeatured.data);
-        if (resNew.data) setNewArrivals(resNew.data);
-        if (resBest.data) setBestSellers(resBest.data);
+        const extractList = (res) => {
+          if (!res) return [];
+          if (Array.isArray(res)) return res;
+          if (Array.isArray(res.data)) return res.data;
+          if (Array.isArray(res.content)) return res.content;
+          return [];
+        };
+
+        const featured = extractList(resFeatured);
+        const newest = extractList(resNew);
+        const best = extractList(resBest);
+
+        if (featured.length > 0) setFeaturedProducts(featured);
+        if (newest.length > 0) setNewArrivals(newest);
+        if (best.length > 0) setBestSellers(best);
       } catch (err) {
         console.error('Error loading home data:', err);
       } finally {

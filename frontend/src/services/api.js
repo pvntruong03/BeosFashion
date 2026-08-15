@@ -1,11 +1,26 @@
 import axios from 'axios';
 
+const getBaseUrl = () => {
+  let url = import.meta.env.VITE_API_URL;
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    return '/api';
+  }
+  url = url.trim();
+  if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
+    url = 'https://' + url;
+  }
+  if (!url.endsWith('/api') && !url.includes('/api/')) {
+    url = url.replace(/\/+$/, '') + '/api';
+  }
+  return url;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 30000,
 });
 
 // Request interceptor to attach JWT and guest sessionId

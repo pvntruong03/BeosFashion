@@ -53,7 +53,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password });
-      const authData = res.data;
+      const authData = res?.data || res;
+
+      if (!authData || !authData.token) {
+        throw new Error(res?.message || 'Không nhận được dữ liệu xác thực từ máy chủ.');
+      }
 
       localStorage.setItem('uq_token', authData.token);
       localStorage.setItem('uq_user', JSON.stringify(authData.user));
@@ -61,8 +65,8 @@ export const AuthProvider = ({ children }) => {
       setToken(authData.token);
       setUser(authData.user);
 
-      showSuccess(`Đăng nhập thành công! Chào mừng ${authData.user.fullName}`);
-      const redirectPath = getRedirectPathForRole(authData.user.role);
+      showSuccess(`Đăng nhập thành công! Chào mừng ${authData.user?.fullName || ''}`);
+      const redirectPath = getRedirectPathForRole(authData.user?.role);
       return { success: true, redirectPath, user: authData.user };
     } catch (err) {
       showError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
@@ -73,7 +77,11 @@ export const AuthProvider = ({ children }) => {
   const register = async (formData) => {
     try {
       const res = await api.post('/auth/register', formData);
-      const authData = res.data;
+      const authData = res?.data || res;
+
+      if (!authData || !authData.token) {
+        throw new Error(res?.message || 'Không nhận được dữ liệu xác thực từ máy chủ.');
+      }
 
       localStorage.setItem('uq_token', authData.token);
       localStorage.setItem('uq_user', JSON.stringify(authData.user));

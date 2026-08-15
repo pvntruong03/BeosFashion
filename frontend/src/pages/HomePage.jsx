@@ -55,50 +55,53 @@ export const HomePage = ({ onNavigate }) => {
 
   return (
     <div>
-      {/* 1. HERO BANNER */}
-      <section style={{ position: 'relative', backgroundColor: '#000', color: '#fff', overflow: 'hidden' }}>
+      {/* 1. LUXURY HAUTE EDITORIAL HERO BANNER */}
+      <section style={{ position: 'relative', backgroundColor: '#0c0c0c', color: '#fff', overflow: 'hidden' }}>
         <div style={{
           position: 'relative',
-          minHeight: '380px',
+          minHeight: '440px',
           display: 'flex',
           alignItems: 'center',
-          backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.15) 100%), url(https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80)',
+          backgroundImage: 'linear-gradient(to right, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.6) 50%, rgba(10,10,10,0.2) 100%), url(https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1800&q=85)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center 20%'
+          backgroundPosition: 'center 25%'
         }}>
-          <div className="container" style={{ padding: '36px 16px', maxWidth: '1400px' }}>
-            <div style={{ maxWidth: '620px' }}>
+          <div className="container" style={{ padding: '48px 16px', maxWidth: '1400px' }}>
+            <div style={{ maxWidth: '680px' }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '8px',
                 backgroundColor: '#e60012',
                 color: '#fff',
-                padding: '4px 10px',
-                fontSize: '0.75rem',
-                fontWeight: '800',
-                letterSpacing: '0.5px',
-                marginBottom: '12px'
+                padding: '5px 12px',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.72rem',
+                fontWeight: '700',
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+                marginBottom: '16px',
+                boxShadow: '0 4px 14px rgba(230,0,18,0.3)'
               }}>
                 <Sparkles size={13} />
-                <span>{lang === 'vi' ? 'BỘ SƯU TẬP MỚI SS26' : 'SS26 NEW ARRIVALS'}</span>
+                <span>SS26 HAUTE LIFEWEAR ATELIER</span>
               </div>
 
-              <h1 className="heading-display" style={{ color: '#ffffff', marginBottom: '12px' }}>
-                AIRism & LifeWear
+              <h1 className="heading-editorial" style={{ color: '#ffffff', fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', lineHeight: 1.12, marginBottom: '16px', fontWeight: '800' }}>
+                AIRism &amp; LifeWear <span className="editorial-italic" style={{ color: '#f5efe6', fontWeight: '400' }}>Essence</span>
               </h1>
 
-              <p className="desktop-only" style={{ fontSize: '1rem', color: '#e0e0e0', lineHeight: 1.5, marginBottom: '24px' }}>
+              <p className="desktop-only" style={{ fontSize: '1.05rem', color: '#e6e1d5', lineHeight: 1.6, marginBottom: '28px', maxWidth: '560px' }}>
                 {lang === 'vi'
                   ? 'Trải nghiệm sự thoáng mát tức thì với sợi vải thông minh công nghệ cao. Thiết kế tối giản, tinh tế cho phong cách hàng ngày.'
-                  : 'Experience instant cooling comfort with high-tech smart fabrics. Minimalist, refined silhouettes designed for everyday life.'}
+                  : 'Experience instant cooling comfort with Japanese high-tech smart fabrics. Minimalist silhouettes refined for modern elegance.'}
               </p>
 
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
                 <button
                   onClick={() => onNavigate('products', { gender: 'MEN' })}
                   className="btn-uq btn-uq-red"
-                  style={{ padding: '10px 20px', fontSize: '0.85rem' }}
+                  style={{ padding: '12px 26px', fontSize: '0.9rem', letterSpacing: '0.5px' }}
                 >
                   <span>{t('shop_men')}</span>
                   <ArrowRight size={16} />
@@ -106,8 +109,19 @@ export const HomePage = ({ onNavigate }) => {
 
                 <button
                   onClick={() => onNavigate('products', { gender: 'WOMEN' })}
-                  className="btn-uq btn-uq-secondary"
-                  style={{ padding: '10px 20px', fontSize: '0.85rem' }}
+                  style={{
+                    padding: '12px 26px',
+                    fontSize: '0.9rem',
+                    letterSpacing: '0.5px',
+                    backgroundColor: 'rgba(255,255,255,0.12)',
+                    backdropFilter: 'blur(10px)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    fontWeight: '700',
+                    transition: 'var(--transition)'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.12)')}
                 >
                   <span>{t('shop_women')}</span>
                 </button>
@@ -118,7 +132,7 @@ export const HomePage = ({ onNavigate }) => {
       </section>
 
       {/* 2. CATEGORY TILES (MEN / WOMEN / KIDS / LIFEWEAR) */}
-      <section style={{ padding: '28px 0' }}>
+      <section style={{ padding: '36px 0', backgroundColor: '#faf9f5' }}>
         <div className="container">
           <div className="responsive-product-grid">
             {[
@@ -152,11 +166,15 @@ export const HomePage = ({ onNavigate }) => {
                 onClick={() => onNavigate('products', { gender: cat.gender, collection: cat.collection })}
                 style={{
                   position: 'relative',
-                  height: '220px',
+                  height: '240px',
                   backgroundColor: '#f5f5f5',
                   overflow: 'hidden',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  border: '1px solid #eae5d8',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
+                className="img-editorial-zoom"
               >
                 <img
                   src={cat.img}
@@ -165,24 +183,24 @@ export const HomePage = ({ onNavigate }) => {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
-                    transition: 'transform 0.4s ease',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                 />
                 <div style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)',
+                  background: 'linear-gradient(to top, rgba(15,15,15,0.85) 0%, rgba(15,15,15,0.2) 60%, transparent 100%)',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-end',
-                  padding: '14px',
+                  padding: '18px',
                   color: '#fff'
                 }}>
-                  <div style={{ fontWeight: '800', fontSize: '1rem', letterSpacing: '0.5px' }}>{cat.title}</div>
-                  <div style={{ fontSize: '0.72rem', color: '#ddd', marginTop: '2px' }}>{cat.sub}</div>
-                  <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.75rem', fontWeight: '700', color: '#fff' }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '1px', color: '#c5a880', textTransform: 'uppercase', marginBottom: '2px' }}>
+                    0{idx + 1} • ATELIER
+                  </div>
+                  <div style={{ fontWeight: '800', fontSize: '1.05rem', letterSpacing: '0.5px' }}>{cat.title}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#ddd', marginTop: '2px' }}>{cat.sub}</div>
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: '700', color: '#fff' }}>
                     <span>{lang === 'vi' ? 'Khám phá' : 'Explore'}</span>
                     <ChevronRight size={14} />
                   </div>
@@ -194,21 +212,21 @@ export const HomePage = ({ onNavigate }) => {
       </section>
 
       {/* 3. NEW ARRIVALS */}
-      <section style={{ padding: '36px 0', borderTop: '1px solid #f0f0f0' }}>
+      <section style={{ padding: '48px 0', borderTop: '1px solid #eae5d8', backgroundColor: '#ffffff' }}>
         <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e60012', fontWeight: '800', fontSize: '0.85rem' }}>
-                <Sparkles size={16} />
-                <span>NEW IN THIS WEEK</span>
+              <div className="luxury-badge" style={{ color: '#e60012', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} />
+                <span>SS26 ATELIER COLLECTION</span>
               </div>
-              <h2 className="heading-section" style={{ marginTop: '4px' }}>
+              <h2 className="heading-editorial" style={{ fontSize: '2.2rem', margin: 0 }}>
                 {t('new_arrivals')}
               </h2>
             </div>
             <button
               onClick={() => onNavigate('products', { isNew: true })}
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700', fontSize: '0.9rem', color: '#111' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', fontSize: '0.88rem', color: '#111', letterSpacing: '0.5px' }}
             >
               <span>{lang === 'vi' ? 'Xem tất cả' : 'View All'}</span>
               <ArrowRight size={16} />
@@ -224,21 +242,21 @@ export const HomePage = ({ onNavigate }) => {
       </section>
 
       {/* 4. LIMITED OFFERS BANNER & BEST SELLERS */}
-      <section style={{ padding: '48px 0', backgroundColor: '#fcfcfc', borderTop: '1px solid #f0f0f0' }}>
+      <section style={{ padding: '52px 0', backgroundColor: '#f9f7f2', borderTop: '1px solid #eae5d8' }}>
         <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e60012', fontWeight: '800', fontSize: '0.85rem' }}>
-                <Flame size={16} />
-                <span>TOP RATED & POPULAR</span>
+              <div className="luxury-badge" style={{ color: '#d97706', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Flame size={14} />
+                <span>TIMELESS ESSENTIALS</span>
               </div>
-              <h2 className="heading-section" style={{ marginTop: '4px' }}>
+              <h2 className="heading-editorial" style={{ fontSize: '2.2rem', margin: 0 }}>
                 {t('best_sellers')}
               </h2>
             </div>
             <button
               onClick={() => onNavigate('products', { bestSeller: true })}
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700', fontSize: '0.9rem', color: '#111' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700', fontSize: '0.88rem', color: '#111', letterSpacing: '0.5px' }}
             >
               <span>{lang === 'vi' ? 'Xem tất cả' : 'View All'}</span>
               <ArrowRight size={16} />
@@ -254,28 +272,29 @@ export const HomePage = ({ onNavigate }) => {
       </section>
 
       {/* 5. LIFEWEAR PHILOSOPHY & LOOKBOOK TEASER */}
-      <section style={{ padding: '60px 0', backgroundColor: '#ffffff', borderTop: '1px solid #e5e5e5' }}>
+      <section style={{ padding: '72px 0', backgroundColor: '#ffffff', borderTop: '1px solid #eae5d8' }}>
         <div className="container">
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '40px',
+            gap: '48px',
             alignItems: 'center'
           }}>
             <div>
-              <span className="badge-uq red" style={{ marginBottom: '12px' }}>BEO LIFEWEAR</span>
-              <h2 className="heading-display" style={{ fontSize: '2rem', marginBottom: '20px' }}>
-                {lang === 'vi' ? 'Trang phục giản đơn cho cuộc sống tốt đẹp hơn.' : 'Simple apparel made better for everyone.'}
+              <div className="luxury-badge" style={{ color: '#e60012', marginBottom: '10px' }}>THE JAPANESE PHILOSOPHY</div>
+              <h2 className="heading-editorial" style={{ fontSize: '2.5rem', lineHeight: 1.18, marginBottom: '20px' }}>
+                {lang === 'vi' ? <>Trang phục giản đơn cho <span className="editorial-italic">cuộc sống tốt đẹp hơn.</span></> : <>Simple apparel, <span className="editorial-italic">elevated for life.</span></>}
               </h2>
-              <p style={{ fontSize: '0.95rem', color: '#555', lineHeight: 1.7, marginBottom: '24px' }}>
+              <p style={{ fontSize: '1rem', color: '#555', lineHeight: 1.75, marginBottom: '28px' }}>
                 {lang === 'vi'
                   ? 'LifeWear là những trang phục được sáng tạo từ các giá trị văn hóa Nhật Bản: đơn giản, chất lượng cao, bền bỉ cùng thời gian. Được thiết kế hiện đại, thanh lịch để trở thành những mảnh ghép hoàn hảo trong tủ đồ thường ngày của bạn.'
-                  : 'LifeWear is clothing inspired by Japanese values of simplicity, quality, and longevity. Designed to be of the time and for the time, LifeWear is made with modern elegance to become the foundation of your daily wardrobe.'}
+                  : 'LifeWear is clothing inspired by Japanese values of simplicity, quality, and longevity. Designed to be of the time and for the time, LifeWear is crafted with modern elegance to become the cornerstone of your daily wardrobe.'}
               </p>
-              <div style={{ display: 'flex', gap: '14px' }}>
+              <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => onNavigate('lookbook')}
                   className="btn-uq btn-uq-primary"
+                  style={{ padding: '12px 24px', letterSpacing: '0.5px' }}
                 >
                   <span>{lang === 'vi' ? 'Xem Lookbook Phối Đồ' : 'Explore Lookbook'}</span>
                   <ArrowRight size={16} />
@@ -283,6 +302,7 @@ export const HomePage = ({ onNavigate }) => {
                 <button
                   onClick={() => onNavigate('stores')}
                   className="btn-uq btn-uq-outline-gray"
+                  style={{ padding: '12px 24px' }}
                 >
                   <span>{lang === 'vi' ? 'Tìm Cửa Hàng Gần Nhất' : 'Find Store Location'}</span>
                 </button>

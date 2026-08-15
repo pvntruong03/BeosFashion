@@ -26,3 +26,15 @@ Whenever interacting with this codebase or assisting the user, Antigravity **MUS
   - `understand-chat` & `understand-explain`: Tự động tham chiếu sơ đồ liên kết giữa Backend Spring Boot <-> Frontend React <-> Database H2/MySQL khi giải thích code hoặc trả lời câu hỏi.
   - `understand-domain`: Bóc tách và theo dõi đúng các luồng nghiệp vụ thời trang (Đặt hàng -> Phân bổ kho -> Quản lý đơn tại Showroom Cần Thơ -> Giao hàng -> Báo cáo ca).
   - `understand-dashboard`: Sẵn sàng khởi chạy và cập nhật dashboard trực quan hóa dự án khi cần.
+
+---
+
+## 🏬 PROJECT CONTEXT & CORE BUSINESS RULES
+- **Brand**: BEO Modern Fashion (Chi nhánh trung tâm: Cần Thơ - `STR-CT-01`).
+- **Hotline**: `1900019199999`
+- **Socials**: Facebook (`https://www.facebook.com/beofashionstorecantho/`), Zalo (`https://zalo.me/0567740000`).
+- **Target Audience & Scope (QUY TẮC BẮT BUỘC SUỐT DỰ ÁN)**:
+  - **TUYỆT ĐỐI KHÔNG CÓ SẢN PHẨM TRẺ EM (NO KIDS / NO BABY PRODUCTS)**.
+  - Hệ thống chỉ tập trung vào thời trang người lớn cao cấp: **Đồ Nam (MEN)**, **Đồ Nữ (WOMEN)** và **Phụ kiện Unisex (ACCESSORIES & BAGS)**.
+- **Roles**: Chỉ có 3 vai trò: `ROLE_CUSTOMER`, `ROLE_STAFF_MANAGER`, `ROLE_ADMIN`.
+- **Tech Stack**: Java 17 + Spring Boot 3 + H2/MySQL + React Vite + Tailwind CSS + Lucide Icons.

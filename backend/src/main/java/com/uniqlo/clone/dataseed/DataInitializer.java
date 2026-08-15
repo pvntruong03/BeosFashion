@@ -193,35 +193,11 @@ public class DataInitializer implements CommandLineRunner {
                 .displayOrder(5)
                 .build());
 
-        Category catKids = categoryRepository.save(Category.builder()
-                .name("Kids")
-                .slug("kids")
-                .gender(Gender.KIDS)
-                .displayOrder(3)
-                .bannerImage("https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=1200&q=80")
-                .build());
-
-        Category catKidsTops = categoryRepository.save(Category.builder()
-                .name("Kids' Tops")
-                .slug("kids-tops")
-                .gender(Gender.KIDS)
-                .parent(catKids)
-                .displayOrder(1)
-                .build());
-
-        Category catKidsBottoms = categoryRepository.save(Category.builder()
-                .name("Kids' Bottoms")
-                .slug("kids-bottoms")
-                .gender(Gender.KIDS)
-                .parent(catKids)
-                .displayOrder(2)
-                .build());
-
         Category catAccessories = categoryRepository.save(Category.builder()
                 .name("Accessories & Bags")
                 .slug("accessories")
                 .gender(Gender.UNISEX)
-                .displayOrder(4)
+                .displayOrder(3)
                 .bannerImage("https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80")
                 .build());
 
@@ -585,50 +561,48 @@ public class DataInitializer implements CommandLineRunner {
                 allStores
         );
 
-        // Product 16: Kids Graphic T-Shirt
+        // Product 16: AIRism Cotton Relaxed Fit Long Sleeve T-Shirt
         Product p16 = createProductWithVariants(
-                "Kids Graphic Cotton T-Shirt",
+                "AIRism Cotton Relaxed Fit Long Sleeve T-Shirt",
                 "UQ-463200",
-                "kids-graphic-short-sleeve-t-shirt",
-                "100% natural cotton gentle on sensitive young skin. Cheerful cartoon prints with soft taped neck seams to prevent scratching.",
-                "Soft seam binding avoids skin chafing.\nBreathable cotton for active play.",
-                "100% Natural Cotton",
+                "airism-cotton-relaxed-fit-long-sleeve-t-shirt",
+                "Clean cotton outer with silky AIRism inner lining. Perfect relaxed drape for effortless layering all year round.",
+                "Smooth moisture-wicking AIRism interior\nDouble-stitched reinforced collar",
+                "53% Cotton, 47% Polyester",
                 "Machine wash cold",
-                new BigDecimal("199000"),
-                null,
-                catKidsTops,
-                Gender.KIDS,
-                "Kids UT",
+                new BigDecimal("499000"),
+                new BigDecimal("399000"),
+                catMenTops,
+                Gender.MEN,
+                "AIRism",
                 true, true, true, false,
-                "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new VariantSeed("00 WHITE", "#FFFFFF", List.of("110", "120", "130", "140", "150"), "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80"),
-                        new VariantSeed("52 GREEN", "#2ECC71", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80"),
-                        new VariantSeed("70 LIGHT PURPLE", "#D7BDE2", List.of("120", "130", "140"), "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80")
+                        new VariantSeed("00 WHITE", "#FFFFFF", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80")
                 ),
                 allStores
         );
 
-        // Product 17: Kids Sweat Jogger Pants
+        // Product 17: Women Premium Supima Cotton Tank Top
         Product p17 = createProductWithVariants(
-                "Kids Easy-Care Sweat Jogger Pants",
+                "Women Premium Supima Cotton Tank Top",
                 "UQ-463211",
-                "kids-sweat-jogger-pants",
-                "Plush cotton-blend fleece jogger pants with elasticated waistband and ribbed cuffs designed for active playtime.",
-                "Soft fleece lining provides gentle warmth.\nConvenient side pockets.",
-                "100% Soft Cotton",
+                "women-premium-supima-cotton-tank-top",
+                "100% extra-long staple Supima cotton crafted with a flattering scoop neck and comfortable wide straps.",
+                "100% Supima Cotton\nFlattering scoop neckline",
+                "100% Supima Cotton",
                 "Machine wash warm",
-                new BigDecimal("349000"),
                 new BigDecimal("299000"),
-                catKidsBottoms,
-                Gender.KIDS,
-                "Kids Active",
+                new BigDecimal("249000"),
+                catWomenTops,
+                Gender.WOMEN,
+                "Supima Cotton",
                 true, false, true, true,
-                "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new VariantSeed("03 GRAY", "#BDC3C7", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80"),
-                        new VariantSeed("69 NAVY", "#1A252F", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1519457431-44ccd64a579b?auto=format&fit=crop&w=800&q=80"),
-                        new VariantSeed("09 BLACK", "#111111", List.of("120", "130", "140", "150"), "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80")
+                        new VariantSeed("00 WHITE", "#FFFFFF", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"),
+                        new VariantSeed("09 BLACK", "#111111", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?auto=format&fit=crop&w=800&q=80")
                 ),
                 allStores
         );

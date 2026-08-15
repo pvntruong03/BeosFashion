@@ -30,12 +30,28 @@ public class FiftyProductsSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (productRepository.count() >= 70) {
-            log.info("Catalog already contains {} products (>= 70). FiftyProductsSeeder skipped.", productRepository.count());
+        // 1. Permanently deactivate all KIDS products and categories (Strict user business rule)
+        List<Product> kidsProducts = productRepository.findAll().stream()
+                .filter(p -> p.getGender() == Gender.KIDS || (p.getCategory() != null && p.getCategory().getGender() == Gender.KIDS))
+                .toList();
+
+        for (Product kp : kidsProducts) {
+            log.info("Deactivating legacy Kids product from catalog: {}", kp.getName());
+            kp.setActive(false);
+            productRepository.save(kp);
+        }
+
+        categoryRepository.findBySlug("kids-tops").ifPresent(cat -> { cat.setActive(false); categoryRepository.save(cat); });
+        categoryRepository.findBySlug("kids-bottoms").ifPresent(cat -> { cat.setActive(false); categoryRepository.save(cat); });
+        categoryRepository.findBySlug("kids").ifPresent(cat -> { cat.setActive(false); categoryRepository.save(cat); });
+
+        long activeCount = productRepository.findByActiveTrue().size();
+        if (activeCount >= 70) {
+            log.info("Catalog already contains {} active adult products (>= 70). FiftyProductsSeeder completed.", activeCount);
             return;
         }
 
-        log.info("Seeding 50 additional high-fashion products to expand catalog (current count: {})...", productRepository.count());
+        log.info("Seeding adult high-fashion products to reach full catalog size (current count: {})...", productRepository.count());
 
         Optional<Store> optionalStore = storeRepository.findByCode("STR-BEO-01");
         Store store = optionalStore.orElseGet(() -> {
@@ -48,7 +64,7 @@ public class FiftyProductsSeeder implements CommandLineRunner {
             return;
         }
 
-        // Fetch categories safely
+        // Fetch adult categories safely
         Category catMenTops = categoryRepository.findBySlug("men-tops").orElse(null);
         Category catMenBottoms = categoryRepository.findBySlug("men-bottoms").orElse(null);
         Category catMenOuterwear = categoryRepository.findBySlug("men-outerwear").orElse(null);
@@ -58,19 +74,30 @@ public class FiftyProductsSeeder implements CommandLineRunner {
         Category catWomenDresses = categoryRepository.findBySlug("women-dresses").orElse(null);
         Category catWomenOuterwear = categoryRepository.findBySlug("women-outerwear").orElse(null);
         Category catWomenInnerwear = categoryRepository.findBySlug("women-innerwear").orElse(null);
-        Category catKidsTops = categoryRepository.findBySlug("kids-tops").orElse(null);
-        Category catKidsBottoms = categoryRepository.findBySlug("kids-bottoms").orElse(null);
         Category catAccessories = categoryRepository.findBySlug("accessories").orElse(null);
 
         List<ProductSeedData> items = buildFiftyProductsList(
                 catMenTops, catMenBottoms, catMenOuterwear, catMenInnerwear,
                 catWomenTops, catWomenBottoms, catWomenDresses, catWomenOuterwear, catWomenInnerwear,
-                catKidsTops, catKidsBottoms, catAccessories
+                catAccessories
         );
 
         int countAdded = 0;
         for (ProductSeedData data : items) {
-            if (productRepository.findByCode(data.code).isPresent()) {
+            Optional<Product> optProd = productRepository.findByCode(data.code);
+            if (optProd.isPresent()) {
+                Product p = optProd.get();
+                p.setName(data.name);
+                p.setSlug(data.slug);
+                p.setDescription(data.description);
+                p.setOverview(data.overview);
+                p.setMaterial(data.material);
+                p.setCategory(data.category);
+                p.setGender(data.gender);
+                p.setCollection(data.collection);
+                p.setPrimaryImageUrl(data.primaryImage);
+                p.setActive(true);
+                productRepository.save(p);
                 continue;
             }
 
@@ -144,7 +171,7 @@ public class FiftyProductsSeeder implements CommandLineRunner {
     private List<ProductSeedData> buildFiftyProductsList(
             Category catMenTops, Category catMenBottoms, Category catMenOuterwear, Category catMenInnerwear,
             Category catWomenTops, Category catWomenBottoms, Category catWomenDresses, Category catWomenOuterwear, Category catWomenInnerwear,
-            Category catKidsTops, Category catKidsBottoms, Category catAccessories
+            Category catAccessories
     ) {
         List<ProductSeedData> list = new ArrayList<>();
 
@@ -754,59 +781,60 @@ public class FiftyProductsSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 44-47: KIDS & BABY
+        // 44-47: ADULT LIFEWEAR & LUXURY ATELIER
         list.add(new ProductSeedData(
-                "Kids Ultra Stretch Quick-Dry Sweatpants", "UQ-500044", "kids-ultra-stretch-quick-dry-sweatpants",
-                "High-durability 360-degree stretch fabric lets kids run and play with total freedom. Quick-drying after play and wash.",
-                "Ultra-stretch mobility with quick-dry finish\nAdjustable elastic waist with inner button",
-                "48% Cotton, 47% Polyester, 5% Spandex", "Machine wash cold",
-                new BigDecimal("399000"), new BigDecimal("329000"), catKidsBottoms, Gender.KIDS, "Kids Active",
+                "French Terry Relaxed Crew Neck Sweatshirt", "UQ-500044", "french-terry-relaxed-crew-neck-sweatshirt",
+                "High-density 100% loopback French terry cotton. Ultra-durable, breathable, and pre-shrunk for effortless relaxed layering.",
+                "100% Loopback French Terry Cotton\nRibbed cuffs and hem maintain shape",
+                "100% Cotton", "Machine wash cold",
+                new BigDecimal("599000"), new BigDecimal("499000"), catMenTops, Gender.MEN, "Sweat Collection",
                 false, true, true, false,
-                "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new ColorVariantData("03 GRAY", "#7F8C8D", List.of("110", "120", "130", "140", "150"), "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80"),
-                        new ColorVariantData("09 BLACK", "#111111", List.of("110", "120", "130", "140", "150"), "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=800&q=80")
+                        new ColorVariantData("03 GRAY", "#7F8C8D", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80"),
+                        new ColorVariantData("09 BLACK", "#111111", List.of("S", "M", "L", "XL"), "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80")
                 )
         ));
 
         list.add(new ProductSeedData(
-                "Kids Pile-Lined Fleece Hooded Warm Jacket", "UQ-500045", "kids-pile-lined-fleece-hooded-warm-jacket",
-                "Lined with soft teddy bear pile fleece for cozy insulation on chilly school mornings. Machine washable.",
-                "Soft pile fleece inner lining\nChin guard prevents zipper pinching",
-                "100% Polyester", "Machine wash cold",
-                new BigDecimal("599000"), null, catKidsTops, Gender.KIDS, "Kids Warm",
+                "Pleated Chiffon Elegant Maxi Dress", "UQ-500045", "pleated-chiffon-elegant-maxi-dress",
+                "Flowing pleated chiffon fabric with subtle micro-pleats from bodice to hem. Delicate flutter sleeves and lined interior.",
+                "Micro-pleated airy chiffon fabric\nFully lined for opacity and comfort",
+                "100% Polyester Chiffon", "Hand wash cold gentle",
+                new BigDecimal("1199000"), new BigDecimal("999000"), catWomenDresses, Gender.WOMEN, "Chiffon Luxe",
                 true, true, false, false,
-                "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new ColorVariantData("69 NAVY", "#1A252F", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=800&q=80"),
-                        new ColorVariantData("31 BEIGE", "#E5D3B3", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=800&q=80")
+                        new ColorVariantData("69 NAVY", "#1A252F", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80"),
+                        new ColorVariantData("31 BEIGE", "#E5D3B3", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80")
                 )
         ));
 
         list.add(new ProductSeedData(
-                "Kids Graphic 100% Cotton Crew Neck T-Shirt", "UQ-500046", "kids-graphic-cotton-crew-neck-tshirt",
-                "100% soft durable cotton printed with friendly character graphics. Pre-shrunk to withstand active everyday wear.",
-                "100% Ring-spun cotton\nNon-irritating heat-sealed neck label",
-                "100% Cotton", "Machine wash warm",
-                new BigDecimal("299000"), new BigDecimal("249000"), catKidsTops, Gender.KIDS, "UT Kids",
+                "Italian Full-Grain Leather Minimalist Belt", "UQ-500046", "italian-full-grain-leather-minimalist-belt",
+                "Handcrafted from genuine vegetable-tanned Italian bridle leather. Brushed matte nickel buckle with beveled edges.",
+                "100% Genuine Italian Full-Grain Leather\nMatte brushed nickel buckle",
+                "100% Genuine Leather", "Wipe clean with leather conditioner",
+                new BigDecimal("499000"), new BigDecimal("399000"), catAccessories, Gender.UNISEX, "Leather Goods",
                 false, false, true, true,
-                "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new ColorVariantData("00 WHITE", "#FFFFFF", List.of("110", "120", "130", "140", "150"), "https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=800&q=80"),
-                        new ColorVariantData("63 BLUE", "#3498DB", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=800&q=80")
+                        new ColorVariantData("09 BLACK", "#111111", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=800&q=80"),
+                        new ColorVariantData("38 DARK BROWN", "#512E5F", List.of("M", "L", "XL"), "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80")
                 )
         ));
 
         list.add(new ProductSeedData(
-                "Kids Dry-EX UV Protection Active Zip Hoodie", "UQ-500047", "kids-dry-ex-uv-protection-active-zip-hoodie",
-                "Kids version of our bestselling Dry-EX active hoodie. Dries sweat in minutes and protects against harsh sun.",
-                "UPF50+ Sun protection\nDry-EX fast-dry mesh fabric",
-                "100% Polyester", "Machine wash cold",
-                new BigDecimal("449000"), null, catKidsTops, Gender.KIDS, "Kids Dry-EX",
+                "AIRism Seamless High-Waist Briefs (2-Pack)", "UQ-500047", "airism-seamless-high-waist-briefs-2pack",
+                "Ultra-smooth bonded laser-cut edges remain completely invisible under form-fitting trousers and dresses.",
+                "Silky cool AIRism with zero visible panty lines\nCotton gusset lining",
+                "85% Polyester, 15% Spandex", "Machine wash with mesh laundry bag",
+                new BigDecimal("299000"), null, catWomenInnerwear, Gender.WOMEN, "AIRism Seamless",
                 false, true, false, false,
-                "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=800&q=80",
+                "https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?auto=format&fit=crop&w=800&q=80",
                 List.of(
-                        new ColorVariantData("08 DARK GRAY", "#34495E", List.of("110", "120", "130", "140"), "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=800&q=80")
+                        new ColorVariantData("31 BEIGE", "#F5CBA7", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?auto=format&fit=crop&w=800&q=80"),
+                        new ColorVariantData("09 BLACK", "#111111", List.of("S", "M", "L"), "https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&w=800&q=80")
                 )
         ));
 

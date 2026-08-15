@@ -5,8 +5,7 @@ const translations = {
     // Navigation
     women: 'NỮ',
     men: 'NAM',
-    kids: 'TRẺ EM',
-    baby: 'EM BÉ',
+    accessories: 'PHỤ KIỆN',
     lifewear: 'BỘ SƯU TẬP',
     search_placeholder: 'Tìm kiếm sản phẩm, mã hàng, chất liệu...',
     store_locator: 'Showroom BEO',
@@ -88,8 +87,7 @@ const translations = {
     // Navigation
     women: 'WOMEN',
     men: 'MEN',
-    kids: 'KIDS',
-    baby: 'BABY',
+    accessories: 'ACCESSORIES',
     lifewear: 'COLLECTIONS',
     search_placeholder: 'Search items, product code, material...',
     store_locator: 'Store Locator',

@@ -34,6 +34,9 @@ Whenever interacting with this codebase or assisting the user, Antigravity **MUS
 - **Hotline**: `1900019199999`
 - **Socials**: Facebook (`https://www.facebook.com/beofashionstorecantho/`), Zalo (`https://zalo.me/0567740000`).
 - **Roles**: Chỉ có 3 vai trò duy nhất: `ROLE_CUSTOMER`, `ROLE_STAFF_MANAGER`, `ROLE_ADMIN`.
+- **Target Audience & Scope (QUY TẮC BẮT BUỘC SUỐT DỰ ÁN)**:
+  - **TUYỆT ĐỐI KHÔNG CÓ SẢN PHẨM TRẺ EM (NO KIDS / NO BABY PRODUCTS)**.
+  - Hệ thống chỉ tập trung vào thời trang người lớn cao cấp: **Đồ Nam (MEN)**, **Đồ Nữ (WOMEN)** và **Phụ kiện Unisex (ACCESSORIES & BAGS)**.
 - **Tech Stack**:
   - Backend: Java 17 + Spring Boot 3 + Spring Data JPA + Spring Security + JWT + VietQR.
   - Frontend: React (Vite) + Tailwind CSS + Lucide Icons.

@@ -59,7 +59,7 @@ export const HomePage = ({ onNavigate }) => {
       {/* 1. UNIQLO US HAUTE EDITORIAL HERO VIDEO / LOOKBOOK BANNER */}
       <HeroVideoBanner onNavigate={onNavigate} />
 
-      {/* 2. CATEGORY TILES (MEN / WOMEN / KIDS / LIFEWEAR) */}
+      {/* 2. CATEGORY TILES (MEN / WOMEN / LIFEWEAR / UT GRAPHIC) */}
       <section style={{ padding: '36px 0', backgroundColor: '#faf9f5' }}>
         <div className="container">
           <div className="responsive-product-grid">

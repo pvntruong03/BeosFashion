@@ -27,7 +27,7 @@ public class CategoryController {
     }
 
     @GetMapping("/gender/{gender}")
-    @Operation(summary = "Get categories by gender (MEN, WOMEN, KIDS, BABY)")
+    @Operation(summary = "Get categories by gender (MEN, WOMEN, UNISEX)")
     public ResponseEntity<ApiResponse<List<CategoryDto>>> getCategoriesByGender(@PathVariable Gender gender) {
         return ResponseEntity.ok(ApiResponse.ok(categoryService.getCategoriesByGender(gender)));
     }

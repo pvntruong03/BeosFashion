@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export const HeroVideoBanner = ({ onNavigate }) => {
   const { lang, t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
 
   const slides = [
     {
@@ -29,16 +28,38 @@ export const HeroVideoBanner = ({ onNavigate }) => {
       image: '/images/hero-airism-ai.jpg',
       ctaPrimary: { text: lang === 'vi' ? 'Khám Phá BST' : 'Explore Collection', collection: 'AIRism' },
       ctaSecondary: { text: lang === 'vi' ? 'Xem Đồ Nam' : 'Shop Men', gender: 'MEN' },
+    },
+    {
+      id: 'outerwear-cashmere',
+      badge: lang === 'vi' ? 'THỜI TRANG THU ĐÔNG' : 'AUTUMN ATELIER',
+      title: lang === 'vi' ? 'Áo Măng Tô Dạ & Len Cashmere' : 'Minimalist Trench Coat & Cashmere',
+      subtitle: lang === 'vi'
+        ? 'Phom dáng tối giản kinh điển may từ sợi len cao cấp siêu mềm, mang lại cảm giác ấm áp tinh tế.'
+        : 'Timeless silhouettes tailored from ultra-soft natural fibers for sophisticated comfort.',
+      image: '/images/hero-outerwear-ai.jpg',
+      ctaPrimary: { text: lang === 'vi' ? 'Xem Áo Khoác Nữ' : 'Shop Outerwear', gender: 'WOMEN' },
+      ctaSecondary: { text: lang === 'vi' ? 'BST Mùa Lạnh' : 'Explore Cashmere', collection: 'LifeWear' },
+    },
+    {
+      id: 'smart-menswear',
+      badge: lang === 'vi' ? 'CÔNG SỞ HIỆN ĐẠI' : 'MODERN TAILORING',
+      title: lang === 'vi' ? 'Áo Blazer Thoáng Nhẹ & Áo Phông AIRism' : 'Smart Comfort Blazer & AIRism Tee',
+      subtitle: lang === 'vi'
+        ? 'Kỹ thuật may đo Nhật Bản hiện đại, co giãn nhẹ và thoáng khí suốt cả ngày làm việc.'
+        : 'Contemporary Japanese tailoring engineered for lightweight all-day breathability.',
+      image: '/images/hero-menswear-ai.jpg',
+      ctaPrimary: { text: t('shop_men'), gender: 'MEN' },
+      ctaSecondary: { text: lang === 'vi' ? 'Xem Lookbook' : 'View Lookbook', action: 'lookbook' },
     }
   ];
 
+  // Auto-advance slides every 5.5 seconds seamlessly
   useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 7000);
-    return () => clearInterval(interval);
-  }, [isPlaying, slides.length]);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, [slides.length]);
 
   const slide = slides[currentSlide];
 
@@ -47,14 +68,14 @@ export const HeroVideoBanner = ({ onNavigate }) => {
       style={{
         position: 'relative',
         width: '100%',
-        height: 'clamp(460px, 68vh, 680px)',
+        height: 'clamp(480px, 70vh, 700px)',
         backgroundColor: '#111',
         overflow: 'hidden',
         color: '#fff',
         userSelect: 'none'
       }}
     >
-      {/* Background Image / Video Stage with Ken Burns Zoom Effect */}
+      {/* Background Image Stage with Smooth Crossfade and Subtle Zoom */}
       {slides.map((s, idx) => (
         <div
           key={s.id}
@@ -62,7 +83,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
             position: 'absolute',
             inset: 0,
             opacity: idx === currentSlide ? 1 : 0,
-            transition: 'opacity 1s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
             zIndex: idx === currentSlide ? 1 : 0,
             overflow: 'hidden'
           }}
@@ -74,9 +95,9 @@ export const HeroVideoBanner = ({ onNavigate }) => {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              objectPosition: 'center 20%',
-              transform: isPlaying && idx === currentSlide ? 'scale(1.05)' : 'scale(1)',
-              transition: 'transform 8s ease-out'
+              objectPosition: 'center 25%',
+              transform: idx === currentSlide ? 'scale(1.04)' : 'scale(1)',
+              transition: 'transform 6s ease-out'
             }}
           />
           {/* Subtle cinematic gradient overlays for pristine readability */}
@@ -84,7 +105,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.1) 100%)',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.08) 100%)',
               pointerEvents: 'none'
             }}
           />
@@ -92,7 +113,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)',
+              background: 'linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)',
               pointerEvents: 'none'
             }}
           />
@@ -108,13 +129,14 @@ export const HeroVideoBanner = ({ onNavigate }) => {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          paddingBottom: 'clamp(28px, 6vh, 48px)',
+          paddingBottom: 'clamp(32px, 6vh, 52px)',
           zIndex: 10
         }}
       >
         <div
+          key={slide.id}
           style={{
-            maxWidth: '680px',
+            maxWidth: '700px',
             animation: 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         >
@@ -154,7 +176,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
             className="heading-editorial"
             style={{
               color: '#ffffff',
-              fontSize: 'clamp(2rem, 4.5vw, 3.4rem)',
+              fontSize: 'clamp(2.1rem, 4.5vw, 3.5rem)',
               lineHeight: 1.15,
               fontWeight: '800',
               letterSpacing: '-0.02em',
@@ -172,7 +194,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
               color: '#f0ece3',
               lineHeight: 1.55,
               marginBottom: '22px',
-              maxWidth: '560px',
+              maxWidth: '580px',
               textShadow: '0 1px 8px rgba(0,0,0,0.6)'
             }}
           >
@@ -182,7 +204,10 @@ export const HeroVideoBanner = ({ onNavigate }) => {
           {/* Action CTAs */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
             <button
-              onClick={() => onNavigate('products', { gender: slide.ctaPrimary.gender, collection: slide.ctaPrimary.collection })}
+              onClick={() => {
+                if (slide.ctaPrimary.action) onNavigate(slide.ctaPrimary.action);
+                else onNavigate('products', { gender: slide.ctaPrimary.gender, collection: slide.ctaPrimary.collection });
+              }}
               className="btn-uq btn-uq-red"
               style={{
                 padding: '12px 26px',
@@ -197,7 +222,10 @@ export const HeroVideoBanner = ({ onNavigate }) => {
             </button>
 
             <button
-              onClick={() => onNavigate('products', { gender: slide.ctaSecondary.gender, collection: slide.ctaSecondary.collection })}
+              onClick={() => {
+                if (slide.ctaSecondary.action) onNavigate(slide.ctaSecondary.action);
+                else onNavigate('products', { gender: slide.ctaSecondary.gender, collection: slide.ctaSecondary.collection });
+              }}
               style={{
                 padding: '12px 24px',
                 fontSize: '0.9rem',
@@ -225,7 +253,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Bottom-Right Media Controls (Play / Pause Indicator matching Uniqlo US) */}
+      {/* Bottom-Right Discrete Slide Progress Indicator */}
       <div
         style={{
           position: 'absolute',
@@ -233,59 +261,26 @@ export const HeroVideoBanner = ({ onNavigate }) => {
           right: '24px',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          gap: '8px',
           zIndex: 20
         }}
       >
-        {/* Slide Pagination Dots */}
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentSlide(i)}
-              style={{
-                width: i === currentSlide ? '24px' : '8px',
-                height: '8px',
-                borderRadius: '4px',
-                backgroundColor: i === currentSlide ? '#e60012' : 'rgba(255,255,255,0.45)',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              title={`Slide ${i + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Play/Pause Control Circle (matching || icon from screenshot) */}
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          aria-label={isPlaying ? 'Pause banner animation' : 'Play banner animation'}
-          style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(0, 0, 0, 0.55)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.4)',
-            color: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(230, 0, 18, 0.85)';
-            e.currentTarget.style.borderColor = '#e60012';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.55)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-          }}
-        >
-          {isPlaying ? <Pause size={15} /> : <Play size={15} style={{ marginLeft: '2px' }} />}
-        </button>
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentSlide(i)}
+            style={{
+              width: i === currentSlide ? '28px' : '8px',
+              height: '6px',
+              borderRadius: '3px',
+              backgroundColor: i === currentSlide ? '#e60012' : 'rgba(255,255,255,0.4)',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            title={`Slide ${i + 1}`}
+          />
+        ))}
       </div>
     </section>
   );

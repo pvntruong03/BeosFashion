@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles, Flame, Tag, ShieldCheck, ChevronRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
+import { HeroVideoBanner } from '../components/HeroVideoBanner';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 
@@ -55,81 +56,8 @@ export const HomePage = ({ onNavigate }) => {
 
   return (
     <div>
-      {/* 1. LUXURY HAUTE EDITORIAL HERO BANNER */}
-      <section style={{ position: 'relative', backgroundColor: '#0c0c0c', color: '#fff', overflow: 'hidden' }}>
-        <div style={{
-          position: 'relative',
-          minHeight: '440px',
-          display: 'flex',
-          alignItems: 'center',
-          backgroundImage: 'linear-gradient(to right, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.6) 50%, rgba(10,10,10,0.2) 100%), url(https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1800&q=85)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 25%'
-        }}>
-          <div className="container" style={{ padding: '48px 16px', maxWidth: '1400px' }}>
-            <div style={{ maxWidth: '680px' }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: '#e60012',
-                color: '#fff',
-                padding: '5px 12px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.72rem',
-                fontWeight: '700',
-                letterSpacing: '1.5px',
-                textTransform: 'uppercase',
-                marginBottom: '16px',
-                boxShadow: '0 4px 14px rgba(230,0,18,0.3)'
-              }}>
-                <Sparkles size={13} />
-                <span>SS26 HAUTE LIFEWEAR ATELIER</span>
-              </div>
-
-              <h1 className="heading-editorial" style={{ color: '#ffffff', fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', lineHeight: 1.12, marginBottom: '16px', fontWeight: '800' }}>
-                AIRism &amp; LifeWear <span className="editorial-italic" style={{ color: '#f5efe6', fontWeight: '400' }}>Essence</span>
-              </h1>
-
-              <p className="desktop-only" style={{ fontSize: '1.05rem', color: '#e6e1d5', lineHeight: 1.6, marginBottom: '28px', maxWidth: '560px' }}>
-                {lang === 'vi'
-                  ? 'Trải nghiệm sự thoáng mát tức thì với sợi vải thông minh công nghệ cao. Thiết kế tối giản, tinh tế cho phong cách hàng ngày.'
-                  : 'Experience instant cooling comfort with Japanese high-tech smart fabrics. Minimalist silhouettes refined for modern elegance.'}
-              </p>
-
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
-                <button
-                  onClick={() => onNavigate('products', { gender: 'MEN' })}
-                  className="btn-uq btn-uq-red"
-                  style={{ padding: '12px 26px', fontSize: '0.9rem', letterSpacing: '0.5px' }}
-                >
-                  <span>{t('shop_men')}</span>
-                  <ArrowRight size={16} />
-                </button>
-
-                <button
-                  onClick={() => onNavigate('products', { gender: 'WOMEN' })}
-                  style={{
-                    padding: '12px 26px',
-                    fontSize: '0.9rem',
-                    letterSpacing: '0.5px',
-                    backgroundColor: 'rgba(255,255,255,0.12)',
-                    backdropFilter: 'blur(10px)',
-                    color: '#ffffff',
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    fontWeight: '700',
-                    transition: 'var(--transition)'
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.12)')}
-                >
-                  <span>{t('shop_women')}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 1. UNIQLO US HAUTE EDITORIAL HERO VIDEO / LOOKBOOK BANNER */}
+      <HeroVideoBanner onNavigate={onNavigate} />
 
       {/* 2. CATEGORY TILES (MEN / WOMEN / KIDS / LIFEWEAR) */}
       <section style={{ padding: '36px 0', backgroundColor: '#faf9f5' }}>

@@ -1,0 +1,32 @@
+services:
+  # 1. Spring Boot Backend Web Service (Java 17 + Maven Docker)
+  - type: web
+    name: beo-fashion-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+  # 2. React Vite Frontend Static Site
+  - type: web
+    name: beo-fashion-storefront
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: beo-fashion-backend
+          property: host

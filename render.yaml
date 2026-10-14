@@ -18,7 +18,7 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: CORS_ALLOWED_ORIGINS
-        sync: false
+        value: https://beo-fashion-storefront.onrender.com
 
   # React Vite frontend static site.
   - type: web
@@ -33,4 +33,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://beo-fashion-backend.onrender.com

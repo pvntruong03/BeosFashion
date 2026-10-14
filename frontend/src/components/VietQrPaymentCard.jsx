@@ -6,9 +6,9 @@ import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
 
 const DEFAULT_BANK_CONFIG = {
-  bankId: 'mbbank',
-  bankName: 'MB Bank (Ngân hàng TMCP Quân Đội)',
-  accountNo: '190019199999',
+  bankId: 'bidv',
+  bankName: 'BIDV (Ngân hàng TMCP Đầu tư và Phát triển Việt Nam)',
+  accountNo: '8900556127',
   accountName: 'PHAM VO NHUT TRUONG',
   template: 'compact2'
 };

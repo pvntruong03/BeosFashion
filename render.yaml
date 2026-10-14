@@ -1,3 +1,6 @@
+envVarGroups:
+  - name: beo-fashion-secrets
+
 services:
   # Spring Boot backend. H2 is acceptable for this coursework demo only.
   - type: web
@@ -9,18 +12,11 @@ services:
     region: singapore
     healthCheckPath: /v3/api-docs
     envVars:
+      - fromGroup: beo-fashion-secrets
       - key: PORT
         value: 8080
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: SEPAY_WEBHOOK_API_KEY
-        sync: false
-      - key: MAIL_USERNAME
-        sync: false
-      - key: MAIL_PASSWORD
-        sync: false
-      - key: MAIL_FROM
-        sync: false
       - key: CORS_ALLOWED_ORIGINS
         sync: false
 

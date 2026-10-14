@@ -5,9 +5,11 @@ import com.beofashion.entity.OrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.core.task.TaskExecutor;
 
 import java.math.RoundingMode;
 
@@ -17,6 +19,8 @@ import java.math.RoundingMode;
 public class OrderPaymentEmailService {
 
     private final JavaMailSender mailSender;
+    @Qualifier("applicationTaskExecutor")
+    private final TaskExecutor taskExecutor;
 
     @Value("${spring.mail.username:}")
     private String mailUsername;
@@ -41,16 +45,24 @@ public class OrderPaymentEmailService {
             return;
         }
 
-        try {
+        final String emailRecipient = recipient;
+        final String sender = mailFrom == null || mailFrom.isBlank() ? mailUsername : mailFrom;
+        final String subject = "[BEO] Xác nhận thanh toán đơn " + order.getOrderNumber();
+        final String body = buildInvoiceText(order);
+        final String orderNumber = order.getOrderNumber();
+
+        taskExecutor.execute(() -> {
+            try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(recipient);
-            message.setFrom(mailFrom == null || mailFrom.isBlank() ? mailUsername : mailFrom);
-            message.setSubject("[BEO] Xác nhận thanh toán đơn " + order.getOrderNumber());
-            message.setText(buildInvoiceText(order));
+            message.setTo(emailRecipient);
+            message.setFrom(sender);
+            message.setSubject(subject);
+            message.setText(body);
             mailSender.send(message);
-        } catch (RuntimeException exception) {
-            log.error("Could not send paid-order email for {}", order.getOrderNumber(), exception);
-        }
+            } catch (RuntimeException exception) {
+                log.error("Could not send paid-order email for {}", orderNumber, exception);
+            }
+        });
     }
 
     private String buildInvoiceText(Order order) {

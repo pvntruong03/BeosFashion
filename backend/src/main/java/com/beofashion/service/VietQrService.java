@@ -21,7 +21,7 @@ public class VietQrService {
 
     private static final String DEFAULT_BANK_ID = "bidv";
     private static final String DEFAULT_BANK_NAME = "BIDV (Ngân hàng TMCP Đầu tư và Phát triển Việt Nam)";
-    private static final String DEFAULT_ACCOUNT_NO = "8900556127";
+    private static final String DEFAULT_ACCOUNT_NO = "96247BEOFASHION";
     private static final String DEFAULT_ACCOUNT_NAME = "PHAM VO NHUT TRUONG";
     private static final String DEFAULT_TEMPLATE = "compact2";
 

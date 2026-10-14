@@ -8,7 +8,7 @@ import api from '../services/api';
 const DEFAULT_BANK_CONFIG = {
   bankId: 'bidv',
   bankName: 'BIDV (Ngân hàng TMCP Đầu tư và Phát triển Việt Nam)',
-  accountNo: '8900556127',
+  accountNo: '96247BEOFASHION',
   accountName: 'PHAM VO NHUT TRUONG',
   template: 'compact2'
 };

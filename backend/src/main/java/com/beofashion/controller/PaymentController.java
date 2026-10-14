@@ -1,7 +1,6 @@
 package com.beofashion.controller;
 
 import com.beofashion.dto.ApiResponse;
-import com.beofashion.dto.OrderDto;
 import com.beofashion.entity.Order;
 import com.beofashion.entity.OrderStatus;
 import com.beofashion.entity.Payment;
@@ -10,7 +9,7 @@ import com.beofashion.entity.PaymentStatus;
 import com.beofashion.exception.ResourceNotFoundException;
 import com.beofashion.repository.OrderRepository;
 import com.beofashion.repository.PaymentRepository;
-import com.beofashion.service.OrderService;
+import com.beofashion.service.OrderPaymentEmailService;
 import com.beofashion.service.VietQrService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,11 +20,19 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.security.MessageDigest;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -35,8 +42,13 @@ public class PaymentController {
 
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
-    private final OrderService orderService;
     private final VietQrService vietQrService;
+    private final OrderPaymentEmailService orderPaymentEmailService;
+
+    @Value("${app.payment.sepay.webhook-api-key:}")
+    private String sePayWebhookApiKey;
+
+    private static final Pattern ORDER_NUMBER_PATTERN = Pattern.compile("\\b(BEO-[A-Z0-9]+-[A-Z0-9]+)\\b");
 
     @GetMapping("/vietqr/{orderNumber}/status")
     @Operation(summary = "Check payment status for an order (used by frontend polling)")
@@ -58,12 +70,34 @@ public class PaymentController {
                 .build());
     }
 
-    @PostMapping("/vietqr/confirm-transfer")
+    @PostMapping("/sepay/webhook")
     @Transactional
-    @Operation(summary = "Confirm a VietQR/bank transfer payment after customer has transferred")
-    public ResponseEntity<ApiResponse<OrderDto>> confirmBankTransfer(@RequestBody ConfirmTransferRequest request) {
-        Order order = orderRepository.findByOrderNumber(request.getOrderNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + request.getOrderNumber()));
+    @Operation(summary = "Receive a verified SePay incoming-transfer webhook")
+    public ResponseEntity<Map<String, Boolean>> handleSePayWebhook(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody SePayWebhookRequest request) {
+        verifySePayAuthorization(authorization);
+
+        if (request.getId() == null || request.getTransferAmount() == null || request.getTransferAmount().signum() <= 0) {
+            throw new IllegalArgumentException("SePay webhook is missing a valid transaction id or amount");
+        }
+        if (!"in".equalsIgnoreCase(request.getTransferType())) {
+            throw new IllegalArgumentException("Only incoming SePay transfers can settle an order");
+        }
+
+        String transactionId = "SEPAY-" + request.getId();
+        Optional<Payment> existingPayment = paymentRepository.findByTransactionId(transactionId);
+        if (existingPayment.isPresent()) {
+            return ResponseEntity.ok(Map.of("success", true));
+        }
+
+        String orderNumber = extractOrderNumber(request.getCode(), request.getContent());
+        if (orderNumber == null) {
+            throw new IllegalArgumentException("SePay transfer does not contain a BEO order number");
+        }
+
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderNumber));
 
         Payment payment = order.getPayment();
         if (payment == null || (payment.getPaymentMethod() != PaymentMethod.BANK_TRANSFER
@@ -71,16 +105,14 @@ public class PaymentController {
             throw new IllegalArgumentException("Transfer confirmation is only available for VietQR or bank transfer orders");
         }
 
-        if (request.getAmount() != null && request.getAmount().compareTo(order.getFinalAmount()) != 0) {
-            throw new IllegalArgumentException("Payment amount must match the order total");
+        if (request.getTransferAmount().compareTo(order.getFinalAmount()) != 0) {
+            throw new IllegalArgumentException("SePay payment amount must match the order total");
         }
 
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         payment.setPaymentTime(LocalDateTime.now());
-        payment.setTransactionId(request.getTransactionRef() == null || request.getTransactionRef().isBlank()
-                ? "VQR-" + System.currentTimeMillis()
-                : request.getTransactionRef());
-        payment.setPaymentDetails("Customer confirmed VietQR/bank transfer for order " + order.getOrderNumber());
+        payment.setTransactionId(transactionId);
+        payment.setPaymentDetails("SePay transaction " + request.getReferenceCode() + " confirmed for order " + order.getOrderNumber());
 
         paymentRepository.save(payment);
         order.setPayment(payment);
@@ -89,11 +121,25 @@ public class PaymentController {
         }
         order = orderRepository.save(order);
 
-        return ResponseEntity.ok(ApiResponse.<OrderDto>builder()
-                .success(true)
-                .message("Bank transfer payment confirmed")
-                .data(orderService.mapToDto(order))
-                .build());
+        orderPaymentEmailService.sendPaidOrderEmail(order);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    private void verifySePayAuthorization(String authorization) {
+        if (sePayWebhookApiKey == null || sePayWebhookApiKey.isBlank()) {
+            throw new IllegalStateException("SePay webhook is not configured");
+        }
+        String expected = "Apikey " + sePayWebhookApiKey;
+        if (authorization == null || !MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8), authorization.getBytes(StandardCharsets.UTF_8))) {
+            throw new AccessDeniedException("Invalid SePay webhook authorization");
+        }
+    }
+
+    private String extractOrderNumber(String code, String content) {
+        String source = String.join(" ", code == null ? "" : code, content == null ? "" : content).toUpperCase();
+        Matcher matcher = ORDER_NUMBER_PATTERN.matcher(source);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     @GetMapping("/vietqr/config")
@@ -131,9 +177,12 @@ public class PaymentController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ConfirmTransferRequest {
-        private String orderNumber;
-        private String transactionRef;
-        private BigDecimal amount;
+    public static class SePayWebhookRequest {
+        private Long id;
+        private String code;
+        private String content;
+        private String transferType;
+        private BigDecimal transferAmount;
+        private String referenceCode;
     }
 }

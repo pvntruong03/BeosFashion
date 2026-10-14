@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, RefreshCw, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Copy, Check, RefreshCw, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
@@ -9,18 +9,17 @@ const DEFAULT_BANK_CONFIG = {
   bankId: 'mbbank',
   bankName: 'MB Bank (Ngân hàng TMCP Quân Đội)',
   accountNo: '190019199999',
-  accountName: 'BEO FASHION VIETNAM',
+  accountName: 'PHAM VO NHUT TRUONG',
   template: 'compact2'
 };
 
 export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
   const { formatPrice, lang } = useLanguage();
-  const { showSuccess, showError } = useToast();
+  const { showSuccess } = useToast();
 
   const [copiedField, setCopiedField] = useState(null);
   const [, setIsPolling] = useState(true);
   const [isPaid, setIsPaid] = useState(order?.payment?.paymentStatus === 'SUCCESS');
-  const [isConfirming, setIsConfirming] = useState(false);
   const [bankConfig, setBankConfig] = useState(DEFAULT_BANK_CONFIG);
 
   const transferContent = `Thanh toan don hang ${order?.orderNumber}`;
@@ -75,28 +74,6 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
 
     return () => clearInterval(interval);
   }, [isPaid, order?.orderNumber, onPaymentConfirmed, showSuccess, lang]);
-
-  const handleConfirmPayment = async () => {
-    setIsConfirming(true);
-    try {
-      const res = await api.post('/payments/vietqr/confirm-transfer', {
-        orderNumber: order.orderNumber,
-        amount: order.finalAmount,
-        transactionRef: 'SEPAY-' + Math.floor(100000 + Math.random() * 900000)
-      });
-      setIsPaid(true);
-      setIsPolling(false);
-      try {
-        confetti({ particleCount: 90, spread: 70, origin: { y: 0.5 } });
-      } catch {}
-      showSuccess(lang === 'vi' ? 'Thanh toán đã được xác nhận! Đơn hàng đang được xử lý.' : 'Payment confirmed! Your order is being processed.');
-      if (onPaymentConfirmed) onPaymentConfirmed(res.data?.data);
-    } catch (err) {
-      showError(err.message || (lang === 'vi' ? 'Lỗi khi kiểm tra giao dịch' : 'Failed to verify transaction'));
-    } finally {
-      setIsConfirming(false);
-    }
-  };
 
   return (
     <div style={{
@@ -308,41 +285,10 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
             </div>
 
             <div style={{ marginTop: '8px' }}>
-              <button
-                type="button"
-                onClick={handleConfirmPayment}
-                disabled={isConfirming}
-                className="btn-beo btn-beo-primary"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontSize: '0.88rem',
-                  fontWeight: '800',
-                  letterSpacing: '0.5px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  borderRadius: '2px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
-                }}
-              >
-                {isConfirming ? (
-                  <>
-                    <RefreshCw size={16} className="spin" style={{ animation: 'spin 1.5s linear infinite' }} />
-                    <span>{lang === 'vi' ? 'Đang xác nhận giao dịch...' : 'Confirming transaction...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={18} color="#ffffff" />
-                    <span>{lang === 'vi' ? 'XÁC NHẬN ĐÃ CHUYỂN KHOẢN' : 'I HAVE COMPLETED THE TRANSFER'}</span>
-                  </>
-                )}
-              </button>
               <div style={{ fontSize: '0.73rem', color: '#666', textAlign: 'center', marginTop: '6px', lineHeight: 1.4 }}>
                 {lang === 'vi'
-                  ? 'Hãy kiểm tra đúng số tiền và nội dung chuyển khoản trước khi xác nhận.'
-                  : 'Verify the amount and payment reference before confirming.'}
+                  ? 'Sau khi ngân hàng ghi nhận giao dịch, trạng thái thanh toán sẽ tự động cập nhật.'
+                  : 'Payment status updates automatically after the bank records your transfer.'}
               </div>
             </div>
           </div>

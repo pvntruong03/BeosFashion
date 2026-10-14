@@ -22,7 +22,7 @@ public class VietQrService {
     private static final String DEFAULT_BANK_ID = "mbbank";
     private static final String DEFAULT_BANK_NAME = "MB Bank (Ngân hàng TMCP Quân Đội)";
     private static final String DEFAULT_ACCOUNT_NO = "190019199999";
-    private static final String DEFAULT_ACCOUNT_NAME = "BEO FASHION VIETNAM";
+    private static final String DEFAULT_ACCOUNT_NAME = "PHAM VO NHUT TRUONG";
     private static final String DEFAULT_TEMPLATE = "compact2";
 
     private final VietQrBankConfigRepository configRepository;

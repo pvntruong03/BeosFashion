@@ -66,7 +66,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/cart/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Guest & customer checkout
                         .requestMatchers(HttpMethod.GET, "/api/orders/track/**").permitAll()
-                        .requestMatchers("/api/payments/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/sepay/webhook").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/vietqr/**").permitAll()
 
                         // Staff Portal APIs (Role check)
                         .requestMatchers("/api/staff/**").hasAnyAuthority("ROLE_STAFF_MANAGER", "ROLE_ADMIN")

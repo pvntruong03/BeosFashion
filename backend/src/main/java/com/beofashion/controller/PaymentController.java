@@ -49,6 +49,9 @@ public class PaymentController {
     private String sePayWebhookApiKey;
 
     private static final Pattern ORDER_NUMBER_PATTERN = Pattern.compile("\\b(BEO-[A-Z0-9]+-[A-Z0-9]+)\\b");
+    // BIDV/SePay transfer descriptions can remove punctuation, for example
+    // BEO-261014-EE67F arrives as BEO261014EE67F.
+    private static final Pattern COMPACT_ORDER_NUMBER_PATTERN = Pattern.compile("\\bBEO(\\d{6})([A-Z0-9]{5})\\b");
 
     @GetMapping("/vietqr/{orderNumber}/status")
     @Operation(summary = "Check payment status for an order (used by frontend polling)")
@@ -139,7 +142,14 @@ public class PaymentController {
     private String extractOrderNumber(String code, String content) {
         String source = String.join(" ", code == null ? "" : code, content == null ? "" : content).toUpperCase();
         Matcher matcher = ORDER_NUMBER_PATTERN.matcher(source);
-        return matcher.find() ? matcher.group(1) : null;
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        Matcher compactMatcher = COMPACT_ORDER_NUMBER_PATTERN.matcher(source);
+        return compactMatcher.find()
+                ? "BEO-" + compactMatcher.group(1) + "-" + compactMatcher.group(2)
+                : null;
     }
 
     @GetMapping("/vietqr/config")

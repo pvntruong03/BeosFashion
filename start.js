@@ -7,8 +7,8 @@ console.log('\x1b[36m%s\x1b[0m', '==============================================
 console.log('\x1b[32m%s\x1b[0m', ' ✨ BEO MODERN FASHION - ONE-CLICK FULLSTACK LAUNCHER ✨');
 console.log('\x1b[36m%s\x1b[0m', '=============================================================');
 console.log(' 🌐 Storefront:       \x1b[33mhttp://localhost:5173\x1b[0m');
-console.log(' 🛡️  Admin CMS:        \x1b[33mhttp://localhost:5173/#/admin\x1b[0m (admin@uniqlo.com / admin123)');
-console.log(' 🏪 Store Manager POS:\x1b[33mhttp://localhost:5173/#/staff\x1b[0m (manager.cantho@uniqlo.com / staff123)');
+console.log(' 🛡️  BEO Admin CMS:    \x1b[33mhttp://localhost:5173/#/admin\x1b[0m');
+console.log(' 🏪 BEO Store POS:     \x1b[33mhttp://localhost:5173/#/staff\x1b[0m');
 console.log(' 🔌 Backend API:      \x1b[33mhttp://localhost:8080\x1b[0m (Swagger: /swagger-ui.html)');
 console.log('\x1b[36m%s\x1b[0m', '=============================================================\n');
 

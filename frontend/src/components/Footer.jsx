@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
-import { Mail, Check, MapPin, Phone, ShieldCheck, RefreshCw, Truck } from 'lucide-react';
+import { Mail, Check, MapPin, ShieldCheck, RefreshCw, Truck } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
+import api from '../services/api';
 
 export const Footer = ({ onNavigate }) => {
   const { t, lang } = useLanguage();
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     if (email && email.includes('@')) {
-      setSubscribed(true);
-      showSuccess(lang === 'vi' ? 'Cảm ơn bạn! Mã giảm giá 10% của bạn là: BEO10' : 'Thank you! Your 10% discount promo code is: BEO10');
-      setEmail('');
+      setSubmitting(true);
+      try {
+        const response = await api.post('/newsletter/subscribe', { email, source: 'website-footer' });
+        setCouponCode(response.data?.couponCode || 'BEO10');
+        setSubscribed(true);
+        showSuccess(lang === 'vi' ? 'Đăng ký bản tin thành công.' : 'Newsletter subscription confirmed.');
+        setEmail('');
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -52,8 +64,8 @@ export const Footer = ({ onNavigate }) => {
               <ShieldCheck size={20} color="#e60012" />
             </div>
             <div>
-              <div style={{ fontWeight: '700', fontSize: '0.88rem' }}>{lang === 'vi' ? 'Chuẩn Nhật Bản' : 'Japanese Quality'}</div>
-              <div style={{ fontSize: '0.75rem', color: '#666' }}>{lang === 'vi' ? 'Công nghệ AIRism & HEATTECH' : 'AIRism & HEATTECH'}</div>
+              <div style={{ fontWeight: '700', fontSize: '0.88rem' }}>{lang === 'vi' ? 'Chuẩn chất lượng BEO' : 'BEO Quality'}</div>
+              <div style={{ fontSize: '0.75rem', color: '#666' }}>{lang === 'vi' ? 'Công nghệ BEO AirFlow & BEO HeatCore' : 'BEO AirFlow & BEO HeatCore'}</div>
             </div>
           </div>
 
@@ -86,7 +98,7 @@ export const Footer = ({ onNavigate }) => {
               </div>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#666', lineHeight: 1.6, marginBottom: '16px' }}>
-              {t('lifewear_story_desc')}
+              {t('beo_story_desc')}
             </p>
             <div style={{ fontSize: '0.85rem', color: '#333', fontWeight: '600' }}>
               Hotline: 1900019199999 (08:00 - 22:00)
@@ -101,10 +113,10 @@ export const Footer = ({ onNavigate }) => {
             <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: '#555', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <li><button onClick={() => onNavigate('products', { gender: 'MEN' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Trang phục Nam' : 'Men Fashion'}</button></li>
               <li><button onClick={() => onNavigate('products', { gender: 'WOMEN' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Trang phục Nữ' : 'Women Fashion'}</button></li>
-              <li><button onClick={() => onNavigate('products', { collection: 'LifeWear' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Bộ sưu tập LifeWear' : 'LifeWear Collection'}</button></li>
-              <li><button onClick={() => onNavigate('products', { collection: 'AIRism' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Dòng sản phẩm AIRism' : 'AIRism Series'}</button></li>
-              <li><button onClick={() => onNavigate('products', { collection: 'HEATTECH' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Dòng sản phẩm HEATTECH' : 'HEATTECH Series'}</button></li>
-              <li><button onClick={() => onNavigate('lookbook')} style={{ color: '#555' }}>{lang === 'vi' ? 'LifeWear Lookbook' : 'Lookbook Styling'}</button></li>
+              <li><button onClick={() => onNavigate('products', { collection: 'BEO Essentials' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Bộ sưu tập BEO Essentials' : 'BEO Essentials'}</button></li>
+              <li><button onClick={() => onNavigate('products', { collection: 'BEO AirFlow' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Dòng sản phẩm BEO AirFlow' : 'BEO AirFlow Series'}</button></li>
+              <li><button onClick={() => onNavigate('products', { collection: 'BEO HeatCore' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Dòng sản phẩm BEO HeatCore' : 'BEO HeatCore Series'}</button></li>
+              <li><button onClick={() => onNavigate('lookbook')} style={{ color: '#555' }}>{lang === 'vi' ? 'BEO Essentials Lookbook' : 'Lookbook Styling'}</button></li>
             </ul>
           </div>
 
@@ -116,9 +128,9 @@ export const Footer = ({ onNavigate }) => {
             <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: '#555', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <li><button onClick={() => onNavigate('stores')} style={{ color: '#555' }}>{lang === 'vi' ? 'Showroom BEO (Cần Thơ)' : 'Flagship Store (Can Tho)'}</button></li>
               <li><button onClick={() => onNavigate('orders')} style={{ color: '#555' }}>{lang === 'vi' ? 'Theo dõi đơn hàng' : 'Track Your Order'}</button></li>
-              <li><a href="#" style={{ color: '#555' }}>{lang === 'vi' ? 'Chính sách đổi trả & bảo hành' : 'Returns & Warranty Policy'}</a></li>
-              <li><a href="#" style={{ color: '#555' }}>{lang === 'vi' ? 'Bảng kích cỡ (Size Guide)' : 'Size Guide & Conversion'}</a></li>
-              <li><a href="#" style={{ color: '#555' }}>{lang === 'vi' ? 'Chính sách quyền riêng tư' : 'Privacy & Security Policy'}</a></li>
+              <li><button onClick={() => onNavigate('help', { section: 'returns' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Chính sách đổi trả & bảo hành' : 'Returns & Warranty Policy'}</button></li>
+              <li><button onClick={() => onNavigate('help', { section: 'size-guide' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Bảng kích cỡ (Size Guide)' : 'Size Guide & Conversion'}</button></li>
+              <li><button onClick={() => onNavigate('help', { section: 'privacy' })} style={{ color: '#555' }}>{lang === 'vi' ? 'Chính sách quyền riêng tư' : 'Privacy & Security Policy'}</button></li>
             </ul>
           </div>
 
@@ -136,7 +148,7 @@ export const Footer = ({ onNavigate }) => {
             {subscribed ? (
               <div style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', padding: '12px', borderRadius: '2px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Check size={18} />
-                <span>{lang === 'vi' ? 'Mã giảm giá:' : 'Promo code:'} <strong>BEO10</strong></span>
+                <span>{lang === 'vi' ? 'Mã giảm giá:' : 'Promo code:'} <strong>{couponCode}</strong></span>
               </div>
             ) : (
               <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -158,10 +170,11 @@ export const Footer = ({ onNavigate }) => {
                   />
                   <button
                     type="submit"
-                    className="btn-uq btn-uq-red"
+                    disabled={submitting}
+                    className="btn-beo btn-beo-red"
                     style={{ padding: '10px 16px', fontSize: '0.85rem', borderRadius: 0 }}
                   >
-                    <Mail size={16} />
+                    {submitting ? '…' : <Mail size={16} />}
                   </button>
                 </div>
               </form>

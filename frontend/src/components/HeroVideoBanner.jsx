@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export const HeroVideoBanner = ({ onNavigate }) => {
@@ -19,14 +19,14 @@ export const HeroVideoBanner = ({ onNavigate }) => {
       ctaSecondary: { text: t('shop_men'), gender: 'MEN' },
     },
     {
-      id: 'airism-linen',
-      badge: lang === 'vi' ? 'BỘ SƯU TẬP SS26' : 'SS26 LIFEWEAR ATELIER',
-      title: lang === 'vi' ? 'Sơ Mi Đũi Cao Cấp & AIRism' : 'Premium Linen & AIRism Essentials',
+      id: 'beo-airflow-linen',
+      badge: lang === 'vi' ? 'BỘ SƯU TẬP SS26' : 'SS26 BEO ESSENTIALS ATELIER',
+      title: lang === 'vi' ? 'Sơ Mi Đũi Cao Cấp & BEO AirFlow' : 'Premium Linen & BEO AirFlow Essentials',
       subtitle: lang === 'vi'
-        ? 'Chất liệu lanh tự nhiên kết hợp sợi làm mát thông minh Nhật Bản. Thoáng nhẹ cho ngày hè.'
-        : 'Natural European flax blended with Japanese cooling technology for effortless daily comfort.',
-      image: '/images/hero-airism-ai.jpg',
-      ctaPrimary: { text: lang === 'vi' ? 'Khám Phá BST' : 'Explore Collection', collection: 'AIRism' },
+        ? 'Chất liệu lanh tự nhiên kết hợp công nghệ sợi làm mát BEO AirFlow. Thoáng nhẹ cho ngày hè.'
+        : 'Natural European flax blended with BEO AirFlow cooling technology for effortless daily comfort.',
+      image: '/images/hero-beo-airflow-ai.jpg',
+      ctaPrimary: { text: lang === 'vi' ? 'Khám Phá BST' : 'Explore Collection', collection: 'BEO AirFlow' },
       ctaSecondary: { text: lang === 'vi' ? 'Xem Đồ Nam' : 'Shop Men', gender: 'MEN' },
     },
     {
@@ -38,15 +38,15 @@ export const HeroVideoBanner = ({ onNavigate }) => {
         : 'Timeless silhouettes tailored from ultra-soft natural fibers for sophisticated comfort.',
       image: '/images/hero-outerwear-ai.jpg',
       ctaPrimary: { text: lang === 'vi' ? 'Xem Áo Khoác Nữ' : 'Shop Outerwear', gender: 'WOMEN' },
-      ctaSecondary: { text: lang === 'vi' ? 'BST Mùa Lạnh' : 'Explore Cashmere', collection: 'LifeWear' },
+      ctaSecondary: { text: lang === 'vi' ? 'BST Mùa Lạnh' : 'Explore Cashmere', collection: 'BEO Essentials' },
     },
     {
       id: 'smart-menswear',
       badge: lang === 'vi' ? 'CÔNG SỞ HIỆN ĐẠI' : 'MODERN TAILORING',
-      title: lang === 'vi' ? 'Áo Blazer Thoáng Nhẹ & Áo Phông AIRism' : 'Smart Comfort Blazer & AIRism Tee',
+      title: lang === 'vi' ? 'Áo Blazer Thoáng Nhẹ & Áo Phông BEO AirFlow' : 'Smart Comfort Blazer & BEO AirFlow Tee',
       subtitle: lang === 'vi'
-        ? 'Kỹ thuật may đo Nhật Bản hiện đại, co giãn nhẹ và thoáng khí suốt cả ngày làm việc.'
-        : 'Contemporary Japanese tailoring engineered for lightweight all-day breathability.',
+        ? 'Kỹ thuật may đo hiện đại của BEO, co giãn nhẹ và thoáng khí suốt cả ngày làm việc.'
+        : 'Contemporary BEO tailoring engineered for lightweight all-day breathability.',
       image: '/images/hero-menswear-ai.jpg',
       ctaPrimary: { text: t('shop_men'), gender: 'MEN' },
       ctaSecondary: { text: lang === 'vi' ? 'Xem Lookbook' : 'View Lookbook', action: 'lookbook' },
@@ -120,7 +120,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
         </div>
       ))}
 
-      {/* Uniqlo US Style Overlay Content: Bottom-Left Card */}
+      {/* BEO US Style Overlay Content: Bottom-Left Card */}
       <div
         className="container"
         style={{
@@ -140,7 +140,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
             animation: 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         >
-          {/* Pill Badge (matching Uniqlo US "TRENDING NOW" badge) */}
+          {/* Pill Badge (matching BEO US "TRENDING NOW" badge) */}
           <div
             style={{
               display: 'inline-flex',
@@ -208,7 +208,7 @@ export const HeroVideoBanner = ({ onNavigate }) => {
                 if (slide.ctaPrimary.action) onNavigate(slide.ctaPrimary.action);
                 else onNavigate('products', { gender: slide.ctaPrimary.gender, collection: slide.ctaPrimary.collection });
               }}
-              className="btn-uq btn-uq-red"
+              className="btn-beo btn-beo-red"
               style={{
                 padding: '12px 26px',
                 fontSize: '0.9rem',

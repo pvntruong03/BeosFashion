@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Sparkles, Flame, Tag, ShieldCheck, ChevronRight } from 'lucide-react';
+import { ArrowRight, Sparkles, Flame, ChevronRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { HeroVideoBanner } from '../components/HeroVideoBanner';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -10,7 +10,7 @@ export const HomePage = ({ onNavigate }) => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [bestSellers, setBestSellers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,17 +56,17 @@ export const HomePage = ({ onNavigate }) => {
 
   return (
     <div>
-      {/* 1. UNIQLO US HAUTE EDITORIAL HERO VIDEO / LOOKBOOK BANNER */}
+      {/* 1. BEO Fashion US HAUTE EDITORIAL HERO VIDEO / LOOKBOOK BANNER */}
       <HeroVideoBanner onNavigate={onNavigate} />
 
-      {/* 2. CATEGORY TILES (MEN / WOMEN / LIFEWEAR / UT GRAPHIC) */}
+      {/* 2. CATEGORY TILES (MEN / WOMEN / BEO ESSENTIALS / BEO GRAPHIC) */}
       <section style={{ padding: '36px 0', backgroundColor: '#faf9f5' }}>
         <div className="container">
           <div className="responsive-product-grid">
             {[
               {
                 title: lang === 'vi' ? 'NAM (MEN)' : 'MEN ESSENTIALS',
-                sub: lang === 'vi' ? 'AIRism, Sơ mi, Smart Pants' : 'AIRism, Oxford, Smart Pants',
+                sub: lang === 'vi' ? 'BEO AirFlow, Sơ mi, Smart Pants' : 'BEO AirFlow, Oxford, Smart Pants',
                 img: 'https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=800&q=80',
                 gender: 'MEN'
               },
@@ -77,16 +77,16 @@ export const HomePage = ({ onNavigate }) => {
                 gender: 'WOMEN'
               },
               {
-                title: lang === 'vi' ? 'BEO LIFEWEAR' : 'LIFEWEAR LAB',
-                sub: lang === 'vi' ? 'AIRism, Dry-EX, Vải dệt 3D' : 'AIRism, Dry-EX, 3D Knit',
+                title: lang === 'vi' ? 'BEO ESSENTIALS' : 'BEO ESSENTIALS LAB',
+                sub: lang === 'vi' ? 'BEO AirFlow, BEO DryMotion, Vải dệt 3D' : 'BEO AirFlow, BEO DryMotion, 3D Knit',
                 img: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80',
-                collection: 'AIRism'
+                collection: 'BEO AirFlow'
               },
               {
-                title: lang === 'vi' ? 'UT GRAPHIC' : 'UT GRAPHIC',
+                title: lang === 'vi' ? 'BEO GRAPHIC' : 'BEO GRAPHIC',
                 sub: lang === 'vi' ? 'Anime, Nghệ thuật' : 'Anime & Pop Culture',
                 img: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80',
-                collection: 'UT Graphic'
+                collection: 'BEO Graphic'
               },
             ].map((cat, idx) => (
               <div
@@ -199,7 +199,7 @@ export const HomePage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* 5. LIFEWEAR PHILOSOPHY & LOOKBOOK TEASER */}
+      {/* 5. BEO ESSENTIALS PHILOSOPHY & LOOKBOOK TEASER */}
       <section style={{ padding: '72px 0', backgroundColor: '#ffffff', borderTop: '1px solid #eae5d8' }}>
         <div className="container">
           <div style={{
@@ -209,19 +209,19 @@ export const HomePage = ({ onNavigate }) => {
             alignItems: 'center'
           }}>
             <div>
-              <div className="luxury-badge" style={{ color: '#e60012', marginBottom: '10px' }}>THE JAPANESE PHILOSOPHY</div>
+              <div className="luxury-badge" style={{ color: '#e60012', marginBottom: '10px' }}>THE BEO PHILOSOPHY</div>
               <h2 className="heading-editorial" style={{ fontSize: '2.5rem', lineHeight: 1.18, marginBottom: '20px' }}>
                 {lang === 'vi' ? <>Trang phục giản đơn cho <span className="editorial-italic">cuộc sống tốt đẹp hơn.</span></> : <>Simple apparel, <span className="editorial-italic">elevated for life.</span></>}
               </h2>
               <p style={{ fontSize: '1rem', color: '#555', lineHeight: 1.75, marginBottom: '28px' }}>
                 {lang === 'vi'
-                  ? 'LifeWear là những trang phục được sáng tạo từ các giá trị văn hóa Nhật Bản: đơn giản, chất lượng cao, bền bỉ cùng thời gian. Được thiết kế hiện đại, thanh lịch để trở thành những mảnh ghép hoàn hảo trong tủ đồ thường ngày của bạn.'
-                  : 'LifeWear is clothing inspired by Japanese values of simplicity, quality, and longevity. Designed to be of the time and for the time, LifeWear is crafted with modern elegance to become the cornerstone of your daily wardrobe.'}
+                  ? 'BEO Essentials được phát triển từ triết lý của BEO: tối giản, chất lượng cao và bền bỉ cùng thời gian. Mỗi thiết kế hiện đại, thanh lịch đều hướng đến việc trở thành mảnh ghép linh hoạt trong tủ đồ thường ngày của bạn.'
+                  : 'BEO Essentials is built on BEO’s values of simplicity, quality, and longevity. Each modern, refined design is made to become a versatile cornerstone of your daily wardrobe.'}
               </p>
               <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => onNavigate('lookbook')}
-                  className="btn-uq btn-uq-primary"
+                  className="btn-beo btn-beo-primary"
                   style={{ padding: '12px 24px', letterSpacing: '0.5px' }}
                 >
                   <span>{lang === 'vi' ? 'Xem Lookbook Phối Đồ' : 'Explore Lookbook'}</span>
@@ -229,7 +229,7 @@ export const HomePage = ({ onNavigate }) => {
                 </button>
                 <button
                   onClick={() => onNavigate('stores')}
-                  className="btn-uq btn-uq-outline-gray"
+                  className="btn-beo btn-beo-outline-gray"
                   style={{ padding: '12px 24px' }}
                 >
                   <span>{lang === 'vi' ? 'Tìm Cửa Hàng Gần Nhất' : 'Find Store Location'}</span>
@@ -240,12 +240,12 @@ export const HomePage = ({ onNavigate }) => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
               <img
                 src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80"
-                alt="LifeWear Woman"
+                alt="BEO Essentials Woman"
                 style={{ width: '100%', height: '280px', objectFit: 'cover' }}
               />
               <img
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80"
-                alt="LifeWear Man"
+                alt="BEO Essentials Man"
                 style={{ width: '100%', height: '280px', objectFit: 'cover' }}
               />
             </div>

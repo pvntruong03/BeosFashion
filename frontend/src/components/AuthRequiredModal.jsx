@@ -163,9 +163,9 @@ export const AuthRequiredModal = ({ isOpen, onClose, requiredRole, onGoToLogin }
             <KeyRound size={18} color="#e60012" style={{ flexShrink: 0 }} />
             <div>
               {lang === 'vi' ? (
-                <>Trang đăng nhập có sẵn nút <strong>"1-Click Test Login"</strong> giúp bạn vào thử nghiệm vai trò này ngay lập tức.</>
+                <>Trang đăng nhập có mục <strong>"Truy cập nhanh theo vai trò"</strong> để vào đúng khu vực chức năng.</>
               ) : (
-                <>The login gateway includes <strong>"1-Click Quick Demo Switcher"</strong> buttons for immediate instant access.</>
+                <>The login gateway includes <strong>"Quick Role Access"</strong> buttons for direct access to the correct workspace.</>
               )}
             </div>
           </div>

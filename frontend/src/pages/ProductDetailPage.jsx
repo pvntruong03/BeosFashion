@@ -4,10 +4,6 @@ import {
   Star,
   ShoppingBag,
   Ruler,
-  Truck,
-  RefreshCw,
-  MapPin,
-  ShieldCheck,
   ChevronDown,
   CheckCircle2,
   AlertTriangle,
@@ -16,6 +12,7 @@ import {
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useToast } from '../contexts/ToastContext';
 import { SizeAdvisorModal } from '../components/SizeAdvisorModal';
 import { ProductReviewsSection } from '../components/ProductReviewsSection';
 import { ReviewModal } from '../components/ReviewModal';
@@ -23,11 +20,13 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductCustomizerStudio } from '../components/ProductCustomizerStudio';
 import { isCustomizerEnabled } from '../services/customizerFeatureService';
 import api from '../services/api';
+import { isAdultVariant, sortSizes } from '../services/productVariants';
 
 export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { formatPrice, t, lang } = useLanguage();
+  const { showError } = useToast();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -50,39 +49,64 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   const fetchProductData = useCallback(async () => {
     setLoading(true);
     try {
-      let productRes;
-      if (slug) {
-        productRes = await api.get(`/products/slug/${slug}`);
-      } else if (productId) {
-        productRes = await api.get(`/products/${productId}`);
+      let productRes = null;
+
+      // 1. Try productId first if provided (exact numeric match)
+      if (productId) {
+        try {
+          productRes = await api.get(`/products/${productId}`);
+        } catch (e) {
+          console.warn('Product lookup by ID failed, trying slug fallback...', e);
+        }
       }
 
-      if (productRes && productRes.data) {
-        const prod = productRes.data;
+      // 2. Fallback to slug if ID lookup failed or wasn't provided
+      if ((!productRes || !productRes.data) && slug) {
+        try {
+          const cleanSlug = encodeURIComponent(
+            String(slug).trim().toLowerCase().replace(/[\s_]+/g, '-')
+          );
+          productRes = await api.get(`/products/slug/${cleanSlug}`);
+        } catch (e) {
+          console.warn('Product lookup by slug failed:', e);
+        }
+      }
+
+      const rawProduct = productRes?.data?.id ? productRes.data : (productRes?.id ? productRes : productRes?.data);
+      const prod = rawProduct ? { ...rawProduct, variants: (rawProduct.variants || []).filter(isAdultVariant) } : null;
+      if (prod) {
         setProduct(prod);
 
         // Set initial color & variant
         if (prod.variants && prod.variants.length > 0) {
-          const firstVariant = prod.variants[0];
+          const firstVariant = prod.variants.find((v) => v.totalStock > 0) || prod.variants[0];
           setSelectedColor(firstVariant.colorName);
           setSelectedSize(firstVariant.size);
           setSelectedVariant(firstVariant);
           setActiveImage(firstVariant.imageUrl || prod.primaryImageUrl);
         } else {
+          setSelectedVariant(null);
+          setSelectedSize('');
+          setSelectedColor('');
           setActiveImage(prod.primaryImageUrl);
         }
 
         // Fetch reviews and related products
         const [revRes, relRes] = await Promise.all([
-          api.get(`/reviews/product/${prod.id}`),
-          api.get(`/products/${prod.id}/related`),
+          api.get(`/reviews/product/${prod.id}`).catch(() => ({ data: [] })),
+          api.get(`/products/${prod.id}/related`).catch(() => ({ data: [] })),
         ]);
 
-        if (revRes.data) setReviews(revRes.data);
-        if (relRes.data) setRelatedProducts(relRes.data);
+        const reviewList = Array.isArray(revRes?.data) ? revRes.data : (Array.isArray(revRes) ? revRes : []);
+        const relatedList = Array.isArray(relRes?.data) ? relRes.data : (Array.isArray(relRes) ? relRes : []);
+        setReviews(reviewList);
+        setRelatedProducts(relatedList);
+      } else {
+        setProduct(null);
       }
     } catch (err) {
       console.error('Error fetching product detail:', err);
+      setProduct(null);
     } finally {
       setLoading(false);
     }
@@ -135,14 +159,30 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
   };
 
   const handleAddToCart = () => {
-    if (!product || !selectedVariant) return;
-    addToCart(product, selectedVariant, quantity);
+    if (!product) return;
+    if (!selectedVariant) {
+      showError(lang === 'vi' ? 'Vui lòng chọn kích cỡ và màu sắc sản phẩm!' : 'Please select a size and color!');
+      return;
+    }
+    if (selectedVariant.totalStock <= 0) {
+      showError(lang === 'vi' ? 'Phiên bản kích cỡ này hiện đã hết hàng. Vui lòng chọn kích cỡ khác!' : 'This size variant is currently out of stock. Please select another size!');
+      return;
+    }
+    addToCart(selectedVariant.id, quantity, true);
   };
 
-  const handleBuyNow = () => {
-    if (!product || !selectedVariant) return;
-    addToCart(product, selectedVariant, quantity);
-    onNavigate('checkout');
+  const handleBuyNow = async () => {
+    if (!product) return;
+    if (!selectedVariant) {
+      showError(lang === 'vi' ? 'Vui lòng chọn kích cỡ và màu sắc sản phẩm trước khi mua!' : 'Please select a size and color before purchasing!');
+      return;
+    }
+    if (selectedVariant.totalStock <= 0) {
+      showError(lang === 'vi' ? 'Phiên bản kích cỡ này hiện đã hết hàng. Vui lòng chọn kích cỡ khác!' : 'This size variant is currently out of stock. Please select another size!');
+      return;
+    }
+    const added = await addToCart(selectedVariant.id, quantity, false);
+    if (added) onNavigate('checkout');
   };
 
   if (loading) {
@@ -159,7 +199,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
     return (
       <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
         <h2>{lang === 'vi' ? 'Không tìm thấy sản phẩm' : 'Product Not Found'}</h2>
-        <button onClick={() => onNavigate('products')} className="btn-uq btn-uq-primary" style={{ marginTop: '16px' }}>
+        <button onClick={() => onNavigate('products')} className="btn-beo btn-beo-primary" style={{ marginTop: '16px' }}>
           {lang === 'vi' ? 'Quay lại cửa hàng' : 'Back to Store'}
         </button>
       </div>
@@ -191,6 +231,10 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 key={idx}
                 src={img.imageUrl}
                 alt={`${product.name} ${idx}`}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80';
+                }}
                 onClick={() => setActiveImage(img.imageUrl)}
                 style={{
                   width: '64px',
@@ -210,15 +254,19 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
             <img
               src={activeImage || product.primaryImageUrl}
               alt={product.name}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80';
+              }}
               style={{ width: '100%', maxHeight: '600px', objectFit: 'cover' }}
             />
             {product.salePrice && (
-              <span className="badge-uq red" style={{ position: 'absolute', top: '16px', left: '16px', fontSize: '0.85rem' }}>
+              <span className="badge-beo red" style={{ position: 'absolute', top: '16px', left: '16px', fontSize: '0.85rem' }}>
                 {lang === 'vi' ? 'KHUYẾN MÃI' : 'LIMITED OFFER'}
               </span>
             )}
             {product.isNew && (
-              <span className="badge-uq black" style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '0.85rem' }}>
+              <span className="badge-beo black" style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '0.85rem' }}>
                 NEW
               </span>
             )}
@@ -240,11 +288,11 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', gap: '2px' }}>
               {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} size={16} color="#ffab00" fill="#ffab00" />
+                <Star key={s} size={16} color="#ffab00" fill={reviews.length && s <= Math.round(reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length) ? '#ffab00' : 'none'} />
               ))}
             </div>
-            <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product.averageRating || 5.0}</span>
-            <span style={{ color: '#666', fontSize: '0.85rem' }}>({reviews.length} {lang === 'vi' ? 'đánh giá đã xác thực' : 'verified reviews'})</span>
+            <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{reviews.length ? (reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length).toFixed(1) : '—'}</span>
+            <span style={{ color: '#666', fontSize: '0.85rem' }}>({reviews.length} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
           </div>
 
           {/* Pricing */}
@@ -257,7 +305,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
                 <span className="text-old-price" style={{ fontSize: '1.1rem' }}>
                   {formatPrice(product.basePrice)}
                 </span>
-                <span className="badge-uq red">{lang === 'vi' ? `TIẾT KIỆM ${formatPrice(product.basePrice - product.salePrice)}` : `SAVE ${formatPrice(product.basePrice - product.salePrice)}`}</span>
+                <span className="badge-beo red">{lang === 'vi' ? `TIẾT KIỆM ${formatPrice(product.basePrice - product.salePrice)}` : `SAVE ${formatPrice(product.basePrice - product.salePrice)}`}</span>
               </>
             ) : (
               <span style={{ fontSize: '1.8rem', fontWeight: '800' }}>
@@ -306,34 +354,38 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
             </div>
 
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map((size) => {
-                const variantForSize = availableSizesForColor.find((v) => v.size === size);
-                const isAvailable = variantForSize && variantForSize.totalStock > 0;
-                const isSelected = selectedSize === size;
+              {(() => {
+                const sizesToRender = sortSizes(product.variants.map((v) => v.size));
 
-                return (
-                  <button
-                    key={size}
-                    onClick={() => isAvailable && handleSizeSelect(size)}
-                    disabled={!isAvailable}
-                    style={{
-                      minWidth: '54px',
-                      height: '42px',
-                      padding: '0 12px',
-                      fontWeight: '700',
-                      fontSize: '0.9rem',
-                      border: isSelected ? '2px solid #111' : '1px solid #ddd',
-                      backgroundColor: isSelected ? '#111' : (isAvailable ? '#fff' : '#f5f5f5'),
-                      color: isSelected ? '#fff' : (isAvailable ? '#111' : '#aaa'),
-                      cursor: isAvailable ? 'pointer' : 'not-allowed',
-                      textDecoration: !isAvailable ? 'line-through' : 'none',
-                      position: 'relative'
-                    }}
-                  >
-                    {size}
-                  </button>
-                );
-              })}
+                return sizesToRender.map((size) => {
+                  const variantForSize = availableSizesForColor.find((v) => v.size === size);
+                  const isAvailable = variantForSize && variantForSize.totalStock > 0;
+                  const isSelected = selectedSize === size;
+
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isAvailable && handleSizeSelect(size)}
+                      disabled={!isAvailable}
+                      style={{
+                        minWidth: '54px',
+                        height: '42px',
+                        padding: '0 12px',
+                        fontWeight: '700',
+                        fontSize: '0.9rem',
+                        border: isSelected ? '2px solid #111' : '1px solid #ddd',
+                        backgroundColor: isSelected ? '#111' : (isAvailable ? '#fff' : '#f5f5f5'),
+                        color: isSelected ? '#fff' : (isAvailable ? '#111' : '#aaa'),
+                        cursor: isAvailable ? 'pointer' : 'not-allowed',
+                        textDecoration: !isAvailable ? 'line-through' : 'none',
+                        position: 'relative'
+                      }}
+                    >
+                      {size}
+                    </button>
+                  );
+                });
+              })()}
             </div>
 
             {/* Stock status indicator */}
@@ -383,7 +435,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
             <button
               onClick={handleAddToCart}
               disabled={!selectedVariant || selectedVariant.totalStock <= 0}
-              className="btn-uq btn-uq-primary"
+              className="btn-beo btn-beo-primary"
               style={{ flex: 1, height: '48px', fontSize: '0.95rem' }}
             >
               <ShoppingBag size={18} />
@@ -410,7 +462,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           <button
             onClick={handleBuyNow}
             disabled={!selectedVariant || selectedVariant.totalStock <= 0}
-            className="btn-uq btn-uq-red"
+            className="btn-beo btn-beo-red"
             style={{ width: '100%', height: '48px', fontSize: '0.95rem', marginBottom: '10px' }}
           >
             <span>{t('buy_now')}</span>
@@ -419,7 +471,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           {isCustomizerEnabled() && (
             <button
               onClick={() => setIsCustomizerModalOpen(true)}
-              className="btn-uq btn-uq-outline-black"
+              className="btn-beo btn-beo-outline-black"
               style={{
                 width: '100%',
                 height: '44px',
@@ -509,7 +561,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
       </div>
 
       {/* Verified Customer Reviews Section */}
-      <ProductReviewsSection productId={product.id} productName={product.name} />
+      <ProductReviewsSection productId={product.id} productName={product.name} onReviewsChange={setReviews} />
 
       {/* Related Products Section */}
       {relatedProducts.length > 0 && (
@@ -544,9 +596,9 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
       }}>
         <div style={{ minWidth: '100px' }}>
           <div style={{ fontSize: '0.72rem', color: '#666', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>
-            {selectedColor} / {selectedSize || 'Chọn size'}
+            {selectedColor} / {selectedSize || (lang === 'vi' ? 'Chọn size' : 'Select size')}
           </div>
-          <div style={{ fontSize: '1.05rem', fontWeight: '900', color: currentPrice < basePrice ? '#e60012' : '#111' }}>
+          <div style={{ fontSize: '1.05rem', fontWeight: '900', color: product.salePrice ? '#e60012' : '#111' }}>
             {formatPrice(currentPrice)}
           </div>
         </div>
@@ -555,7 +607,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           <button
             onClick={handleAddToCart}
             disabled={!selectedVariant || selectedVariant.totalStock <= 0}
-            className="btn-uq btn-uq-primary"
+            className="btn-beo btn-beo-primary"
             style={{ height: '42px', padding: '0 12px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
           >
             <ShoppingBag size={15} />
@@ -564,7 +616,7 @@ export const ProductDetailPage = ({ productId, slug, onNavigate }) => {
           <button
             onClick={handleBuyNow}
             disabled={!selectedVariant || selectedVariant.totalStock <= 0}
-            className="btn-uq btn-uq-red"
+            className="btn-beo btn-beo-red"
             style={{ height: '42px', padding: '0 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
           >
             <span>{t('buy_now')}</span>

@@ -1,28 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, Copy, Check, RefreshCw, ShieldCheck, CheckCircle2, Sparkles, Building, AlertCircle } from 'lucide-react';
+import { Copy, Check, RefreshCw, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
+
+const DEFAULT_BANK_CONFIG = {
+  bankId: 'mbbank',
+  bankName: 'MB Bank (Ngân hàng TMCP Quân Đội)',
+  accountNo: '190019199999',
+  accountName: 'BEO FASHION VIETNAM',
+  template: 'compact2'
+};
 
 export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
   const { formatPrice, lang } = useLanguage();
   const { showSuccess, showError } = useToast();
 
   const [copiedField, setCopiedField] = useState(null);
-  const [isPolling, setIsPolling] = useState(true);
+  const [, setIsPolling] = useState(true);
   const [isPaid, setIsPaid] = useState(order?.payment?.paymentStatus === 'SUCCESS');
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [bankConfig, setBankConfig] = useState(DEFAULT_BANK_CONFIG);
 
-  const qrData = order?.vietQr || {
-    bankId: 'vietinbank',
-    bankName: 'VietinBank (Vietnam Joint Stock Commercial Bank for Industry and Trade)',
-    accountNo: '113366668888',
-    accountName: 'BEO FASHION VIETNAM',
+  const transferContent = `Thanh toan don hang ${order?.orderNumber}`;
+  const qrData = {
+    ...order?.vietQr,
+    ...bankConfig,
     amount: order?.finalAmount || 0,
-    transferContent: `Thanh toan don hang ${order?.orderNumber}`,
-    qrImageUrl: `https://img.vietqr.io/image/vietinbank-113366668888-compact2.png?amount=${Math.round(order?.finalAmount || 0)}&addInfo=Thanh+toan+don+hang+${order?.orderNumber}&accountName=BEO+FASHION+VIETNAM`
+    transferContent,
+    qrImageUrl: `https://img.vietqr.io/image/${bankConfig.bankId}-${bankConfig.accountNo}-${bankConfig.template}.png?amount=${Math.round(order?.finalAmount || 0)}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(bankConfig.accountName)}`
   };
+
+  useEffect(() => {
+    api.get('/payments/vietqr/config')
+      .then((config) => {
+        if (config?.bankId && config?.accountNo) {
+          setBankConfig({ ...DEFAULT_BANK_CONFIG, ...config });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const copyToClipboard = (text, fieldName) => {
     if (navigator.clipboard) {
@@ -46,11 +64,11 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
           clearInterval(interval);
           try {
             confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-          } catch (e) {}
-          showSuccess(lang === 'vi' ? 'Hệ thống đã nhận được chuyển khoản! Đơn hàng được xác nhận.' : 'Payment received! Order verified successfully.');
+          } catch {}
+          showSuccess(lang === 'vi' ? 'Trạng thái thanh toán đã được xác nhận.' : 'Payment status confirmed.');
           if (onPaymentConfirmed) onPaymentConfirmed();
         }
-      } catch (err) {
+      } catch {
         // Silent error during polling
       }
     }, 2500);
@@ -58,11 +76,10 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
     return () => clearInterval(interval);
   }, [isPaid, order?.orderNumber, onPaymentConfirmed, showSuccess, lang]);
 
-  // Simulate payment (SePay/Casso/Bank webhook)
-  const handleSimulatePayment = async () => {
-    setIsSimulating(true);
+  const handleConfirmPayment = async () => {
+    setIsConfirming(true);
     try {
-      const res = await api.post('/payments/vietqr/simulate-transfer', {
+      const res = await api.post('/payments/vietqr/confirm-transfer', {
         orderNumber: order.orderNumber,
         amount: order.finalAmount,
         transactionRef: 'SEPAY-' + Math.floor(100000 + Math.random() * 900000)
@@ -71,13 +88,13 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
       setIsPolling(false);
       try {
         confetti({ particleCount: 90, spread: 70, origin: { y: 0.5 } });
-      } catch (e) {}
-      showSuccess(lang === 'vi' ? 'Giả lập chuyển khoản thành công! Đơn hàng đã được xác nhận.' : 'Simulated transfer verified! Order confirmed.');
+      } catch {}
+      showSuccess(lang === 'vi' ? 'Thanh toán đã được xác nhận! Đơn hàng đang được xử lý.' : 'Payment confirmed! Your order is being processed.');
       if (onPaymentConfirmed) onPaymentConfirmed(res.data?.data);
     } catch (err) {
-      showError(err.message || (lang === 'vi' ? 'Lỗi khi giả lập chuyển khoản' : 'Failed to simulate transfer'));
+      showError(err.message || (lang === 'vi' ? 'Lỗi khi kiểm tra giao dịch' : 'Failed to verify transaction'));
     } finally {
-      setIsSimulating(false);
+      setIsConfirming(false);
     }
   };
 
@@ -112,23 +129,23 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
           <div>
             <h3 style={{ fontSize: '1.05rem', fontWeight: '800', margin: 0, textTransform: 'uppercase' }}>
               {isPaid
-                ? (lang === 'vi' ? 'THANH TOÁN THÀNH CÔNG' : 'PAYMENT SUCCESSFUL')
-                : (lang === 'vi' ? 'QUÉT MÃ VIETQR ĐỂ THANH TOÁN TỰ ĐỘNG' : 'SCAN VIETQR CODE TO COMPLETE PAYMENT')}
+                ? (lang === 'vi' ? 'THANH TOÁN ĐÃ XÁC NHẬN' : 'PAYMENT CONFIRMED')
+                : (lang === 'vi' ? 'THANH TOÁN VIETQR' : 'VIETQR PAYMENT')}
             </h3>
             <div style={{ fontSize: '0.75rem', color: '#666' }}>
-              {lang === 'vi' ? 'Chuẩn Napas247 • Tự động xác nhận sau 2-5 giây' : 'Napas247 Standard • Instant verification in 2-5 seconds'}
+              {lang === 'vi' ? 'Chuyển khoản nhanh qua mã QR • Tự động điền nội dung' : 'Fast QR bank transfer • Reference is filled automatically'}
             </div>
           </div>
         </div>
 
         {isPaid ? (
-          <span className="badge-uq" style={{ backgroundColor: '#00875a', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span className="badge-beo" style={{ backgroundColor: '#00875a', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <CheckCircle2 size={14} /> {lang === 'vi' ? 'ĐÃ THANH TOÁN' : 'PAID'}
           </span>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#e60012', fontWeight: '700' }}>
             <RefreshCw size={14} className="spin" style={{ animation: 'spin 2s linear infinite' }} />
-            <span>{lang === 'vi' ? 'Đang chờ chuyển khoản...' : 'Awaiting transfer confirmation...'}</span>
+            <span>{lang === 'vi' ? 'Đang chờ xác nhận...' : 'Awaiting confirmation...'}</span>
           </div>
         )}
       </div>
@@ -150,12 +167,12 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
             <CheckCircle2 size={38} />
           </div>
           <h4 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#111', marginBottom: '6px' }}>
-            {lang === 'vi' ? 'Giao Dịch Đã Khớp Hoàn Toàn!' : 'Transaction Verified Successfully!'}
+            {lang === 'vi' ? 'Thanh Toán Đã Được Xác Nhận' : 'Payment Confirmed Successfully'}
           </h4>
           <p style={{ fontSize: '0.85rem', color: '#555' }}>
             {lang === 'vi'
-              ? `Hệ thống ngân hàng đã xác nhận thanh toán số tiền ${formatPrice(order.finalAmount)} cho đơn hàng ${order.orderNumber}.`
-              : `Banking system confirmed payment of ${formatPrice(order.finalAmount)} for order ${order.orderNumber}.`}
+              ? `Đơn hàng ${order.orderNumber} đã ghi nhận thanh toán ${formatPrice(order.finalAmount)} và chuyển sang bước xử lý tiếp theo.`
+              : `Order ${order.orderNumber} recorded a payment of ${formatPrice(order.finalAmount)} and moved to the next processing step.`}
           </p>
         </div>
       ) : (
@@ -189,8 +206,8 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
             />
             <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '10px', textAlign: 'center' }}>
               {lang === 'vi'
-                ? 'Mở App Ngân hàng bất kỳ hoặc Ví MoMo/ZaloPay để quét mã chuyển khoản tự động khớp số tiền'
-                : 'Open any Mobile Banking App or MoMo to scan and pay with auto-filled reference code'}
+                ? 'Mở ứng dụng ngân hàng, quét mã và kiểm tra đúng số tiền cùng nội dung chuyển khoản.'
+                : 'Open your banking app, scan the code, and verify the amount and payment reference.'}
             </div>
           </div>
 
@@ -199,7 +216,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
             {/* Bank Name */}
             <div style={{ padding: '8px 12px', backgroundColor: '#fcfcfc', border: '1px solid #eee' }}>
               <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>
-                {lang === 'vi' ? 'Ngân hàng thụ hưởng' : 'Beneficiary Bank'}
+                  {lang === 'vi' ? 'Ngân hàng thụ hưởng' : 'Beneficiary Bank'}
               </div>
               <div style={{ fontWeight: '800', color: '#111', marginTop: '2px' }}>{qrData.bankName}</div>
             </div>
@@ -222,7 +239,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               <button
                 type="button"
                 onClick={() => copyToClipboard(qrData.accountNo, 'Account Number')}
-                className="btn-uq btn-uq-outline-gray"
+                className="btn-beo btn-beo-outline-gray"
                 style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 {copiedField === 'Account Number' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
@@ -233,7 +250,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
             {/* Account Name */}
             <div style={{ padding: '8px 12px', backgroundColor: '#fcfcfc', border: '1px solid #eee' }}>
               <div style={{ fontSize: '0.72rem', color: '#777', textTransform: 'uppercase', fontWeight: '700' }}>
-                {lang === 'vi' ? 'Chủ tài khoản' : 'Account Holder'}
+                  {lang === 'vi' ? 'Chủ tài khoản' : 'Account Holder'}
               </div>
               <div style={{ fontWeight: '800', color: '#111', marginTop: '2px' }}>{qrData.accountName}</div>
             </div>
@@ -256,7 +273,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               <button
                 type="button"
                 onClick={() => copyToClipboard(String(Math.round(order.finalAmount)), 'Amount')}
-                className="btn-uq btn-uq-outline-gray"
+                className="btn-beo btn-beo-outline-gray"
                 style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 {copiedField === 'Amount' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
@@ -282,7 +299,7 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               <button
                 type="button"
                 onClick={() => copyToClipboard(qrData.transferContent, 'Reference Code')}
-                className="btn-uq btn-uq-outline-gray"
+                className="btn-beo btn-beo-outline-gray"
                 style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 {copiedField === 'Reference Code' ? <Check size={12} color="#00875a" /> : <Copy size={12} />}
@@ -290,22 +307,42 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               </button>
             </div>
 
-            {/* Test Simulation Button */}
             <div style={{ marginTop: '8px' }}>
               <button
                 type="button"
-                onClick={handleSimulatePayment}
-                disabled={isSimulating}
-                className="btn-uq btn-uq-primary"
-                style={{ width: '100%', padding: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                onClick={handleConfirmPayment}
+                disabled={isConfirming}
+                className="btn-beo btn-beo-primary"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '0.88rem',
+                  fontWeight: '800',
+                  letterSpacing: '0.5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  borderRadius: '2px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
+                }}
               >
-                <Sparkles size={16} />
-                <span>{isSimulating ? (lang === 'vi' ? 'Đang giả lập...' : 'Simulating...') : (lang === 'vi' ? '🧪 Giả lập Chuyển Khoản Thành Công (Test Webhook/SePay)' : '🧪 Simulate Successful Bank Transfer (Test Webhook)')}</span>
+                {isConfirming ? (
+                  <>
+                    <RefreshCw size={16} className="spin" style={{ animation: 'spin 1.5s linear infinite' }} />
+                    <span>{lang === 'vi' ? 'Đang xác nhận giao dịch...' : 'Confirming transaction...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={18} color="#ffffff" />
+                    <span>{lang === 'vi' ? 'XÁC NHẬN ĐÃ CHUYỂN KHOẢN' : 'I HAVE COMPLETED THE TRANSFER'}</span>
+                  </>
+                )}
               </button>
-              <div style={{ fontSize: '0.72rem', color: '#777', textAlign: 'center', marginTop: '4px' }}>
+              <div style={{ fontSize: '0.73rem', color: '#666', textAlign: 'center', marginTop: '6px', lineHeight: 1.4 }}>
                 {lang === 'vi'
-                  ? '* Bấm nút trên để thử nghiệm luồng Webhook tự động khớp tiền mà không cần quét mã thật.'
-                  : '* Click above to test the automated webhook reconciliation flow without actual banking transaction.'}
+                  ? 'Hãy kiểm tra đúng số tiền và nội dung chuyển khoản trước khi xác nhận.'
+                  : 'Verify the amount and payment reference before confirming.'}
               </div>
             </div>
           </div>

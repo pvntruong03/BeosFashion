@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Camera, Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon, Search } from 'lucide-react';
+import { Camera, Upload, Sparkles, X, ArrowRight, CheckCircle2, Image as ImageIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
+import { analyzeImageWithClip } from '../services/visualSearchAI';
 
 const SAMPLE_PRESETS = [
   {
     id: 1,
-    title: 'AIRism Oversized Black Tee',
-    hint: 'black oversized airism tee',
+    title: 'BEO AirFlow Oversized Black Tee',
+    hint: 'black oversized beo-airflow tee',
     imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
     category: 'T-Shirts'
   },
@@ -48,21 +49,31 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [searchResult, setSearchResult] = useState(null);
   const [error, setError] = useState(null);
+  const [modelProgress, setModelProgress] = useState('');
 
   if (!isOpen) return null;
 
-  const performVisualSearch = async (imageUrl, hint = '') => {
+  const performVisualSearch = async (imageUrl) => {
     setSelectedImage(imageUrl);
     setIsScanning(true);
     setError(null);
     setSearchResult(null);
+    setModelProgress(lang === 'vi' ? 'Đang tải danh mục sản phẩm…' : 'Loading product catalog…');
 
     try {
-      await new Promise((res) => setTimeout(res, 800));
+      const catalogResponse = await api.get('/products?sizePerPage=200');
+      const products = catalogResponse.data?.content || catalogResponse.data || [];
+      const clipResult = await analyzeImageWithClip(imageUrl, products, (progress) => {
+        if (progress?.status === 'progress' && Number.isFinite(progress.progress)) {
+          setModelProgress(`${lang === 'vi' ? 'Đang tải mô hình CLIP' : 'Loading CLIP model'}: ${Math.round(progress.progress)}%`);
+        } else if (progress?.status === 'ready') {
+          setModelProgress(lang === 'vi' ? 'Đang so sánh embedding ảnh với sản phẩm…' : 'Comparing image and product embeddings…');
+        }
+      });
 
       const res = await api.post('/products/visual-search', {
-        imageUrl: imageUrl,
-        visualHint: hint || imageUrl
+        imageUrl: imageUrl.startsWith('data:') ? null : imageUrl,
+        ...clipResult
       });
 
       if (res.data) {
@@ -70,7 +81,9 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
       }
     } catch (err) {
       console.error('Visual search error:', err);
-      setError(lang === 'vi' ? 'Không thể phân tích hình ảnh này. Vui lòng thử lại với hình ảnh khác.' : 'Unable to analyze image. Please try another photo.');
+      setError(lang === 'vi'
+        ? 'Không thể chạy mô hình CLIP. Hãy kiểm tra kết nối mạng rồi thử lại với ảnh JPG, PNG hoặc WEBP.'
+        : 'The CLIP model could not run. Check your connection and try a JPG, PNG, or WEBP image.');
     } finally {
       setIsScanning(false);
     }
@@ -83,8 +96,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
     const reader = new FileReader();
     reader.onload = () => {
       const base64Url = reader.result;
-      const fileNameHint = file.name.replace(/\.[^/.]+$/, '');
-      performVisualSearch(base64Url, fileNameHint);
+      performVisualSearch(base64Url);
     };
     reader.readAsDataURL(file);
   };
@@ -92,7 +104,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
   const handleCustomUrlSubmit = (e) => {
     e.preventDefault();
     if (!customImageUrl.trim()) return;
-    performVisualSearch(customImageUrl.trim(), customImageUrl.trim());
+    performVisualSearch(customImageUrl.trim());
   };
 
   return (
@@ -136,8 +148,8 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
               </h2>
               <div style={{ fontSize: '0.78rem', color: '#bbb', marginTop: '2px' }}>
                 {lang === 'vi'
-                  ? 'Tải ảnh trang phục bất kỳ để AI phân tích màu sắc, kiểu dáng và tìm sản phẩm LifeWear tương đồng'
-                  : 'Upload any outfit photo for neural-network analysis to discover matching LifeWear items'}
+                  ? 'Tải ảnh trang phục bất kỳ để AI phân tích màu sắc, kiểu dáng và tìm sản phẩm BEO Essentials tương đồng'
+                  : 'Upload any outfit photo for neural-network analysis to discover matching BEO Essentials items'}
               </div>
             </div>
           </div>
@@ -161,7 +173,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
               {SAMPLE_PRESETS.map((preset) => (
                 <button
                   key={preset.id}
-                  onClick={() => performVisualSearch(preset.imageUrl, preset.hint)}
+                  onClick={() => performVisualSearch(preset.imageUrl)}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -248,7 +260,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                 />
                 <button
                   type="submit"
-                  className="btn-uq btn-uq-primary"
+                  className="btn-beo btn-beo-primary"
                   style={{ padding: '8px 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
                 >
                   {lang === 'vi' ? 'Tìm' : 'Search'}
@@ -287,7 +299,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                 {lang === 'vi' ? 'AI ĐANG PHÂN TÍCH ĐƯỜNG NÉT & TÔNG MÀU TRANG PHỤC...' : 'AI IS ANALYZING SILHOUETTE, PATTERN & COLORWAYS...'}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '4px' }}>
-                {lang === 'vi' ? 'Đang quét thư viện sản phẩm LifeWear để tìm các mẫu khớp nhất' : 'Scanning catalog embeddings to find closest matches'}
+                {modelProgress || (lang === 'vi' ? 'Đang chạy CLIP image-text embedding' : 'Running CLIP image-text embeddings')}
               </div>
             </div>
           )}
@@ -313,7 +325,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
                     {searchResult.detectedTags?.map((tag, idx) => (
-                      <span key={idx} className="badge-uq red" style={{ fontSize: '0.75rem' }}>
+                      <span key={idx} className="badge-beo red" style={{ fontSize: '0.75rem' }}>
                         ✓ {tag}
                       </span>
                     ))}
@@ -321,6 +333,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                 </div>
 
                 <div style={{ fontSize: '0.8rem', color: '#555', textAlign: 'right' }}>
+                  <div style={{ fontWeight: 800, color: '#111' }}>CLIP · {searchResult.modelId}</div>
                   {lang === 'vi'
                     ? `Tìm thấy ${searchResult.matchedProducts?.length || 0} sản phẩm khớp (${searchResult.analysisTimeMs}ms)`
                     : `Found ${searchResult.matchedProducts?.length || 0} matches in ${searchResult.analysisTimeMs}ms`}
@@ -381,7 +394,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                       {/* Info */}
                       <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                         <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', marginBottom: '2px' }}>
-                          {prod.gender} • {prod.categoryName || 'LifeWear'}
+                          {prod.gender} • {prod.categoryName || 'BEO Essentials'}
                         </div>
                         <h4 style={{
                           fontSize: '0.8rem',
@@ -410,7 +423,7 @@ export const VisualSearchModal = ({ isOpen, onClose, onSelectProduct }) => {
                               onClose();
                               if (onSelectProduct) onSelectProduct(prod);
                             }}
-                            className="btn-uq btn-uq-outline-gray"
+                            className="btn-beo btn-beo-outline-gray"
                             style={{ padding: '4px 8px', fontSize: '0.72rem' }}
                           >
                             {lang === 'vi' ? 'Xem' : 'View'} <ArrowRight size={10} />

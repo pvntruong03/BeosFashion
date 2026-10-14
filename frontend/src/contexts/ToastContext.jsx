@@ -8,7 +8,12 @@ export const ToastProvider = ({ children }) => {
 
   const addToast = useCallback((message, type = 'info', duration = 3500) => {
     const id = Date.now() + Math.random().toString(36).substring(2, 6);
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => {
+      if (prev.some((toast) => toast.message === message && toast.type === type)) {
+        return prev;
+      }
+      return [...prev, { id, message, type }].slice(-4);
+    });
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));

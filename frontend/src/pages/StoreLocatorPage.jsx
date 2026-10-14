@@ -3,11 +3,8 @@ import {
   MapPin,
   Phone,
   Clock,
-  Navigation,
-  CheckCircle2,
   Sparkles,
   MessageCircle,
-  ExternalLink,
   ShieldCheck,
   Truck,
   Scissors
@@ -25,7 +22,7 @@ export const StoreLocatorPage = ({ onNavigate }) => {
     openingHours: '08:00 - 22:00',
     imageUrl: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1200&q=80'
   });
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -56,7 +53,7 @@ export const StoreLocatorPage = ({ onNavigate }) => {
         <p style={{ fontSize: '0.95rem', color: '#666', maxWidth: '650px', margin: '0 auto', lineHeight: 1.6 }}>
           {lang === 'vi'
             ? 'Không gian mua sắm thời trang tối giản & cao cấp. Đầy đủ các bộ sưu tập mới nhất cùng dịch vụ chăm sóc khách hàng độc quyền.'
-            : 'Minimalist & premium retail space featuring full LifeWear collections, custom laboratory, and bespoke VIP customer services.'}
+            : 'Minimalist & premium retail space featuring full BEO Essentials collections, custom laboratory, and bespoke VIP customer services.'}
         </p>
       </div>
 
@@ -217,7 +214,7 @@ export const StoreLocatorPage = ({ onNavigate }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <button
               onClick={() => onNavigate('products')}
-              className="btn-uq btn-uq-primary"
+              className="btn-beo btn-beo-primary"
               style={{ width: '100%', padding: '14px', fontSize: '0.95rem' }}
             >
               <span>{lang === 'vi' ? 'Khám Phá Toàn Bộ Bộ Sưu Tập Thời Trang' : 'Explore All Fashion Collections'}</span>

@@ -3,18 +3,13 @@ import {
   Store,
   Package,
   Boxes,
-  Truck,
   FileText,
   Plus,
   Trash2,
-  CheckCircle2,
-  AlertTriangle,
   Search,
-  ArrowRightLeft,
   Edit2,
   X,
   Tag,
-  Save,
   Printer,
   Filter
 } from 'lucide-react';
@@ -23,12 +18,13 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { buildVariantMatrix } from '../services/productVariants';
 import api from '../services/api';
 
 export const StaffDashboardPage = ({ onNavigate }) => {
-  const { user, isStaff, isAdmin } = useAuth();
+  const { user } = useAuth();
   const { formatPrice, lang } = useLanguage();
-  const { showSuccess, showError, showInfo } = useToast();
+  const { showSuccess, showError } = useToast();
 
   const [activeTab, setActiveTab] = useState(() => {
     try {
@@ -40,7 +36,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
         if (tab) return tab;
       }
       return localStorage.getItem('beo_staff_active_tab') || 'products';
-    } catch (e) {
+    } catch {
       return 'products';
     }
   });
@@ -54,7 +50,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
     }
   };
   const [storeInfo, setStoreInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // Store Products State
   const [posProducts, setPosProducts] = useState([]);
@@ -76,14 +72,6 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const [newStockQty, setNewStockQty] = useState(0);
   const [adjustReason, setAdjustReason] = useState('Routine Physical Inventory');
 
-  // Transfers State
-  const [transfers, setTransfers] = useState([]);
-  const [allStores, setAllStores] = useState([]);
-  const [transferVariantId, setTransferVariantId] = useState('');
-  const [transferFromStoreId, setTransferFromStoreId] = useState(4);
-  const [transferQty, setTransferQty] = useState(20);
-  const [transferReason, setTransferReason] = useState('Restock Best Sellers');
-
   // Daily report State
   const [dailyReport, setDailyReport] = useState(null);
 
@@ -97,7 +85,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const [prodFormSalePrice, setProdFormSalePrice] = useState('');
   const [prodFormCategoryId, setProdFormCategoryId] = useState(1);
   const [prodFormGender, setProdFormGender] = useState('MEN');
-  const [prodFormCollection, setProdFormCollection] = useState('LifeWear Essentials');
+  const [prodFormCollection, setProdFormCollection] = useState('BEO Essentials');
   const [prodFormMaterial, setProdFormMaterial] = useState('100% Supima Cotton');
   const [prodFormDesc, setProdFormDesc] = useState('');
   const [prodFormImage, setProdFormImage] = useState('');
@@ -112,14 +100,12 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const fetchStaffData = useCallback(async () => {
     setLoading(true);
     try {
-      const [resStore, resProducts, resOrders, resInvs, resTrans, resReport, resAllStores, resCats] = await Promise.all([
+      const [resStore, resProducts, resOrders, resInvs, resReport, resCats] = await Promise.all([
         api.get('/staff/store-info'),
         api.get('/products?sizePerPage=100'),
         api.get('/staff/orders'),
         api.get('/staff/inventory'),
-        api.get('/staff/transfers'),
         api.get('/staff/reports/daily'),
-        api.get('/stores'),
         api.get('/categories'),
       ]);
 
@@ -127,9 +113,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
       if (resProducts.data) setPosProducts(resProducts.data.content || []);
       if (resOrders.data) setStoreOrders(resOrders.data);
       if (resInvs.data) setInventoryList(resInvs.data);
-      if (resTrans.data) setTransfers(resTrans.data);
       if (resReport.data) setDailyReport(resReport.data);
-      if (resAllStores.data) setAllStores(resAllStores.data);
       if (resCats.data) setCategories(resCats.data);
     } catch (err) {
       console.error('Error loading staff dashboard data:', err);
@@ -146,17 +130,19 @@ export const StaffDashboardPage = ({ onNavigate }) => {
   const handleOpenCreateProduct = () => {
     setEditingProduct(null);
     setProdFormName('');
-    setProdFormCode('UQ-' + Math.floor(100000 + Math.random() * 900000));
+    setProdFormCode('BEO-' + Math.floor(100000 + Math.random() * 900000));
     setProdFormPrice(399000);
     setProdFormSalePrice('');
     setProdFormCategoryId(categories[0]?.id || 1);
     setProdFormGender('MEN');
-    setProdFormCollection('LifeWear Essentials');
+    setProdFormCollection('BEO Essentials');
     setProdFormMaterial('100% Supima Cotton');
-    setProdFormDesc('Precision engineered Japanese LifeWear delivering supreme comfort and longevity.');
+    setProdFormDesc('Precision-engineered BEO Essentials delivering lasting comfort and durability.');
     setProdFormImage('https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80');
     setProdFormFeatured(true);
     setProdFormNew(true);
+    setSelectedColorsForMatrix(['09 BLACK', '00 WHITE']);
+    setSelectedSizesForMatrix(['S', 'M', 'L', 'XL']);
     setIsProductModalOpen(true);
   };
 
@@ -168,41 +154,28 @@ export const StaffDashboardPage = ({ onNavigate }) => {
     setProdFormSalePrice(prod.salePrice !== null && prod.salePrice !== undefined ? prod.salePrice : '');
     setProdFormCategoryId(prod.categoryId || (categories[0]?.id || 1));
     setProdFormGender(prod.gender || 'MEN');
-    setProdFormCollection(prod.collection || 'LifeWear Essentials');
+    setProdFormCollection(prod.collection || 'BEO Essentials');
     setProdFormMaterial(prod.material || '100% Supima Cotton');
     setProdFormDesc(prod.description || '');
     setProdFormImage(prod.primaryImageUrl || '');
     setProdFormFeatured(prod.featured || false);
     setProdFormNew(prod.new || false);
+    const currentVariants = Array.isArray(prod.variants) ? prod.variants : [];
+    setSelectedColorsForMatrix([...new Set(currentVariants.map((variant) => variant.colorName).filter(Boolean))]);
+    setSelectedSizesForMatrix([...new Set(currentVariants.map((variant) => variant.size).filter(Boolean))]);
     setIsProductModalOpen(true);
   };
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
-      const variants = [];
-      const colorHexMap = {
-        '09 BLACK': '#111111',
-        '00 WHITE': '#ffffff',
-        '68 BLUE': '#2980b9',
-        '32 BEIGE': '#d2b48c',
-        '03 GRAY': '#7f8c8d',
-        '12 PINK': '#fadbd8',
-      };
-
-      for (const col of selectedColorsForMatrix) {
-        for (const sz of selectedSizesForMatrix) {
-          variants.push({
-            colorName: col,
-            colorHex: colorHexMap[col] || '#000000',
-            size: sz,
-            sku: `${prodFormCode}-${col.substring(0, 2)}-${sz}`,
-            barcode: '45500' + Math.floor(1000000 + Math.random() * 9000000),
-            totalStock: 50,
-            imageUrl: prodFormImage
-          });
-        }
-      }
+      const variants = buildVariantMatrix({
+        colors: selectedColorsForMatrix,
+        sizes: selectedSizesForMatrix,
+        productCode: prodFormCode,
+        imageUrl: prodFormImage,
+        existingVariants: editingProduct?.variants || [],
+      });
 
       const payload = {
         name: prodFormName,
@@ -281,29 +254,6 @@ export const StaffDashboardPage = ({ onNavigate }) => {
     }
   };
 
-  // --- STOCK TRANSFER LOGIC ---
-  const handleCreateTransferRequest = async (e) => {
-    e.preventDefault();
-    if (!transferVariantId) {
-      showError(lang === 'vi' ? 'Vui lòng chọn sản phẩm cần điều chuyển' : 'Please select a variant to transfer');
-      return;
-    }
-
-    try {
-      await api.post('/staff/transfers', {
-        fromStoreId: Number(transferFromStoreId),
-        toStoreId: storeInfo?.id,
-        variantId: Number(transferVariantId),
-        quantity: Number(transferQty),
-        reason: transferReason
-      });
-      showSuccess(lang === 'vi' ? 'Đã gửi yêu cầu điều chuyển hàng thành công!' : 'Stock transfer request submitted successfully!');
-      fetchStaffData();
-    } catch (err) {
-      showError(err.message || (lang === 'vi' ? 'Lỗi khi gửi yêu cầu điều chuyển' : 'Failed to request stock transfer'));
-    }
-  };
-
   const filteredStoreOrders = storeOrders.filter((ord) => {
     const matchesStatus = staffOrderStatusFilter === 'ALL' || ord.status === staffOrderStatusFilter;
     const q = staffOrderSearch.toLowerCase().trim();
@@ -371,7 +321,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                 <h1 style={{ fontSize: '1.3rem', fontWeight: '800', margin: 0 }}>
                   {storeInfo?.name || 'BEO STORE FLAGSHIP'}
                 </h1>
-                <span className="badge-uq red">{user?.role}</span>
+                <span className="badge-beo red">{user?.role}</span>
               </div>
               <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '4px' }}>
                 {lang === 'vi' ? 'Cửa hàng:' : 'Store:'} <strong>{storeInfo?.address || '209 30th April Street, Xuan Khanh, Can Tho City'}</strong> | {lang === 'vi' ? 'Quản lý:' : 'Manager:'} <strong>{user?.fullName}</strong>
@@ -382,8 +332,8 @@ export const StaffDashboardPage = ({ onNavigate }) => {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => onNavigate('home')}
-              className="btn-uq btn-uq-outline-gray"
-              style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
+              className="btn-beo portal-storefront-button"
+              style={{ padding: '8px 16px', fontSize: '0.85rem' }}
             >
               {lang === 'vi' ? 'Về Storefront' : 'Storefront'}
             </button>
@@ -533,7 +483,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
               <Search size={16} color="#888" />
               <input
                 type="text"
-                placeholder={lang === 'vi' ? 'Tìm kiếm theo mã đơn (UQ-...), tên khách hàng, số điện thoại, địa chỉ...' : 'Search by Order ID (UQ-...), customer name, phone, address...'}
+                placeholder={lang === 'vi' ? 'Tìm kiếm theo mã đơn (BEO-...), tên khách hàng, số điện thoại, địa chỉ...' : 'Search by Order ID (BEO-...), customer name, phone, address...'}
                 value={staffOrderSearch}
                 onChange={(e) => {
                   setStaffOrderSearch(e.target.value);
@@ -566,7 +516,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <strong style={{ fontSize: '1rem' }}>{order.orderNumber}</strong>
-                          <span className="badge-uq red">{order.status}</span>
+                          <span className="badge-beo red">{order.status}</span>
                           <span style={{ fontSize: '0.8rem', color: '#666' }}>
                             {lang === 'vi' ? 'Khách:' : 'Customer:'} {order.customerName} ({order.customerPhone})
                           </span>
@@ -595,7 +545,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                         {order.status === 'PENDING' && (
                           <button
                             onClick={() => handleUpdateOrderStatus(order.id, 'PACKING')}
-                            className="btn-uq btn-uq-primary"
+                            className="btn-beo btn-beo-primary"
                             style={{ padding: '6px 12px', fontSize: '0.75rem' }}
                           >
                             {lang === 'vi' ? 'Soạn hàng & Đóng gói' : 'Pick & Pack'}
@@ -604,7 +554,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                         {order.status === 'PACKING' && (
                           <button
                             onClick={() => handleUpdateOrderStatus(order.id, 'SHIPPING')}
-                            className="btn-uq btn-uq-primary"
+                            className="btn-beo btn-beo-primary"
                             style={{ padding: '6px 12px', fontSize: '0.75rem' }}
                           >
                             {lang === 'vi' ? 'Bàn giao Shipper / Đang giao' : 'Handover to Courier / In Transit'}
@@ -613,7 +563,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                         {order.status === 'SHIPPING' && (
                           <button
                             onClick={() => handleUpdateOrderStatus(order.id, 'DELIVERED')}
-                            className="btn-uq btn-uq-red"
+                            className="btn-beo btn-beo-red"
                             style={{ padding: '6px 12px', fontSize: '0.75rem' }}
                           >
                             {lang === 'vi' ? 'Xác nhận Đã giao thành công' : 'Mark as Delivered'}
@@ -622,7 +572,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                         {order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && order.status !== 'COMPLETED' && (
                           <button
                             onClick={() => handleUpdateOrderStatus(order.id, 'CANCELLED')}
-                            className="btn-uq"
+                            className="btn-beo"
                             style={{
                               padding: '6px 12px',
                               fontSize: '0.75rem',
@@ -638,7 +588,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                         )}
                         <button
                           onClick={() => setReceiptOrder(order)}
-                          className="btn-uq btn-uq-outline-gray"
+                          className="btn-beo btn-beo-outline-gray"
                           style={{ padding: '6px 12px', fontSize: '0.75rem' }}
                         >
                           <Printer size={12} /> {lang === 'vi' ? 'In Phiếu Đóng Gói' : 'Print Slip'}
@@ -836,9 +786,9 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                         </td>
                         <td style={{ padding: '10px', textAlign: 'center' }}>
                           {variant.totalStock <= 5 ? (
-                            <span className="badge-uq red">{lang === 'vi' ? `Sắp hết (${variant.totalStock})` : `Low Stock (${variant.totalStock})`}</span>
+                            <span className="badge-beo red">{lang === 'vi' ? `Sắp hết (${variant.totalStock})` : `Low Stock (${variant.totalStock})`}</span>
                           ) : (
-                            <span className="badge-uq gray" style={{ color: '#00875a' }}>{lang === 'vi' ? 'Đủ hàng' : 'In Stock'}</span>
+                            <span className="badge-beo gray" style={{ color: '#00875a' }}>{lang === 'vi' ? 'Đủ hàng' : 'In Stock'}</span>
                           )}
                         </td>
                         <td style={{ padding: '10px', textAlign: 'right' }}>
@@ -847,7 +797,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                               setAdjustModalItem(variant);
                               setNewStockQty(variant.totalStock);
                             }}
-                            className="btn-uq btn-uq-outline-gray"
+                            className="btn-beo btn-beo-outline-gray"
                             style={{ padding: '4px 10px', fontSize: '0.75rem' }}
                           >
                             {lang === 'vi' ? 'Kiểm kê / Điều chỉnh' : 'Audit / Adjust'}
@@ -1030,7 +980,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
             </div>
 
             {/* Print shift report button */}
-            <button onClick={() => window.print()} className="btn-uq btn-uq-primary">
+            <button onClick={() => window.print()} className="btn-beo btn-beo-primary">
               <Printer size={16} />
               <span>{lang === 'vi' ? 'In Biên Bản Chốt Ca Bán Hàng' : 'Print Shift Settlement Report'}</span>
             </button>
@@ -1064,7 +1014,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                   />
                   <Search size={14} color="#888" style={{ position: 'absolute', left: '10px', top: '10px' }} />
                 </div>
-                <button onClick={handleOpenCreateProduct} className="btn-uq btn-uq-red" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                <button onClick={handleOpenCreateProduct} className="btn-beo btn-beo-red" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                   <Plus size={16} />
                   <span>{lang === 'vi' ? 'Thêm Sản Phẩm Mới' : 'Add New Product'}</span>
                 </button>
@@ -1085,7 +1035,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                       <th style={{ padding: '10px' }}>{lang === 'vi' ? 'GIỚI TÍNH' : 'GENDER'}</th>
                       <th style={{ padding: '10px' }}>{lang === 'vi' ? 'BỘ SƯU TẬP' : 'COLLECTION'}</th>
                       <th style={{ padding: '10px' }}>{lang === 'vi' ? 'GIÁ NIÊM YẾT' : 'RETAIL PRICE'}</th>
-                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'BIẾN THỂ' : 'VARIANTS'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'BIẾN THỂ MÀU / SIZE' : 'COLOR / SIZE VARIANTS'}</th>
                       <th style={{ padding: '10px', textAlign: 'right' }}>{lang === 'vi' ? 'THAO TÁC' : 'ACTIONS'}</th>
                     </tr>
                   </thead>
@@ -1097,13 +1047,13 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                             <img src={prod.primaryImageUrl} alt={prod.name} style={{ width: '40px', height: '48px', objectFit: 'cover' }} />
                             <div>
                               <strong>{prod.name}</strong>
-                              <div style={{ fontSize: '0.75rem', color: '#666' }}>{prod.categoryName || 'LifeWear'}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#666' }}>{prod.categoryName || 'BEO Essentials'}</div>
                             </div>
                           </div>
                         </td>
                         <td style={{ padding: '10px', fontFamily: 'monospace' }}>{prod.code}</td>
                         <td style={{ padding: '10px' }}>{prod.gender}</td>
-                        <td style={{ padding: '10px' }}>{prod.collection || 'LifeWear Essentials'}</td>
+                        <td style={{ padding: '10px' }}>{prod.collection || 'BEO Essentials'}</td>
                         <td style={{ padding: '10px', fontWeight: '700' }}>
                           {prod.salePrice ? (
                             <div>
@@ -1121,7 +1071,7 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                             <button
                               onClick={() => handleOpenEditProduct(prod)}
-                              className="btn-uq btn-uq-outline-gray"
+                              className="btn-beo btn-beo-outline-gray"
                               style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                               title="Edit"
                             >
@@ -1465,10 +1415,10 @@ export const StaffDashboardPage = ({ onNavigate }) => {
                 )}
 
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '12px' }}>
-                  <button type="button" onClick={() => setIsProductModalOpen(false)} className="btn-uq btn-uq-outline-gray" style={{ padding: '10px 18px' }}>
+                  <button type="button" onClick={() => setIsProductModalOpen(false)} className="btn-beo btn-beo-outline-gray" style={{ padding: '10px 18px' }}>
                     {lang === 'vi' ? 'Hủy' : 'Cancel'}
                   </button>
-                  <button type="submit" className="btn-uq btn-uq-red" style={{ padding: '10px 24px' }}>
+                  <button type="submit" className="btn-beo btn-beo-red" style={{ padding: '10px 24px' }}>
                     {editingProduct ? (lang === 'vi' ? 'Lưu Thay Đổi Sản Phẩm' : 'Save Changes') : (lang === 'vi' ? 'Tạo Sản Phẩm & Biến Thể' : 'Create Product & SKUs')}
                   </button>
                 </div>
@@ -1529,10 +1479,10 @@ export const StaffDashboardPage = ({ onNavigate }) => {
               </div>
 
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                <button onClick={() => setAdjustModalItem(null)} className="btn-uq btn-uq-outline-gray" style={{ padding: '8px 16px' }}>
+                <button onClick={() => setAdjustModalItem(null)} className="btn-beo btn-beo-outline-gray" style={{ padding: '8px 16px' }}>
                   {lang === 'vi' ? 'Hủy' : 'Cancel'}
                 </button>
-                <button onClick={handleConfirmStockAdjust} className="btn-uq btn-uq-red" style={{ padding: '8px 16px' }}>
+                <button onClick={handleConfirmStockAdjust} className="btn-beo btn-beo-red" style={{ padding: '8px 16px' }}>
                   {lang === 'vi' ? 'Xác nhận lưu' : 'Save Adjustment'}
                 </button>
               </div>

@@ -6,7 +6,7 @@ export const isCustomizerEnabled = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     // Default to true so client can preview and test
     return saved === null ? true : saved === 'true';
-  } catch (e) {
+  } catch {
     return true;
   }
 };

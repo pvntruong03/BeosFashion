@@ -1,57 +1,48 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   Sparkles,
   Type,
   Smile,
   Upload,
-  RotateCcw,
   ShoppingBag,
-  Eye,
   Check,
-  Palette,
   Layers,
-  HelpCircle,
   X,
-  Plus,
-  Minus,
-  Sliders,
-  Award,
-  ChevronRight,
   Move,
   ArrowUp,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  Maximize2,
-  RefreshCw,
-  Compass,
-  CornerDownRight
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../contexts/ToastContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import api from '../services/api';
 
 // Base Apparel Types
 const APPAREL_TYPES = [
   {
     id: 'tshirt',
     name: 'Supima Cotton Crew Neck T-Shirt',
+    catalogNames: ['Women Supima Cotton Crew Neck T-Shirt', 'Supima Cotton Classic V-Neck T-Shirt'],
     basePrice: 299000,
-    frontImage: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
-    backImage: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&auto=format&fit=crop&q=80',
+    frontImage: '/images/white-tshirt-mockup.webp',
+    backImage: '/images/white-tshirt-mockup.webp',
     description: '100% Supima Cotton extra-fine weave, ultra-smooth surface engineered for high-precision printing & embroidery.'
   },
   {
     id: 'polo',
-    name: 'AIRism Pique Short Sleeve Polo',
+    name: 'BEO AirFlow Pique Short Sleeve Polo',
+    catalogNames: ['BEO AirFlow Pique Short Sleeve Polo Shirt', 'Men BEO DryMotion Performance Polo Shirt'],
     basePrice: 399000,
     frontImage: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80',
     backImage: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&auto=format&fit=crop&q=80',
-    description: 'Breathable AIRism pique knit with instant cool touch, structured collar ideal for subtle chest embroidery.'
+    description: 'Breathable BEO AirFlow pique knit with instant cool touch, structured collar ideal for subtle chest embroidery.'
   },
   {
     id: 'hoodie',
     name: 'Heavyweight Fleece Pullover Hoodie',
+    catalogNames: ['BEO AirFlow UV Protection Mesh Relaxed Hoodie', 'BEO DryMotion UV Protection Full-Zip Active Hoodie'],
     basePrice: 549000,
     frontImage: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&auto=format&fit=crop&q=80',
     backImage: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?w=800&auto=format&fit=crop&q=80',
@@ -60,12 +51,21 @@ const APPAREL_TYPES = [
   {
     id: 'tote',
     name: '12oz Heavy Canvas Utility Tote Bag',
+    catalogNames: ['Round Mini Shoulder Bag Unisex', 'Round Mini Dumpling Nylon Shoulder Bag'],
     basePrice: 199000,
     frontImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80',
     backImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80',
     description: 'Durable heavyweight raw cotton canvas with reinforced shoulder straps, customized slogan typography.'
   }
 ];
+
+const findCatalogProduct = (products, preferredNames = []) => {
+  for (const name of preferredNames) {
+    const match = products.find((product) => product.name === name);
+    if (match) return match;
+  }
+  return null;
+};
 
 // Garment Base Colors
 const BASE_COLORS = [
@@ -121,7 +121,7 @@ const EMBROIDERY_ICONS = [
   { id: 'plane', name: 'Traveler Aero', icon: '✈️' }
 ];
 
-export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate }) => {
+export const ProductCustomizerStudio = ({ initialProduct, onClose }) => {
   const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
   const { formatPrice, lang } = useLanguage();
@@ -135,6 +135,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
   const [selectedSize, setSelectedSize] = useState('L');
   const [viewSide, setViewSide] = useState('FRONT');
   const [activeTab, setActiveTab] = useState('text');
+  const [catalogProducts, setCatalogProducts] = useState([]);
 
   // Customization Content States
   const [customText, setCustomText] = useState('BEO 2026');
@@ -148,15 +149,92 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
 
   // Free Dragging & Coordinate Positioning States (Percentages 0-100)
   const [positionConfig, setPositionConfig] = useState({
-    frontX: 38,
-    frontY: 32,
+    frontX: 50,
+    frontY: 42,
     backX: 50,
-    backY: 35,
+    backY: 38,
     rotation: 0
   });
 
+  useEffect(() => {
+    if (initialProduct) {
+      const pName = initialProduct.name?.toLowerCase() || '';
+      const matched = APPAREL_TYPES.find((a) => pName.includes(a.id)) || APPAREL_TYPES[0];
+      setSelectedApparel({
+        ...matched,
+        name: initialProduct.name || matched.name,
+        basePrice: initialProduct.salePrice || initialProduct.basePrice || matched.basePrice
+      });
+    }
+  }, [initialProduct]);
+
+  useEffect(() => {
+    let active = true;
+    api.get('/products?sizePerPage=200')
+      .then((res) => {
+        if (active) setCatalogProducts(res.data?.content || []);
+      })
+      .catch(() => {
+        if (active) showError(lang === 'vi' ? 'Không thể tải danh mục phôi áo.' : 'Unable to load the garment catalog.');
+      });
+    return () => {
+      active = false;
+    };
+  }, [lang, showError]);
+
+  const matchedCatalogProduct = useMemo(() => {
+    if (initialProduct?.variants?.length) return initialProduct;
+    return findCatalogProduct(catalogProducts, selectedApparel.catalogNames);
+  }, [catalogProducts, initialProduct, selectedApparel]);
+
+  const availableVariants = useMemo(() => (
+    (matchedCatalogProduct?.variants || []).filter((variant) =>
+      variant.active !== false && !/^\d{2,3}$/.test(String(variant.size || ''))
+    )
+  ), [matchedCatalogProduct]);
+
+  const availableColors = useMemo(() => {
+    const unique = new Map();
+    availableVariants.forEach((variant) => {
+      if (!unique.has(variant.colorName)) {
+        unique.set(variant.colorName, {
+          name: variant.colorName,
+          hex: variant.colorHex || '#cccccc',
+          bg: variant.colorHex || '#cccccc',
+          border: '#999999',
+          textColor: '#111111'
+        });
+      }
+    });
+    return [...unique.values()];
+  }, [availableVariants]);
+
+  const availableSizes = useMemo(() => (
+    [...new Set(availableVariants.map((variant) => variant.size).filter(Boolean))]
+  ), [availableVariants]);
+
+  useEffect(() => {
+    if (!availableVariants.length) return;
+    const currentMatch = availableVariants.find((variant) =>
+      variant.size === selectedSize && variant.colorName === selectedColor.name
+    );
+    if (currentMatch) return;
+
+    const preferred = availableVariants.find((variant) =>
+      variant.size === selectedSize && /white/i.test(variant.colorName)
+    ) || availableVariants.find((variant) => variant.size === selectedSize) || availableVariants[0];
+
+    setSelectedSize(preferred.size);
+    setSelectedColor({
+      name: preferred.colorName,
+      hex: preferred.colorHex || '#cccccc',
+      bg: preferred.colorHex || '#cccccc',
+      border: '#999999',
+      textColor: '#111111'
+    });
+  }, [availableVariants, selectedColor.name, selectedSize]);
+
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Current Coordinates based on View Side
   const currentX = viewSide === 'FRONT' ? positionConfig.frontX : positionConfig.backX;
@@ -164,10 +242,13 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
 
   // Custom fee calculation based on placement
   const customFee = viewSide === 'BACK' || (currentX > 40 && currentX < 60 && currentY < 50) ? 70000 : 50000;
-  const totalPrice = selectedApparel.basePrice + customFee;
+  const catalogBasePrice = matchedCatalogProduct
+    ? Number(matchedCatalogProduct.salePrice || matchedCatalogProduct.basePrice || selectedApparel.basePrice)
+    : selectedApparel.basePrice;
+  const totalPrice = catalogBasePrice + customFee;
 
   // Update coordinate helper
-  const updateCurrentCoords = (newX, newY) => {
+  const updateCurrentCoords = useCallback((newX, newY) => {
     const clampedX = Math.max(18, Math.min(82, Number(newX.toFixed(1))));
     const clampedY = Math.max(18, Math.min(82, Number(newY.toFixed(1))));
 
@@ -176,7 +257,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
       [viewSide === 'FRONT' ? 'frontX' : 'backX']: clampedX,
       [viewSide === 'FRONT' ? 'frontY' : 'backY']: clampedY
     }));
-  };
+  }, [viewSide]);
 
   // Preset Selection
   const applyPreset = (preset) => {
@@ -200,9 +281,6 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
   const handleDragStart = (e) => {
     e.preventDefault();
     setIsDragging(true);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    setDragStart({ x: clientX, y: clientY });
   };
 
   useEffect(() => {
@@ -237,7 +315,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
       window.removeEventListener('touchmove', handleDragMove);
       window.removeEventListener('touchend', handleDragEnd);
     };
-  }, [isDragging, viewSide]);
+  }, [isDragging, updateCurrentCoords]);
 
   // Handle Image Upload
   const handleImageUpload = (e) => {
@@ -257,42 +335,56 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
   };
 
   // Add customized item to cart
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    let catalogProduct = matchedCatalogProduct;
+    if (!catalogProduct) {
+      try {
+        const res = await api.get('/products?sizePerPage=200');
+        catalogProduct = findCatalogProduct(res.data?.content || [], selectedApparel.catalogNames);
+      } catch {
+        catalogProduct = null;
+      }
+    }
+
+    const normalizeColor = (value) => String(value || '')
+      .replace(/^\d+\s*/, '')
+      .replace(/^OFF\s+/, '')
+      .trim()
+      .toUpperCase();
+    const targetColor = normalizeColor(selectedColor.name);
+    const productVariants = (catalogProduct?.variants || []).filter((variant) =>
+      variant.active !== false && !/^\d{2,3}$/.test(String(variant.size || ''))
+    );
+    const selectedVariant = productVariants.find((variant) =>
+      variant.size === selectedSize && normalizeColor(variant.colorName) === targetColor
+    ) || productVariants.find((variant) => variant.size === selectedSize);
+
+    if (!selectedVariant) {
+      showError(lang === 'vi'
+        ? 'Biến thể màu và kích cỡ này hiện không có trong kho.'
+        : 'This color and size combination is currently unavailable.');
+      return;
+    }
+
     const customDetails = {
       isCustomized: true,
       apparelName: selectedApparel.name,
-      garmentColor: selectedColor.name,
-      size: selectedSize,
+      garmentColor: selectedVariant.colorName,
+      size: selectedVariant.size,
       position: `X:${Math.round(currentX)}%, Y:${Math.round(currentY)}% (${viewSide === 'FRONT' ? 'Front' : 'Back'})`,
       text: customText.trim() || null,
       font: selectedFont.name,
       threadColor: selectedThread.name,
       badge: selectedBadge ? selectedBadge.name : null,
-      hasUploadedImage: !!uploadedImage
+      hasUploadedImage: !!uploadedImage,
+      customFee
     };
 
-    const customizedProduct = {
-      id: 21,
-      name: `[Custom Lab] ${selectedApparel.name} - ${customText || 'Customized'}`,
-      code: `BEO-CUSTOM-${Date.now().toString().slice(-4)}`,
-      primaryImageUrl: selectedApparel.frontImage,
-      basePrice: totalPrice,
-      salePrice: null,
-      customDetails
-    };
+    // Serialize custom notes to JSON string
+    const customNotes = JSON.stringify(customDetails);
 
-    const customizedVariant = {
-      id: 999,
-      colorName: selectedColor.name,
-      colorHex: selectedColor.hex,
-      size: selectedSize,
-      totalStock: 99,
-      priceAdjustment: customFee
-    };
-
-    addToCart(customizedProduct, customizedVariant, 1);
-    showSuccess(lang === 'vi' ? `Đã thêm áo thiết kế riêng "${customText || selectedApparel.name}" vào giỏ hàng!` : `Added custom design "${customText || selectedApparel.name}" to cart!`);
-    if (onClose) onClose();
+    const added = await addToCart(selectedVariant.id, 1, true, customNotes);
+    if (added && onClose) onClose();
   };
 
   return (
@@ -968,7 +1060,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     <div />
                     <button
                       onClick={() => nudge(0, -3)}
-                      className="btn-uq"
+                      className="btn-beo"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       title="Move Up"
                     >
@@ -978,7 +1070,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
 
                     <button
                       onClick={() => nudge(-3, 0)}
-                      className="btn-uq"
+                      className="btn-beo"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       title="Move Left"
                     >
@@ -986,7 +1078,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     </button>
                     <button
                       onClick={() => updateCurrentCoords(50, 38)}
-                      className="btn-uq"
+                      className="btn-beo"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: '900' }}
                       title="Center Position"
                     >
@@ -994,7 +1086,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     </button>
                     <button
                       onClick={() => nudge(3, 0)}
-                      className="btn-uq"
+                      className="btn-beo"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       title="Move Right"
                     >
@@ -1004,7 +1096,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     <div />
                     <button
                       onClick={() => nudge(0, 3)}
-                      className="btn-uq"
+                      className="btn-beo"
                       style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       title="Move Down"
                     >
@@ -1045,8 +1137,11 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     {lang === 'vi' ? 'Chọn Loại Phôi Trang Phục:' : 'Select Base Garment:'}
                   </label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {APPAREL_TYPES.map((ap) => (
-                      <div
+                    {APPAREL_TYPES.map((ap) => {
+                      const catalogMatch = findCatalogProduct(catalogProducts, ap.catalogNames);
+                      const displayedPrice = Number(catalogMatch?.salePrice || catalogMatch?.basePrice || ap.basePrice);
+                      return (
+                        <div
                         key={ap.id}
                         onClick={() => setSelectedApparel(ap)}
                         style={{
@@ -1065,10 +1160,11 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                           <div style={{ fontSize: '0.72rem', color: '#666' }}>{ap.description.slice(0, 50)}...</div>
                         </div>
                         <div style={{ fontWeight: '800', color: '#e60012', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
-                          {formatPrice(ap.basePrice)}
+                          {formatPrice(displayedPrice)}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1078,10 +1174,16 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     {lang === 'vi' ? 'Màu Áo:' : 'Garment Color:'} <strong>{selectedColor.name}</strong>
                   </label>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {BASE_COLORS.map((col) => (
+                    {(availableColors.length ? availableColors : BASE_COLORS).map((col) => (
                       <div
                         key={col.name}
-                        onClick={() => setSelectedColor(col)}
+                        onClick={() => {
+                          setSelectedColor(col);
+                          const compatible = availableVariants.find((variant) =>
+                            variant.colorName === col.name && variant.size === selectedSize
+                          ) || availableVariants.find((variant) => variant.colorName === col.name);
+                          if (compatible) setSelectedSize(compatible.size);
+                        }}
                         style={{
                           width: '32px',
                           height: '32px',
@@ -1110,10 +1212,24 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
                     {lang === 'vi' ? 'Kích Thước:' : 'Size:'} <strong>{selectedSize}</strong>
                   </label>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    {['S', 'M', 'L', 'XL', 'XXL'].map((sz) => (
+                    {(availableSizes.length ? availableSizes : ['S', 'M', 'L', 'XL', 'XXL']).map((sz) => (
                       <button
                         key={sz}
-                        onClick={() => setSelectedSize(sz)}
+                        onClick={() => {
+                          setSelectedSize(sz);
+                          const compatible = availableVariants.find((variant) =>
+                            variant.size === sz && variant.colorName === selectedColor.name
+                          ) || availableVariants.find((variant) => variant.size === sz);
+                          if (compatible && compatible.colorName !== selectedColor.name) {
+                            setSelectedColor({
+                              name: compatible.colorName,
+                              hex: compatible.colorHex || '#cccccc',
+                              bg: compatible.colorHex || '#cccccc',
+                              border: '#999999',
+                              textColor: '#111111'
+                            });
+                          }
+                        }}
                         style={{
                           width: '38px',
                           height: '38px',
@@ -1145,7 +1261,7 @@ export const ProductCustomizerStudio = ({ initialProduct, onClose, onNavigate })
 
             <button
               onClick={handleAddToCart}
-              className="btn-uq btn-uq-red"
+              className="btn-beo btn-beo-red"
               style={{
                 width: '100%',
                 height: '46px',

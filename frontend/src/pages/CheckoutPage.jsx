@@ -6,12 +6,9 @@ import {
   CreditCard,
   QrCode,
   Wallet,
-  CheckCircle2,
   Tag,
   ArrowLeft,
-  Lock,
-  Sparkles,
-  Award
+  Lock
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -36,10 +33,9 @@ export const CheckoutPage = ({ onNavigate }) => {
   const [shippingAddress, setShippingAddress] = useState(user?.address || '');
   const [shippingCity, setShippingCity] = useState(user?.city || 'Can Tho');
   const [selectedStoreId, setSelectedStoreId] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('VIETQR');
+  const [paymentMethod, setPaymentMethod] = useState('BANK_TRANSFER');
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -47,10 +43,7 @@ export const CheckoutPage = ({ onNavigate }) => {
   const standardShippingFee = 30000;
   const shippingFee = (orderType === 'IN_STORE_PICKUP' || subTotal >= freeShippingThreshold) ? 0 : standardShippingFee;
   const couponDiscount = appliedCoupon?.calculatedDiscount || 0;
-  const availablePoints = user?.points || 1500;
-  const pointsDiscountValue = useLoyaltyPoints ? Math.min(availablePoints * 100, subTotal * 0.3) : 0;
-  const totalDiscount = couponDiscount + pointsDiscountValue;
-  const finalAmount = Math.max(subTotal - totalDiscount + shippingFee, 0);
+  const finalAmount = Math.max(subTotal - couponDiscount + shippingFee, 0);
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -106,7 +99,10 @@ export const CheckoutPage = ({ onNavigate }) => {
       await clearCart();
       await fetchCart();
       showSuccess(lang === 'vi' ? 'Đặt hàng thành công!' : 'Order placed successfully!');
-      onNavigate('order-success', { order: res.data });
+      if (res.data?.orderNumber) {
+        sessionStorage.setItem(`beo_order_${res.data.orderNumber}`, JSON.stringify(res.data));
+      }
+      onNavigate('order-success', { order: res.data, orderNumber: res.data?.orderNumber });
     } catch (err) {
       showError(err.message || (lang === 'vi' ? 'Lỗi khi tạo đơn hàng' : 'Failed to place order'));
     } finally {
@@ -119,7 +115,7 @@ export const CheckoutPage = ({ onNavigate }) => {
       <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '12px' }}>{t('empty_cart')}</h2>
         <p style={{ color: '#666', marginBottom: '24px' }}>{lang === 'vi' ? 'Hãy chọn sản phẩm để tiến hành thanh toán.' : 'Please add items to your shopping bag to checkout.'}</p>
-        <button onClick={() => onNavigate('products')} className="btn-uq btn-uq-primary">
+        <button onClick={() => onNavigate('products')} className="btn-beo btn-beo-primary">
           {lang === 'vi' ? 'Tiếp tục mua sắm' : 'Continue Shopping'}
         </button>
       </div>
@@ -140,21 +136,16 @@ export const CheckoutPage = ({ onNavigate }) => {
       </h1>
 
       <form onSubmit={handleSubmitOrder}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-          gap: '40px',
-          alignItems: 'start'
-        }}>
+        <div className="checkout-layout">
           {/* Left Column: Delivery details & Payment method */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {/* 1. Delivery Type Selection */}
-            <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e5e5e5' }}>
+            <div className="checkout-card" style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e5e5e5' }}>
               <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '16px' }}>
                 {lang === 'vi' ? '1. Hình thức nhận hàng' : '1. Delivery Method'}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              <div className="checkout-delivery-grid">
                 <button
                   type="button"
                   onClick={() => setOrderType('ONLINE_DELIVERY')}
@@ -198,13 +189,13 @@ export const CheckoutPage = ({ onNavigate }) => {
             </div>
 
             {/* 2. Customer & Shipping Info */}
-            <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e5e5e5' }}>
+            <div className="checkout-card" style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e5e5e5' }}>
               <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '16px' }}>
                 {lang === 'vi' ? '2. Thông tin khách hàng & Địa chỉ' : '2. Contact & Delivery Details'}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
+                <div className="checkout-contact-grid">
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', marginBottom: '4px' }}>
                       {lang === 'vi' ? 'Họ và tên *' : 'Full Name *'}
@@ -312,7 +303,7 @@ export const CheckoutPage = ({ onNavigate }) => {
             </div>
 
             {/* 3. Payment Method */}
-            <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e5e5e5' }}>
+            <div className="checkout-card" style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e5e5e5' }}>
               <div style={{ fontWeight: '800', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '16px' }}>
                 {lang === 'vi' ? '3. Phương thức thanh toán' : '3. Payment Method'}
               </div>
@@ -321,9 +312,9 @@ export const CheckoutPage = ({ onNavigate }) => {
                 {[
                   {
                     id: 'BANK_TRANSFER',
-                    label: lang === 'vi' ? 'Chuyển khoản VietQR 24/7 (Khuyên dùng)' : 'VietQR Instant Bank Transfer (Recommended)',
+                    label: 'VietQR',
                     icon: <QrCode size={20} color="#e60012" />,
-                    desc: lang === 'vi' ? 'Tự động sinh mã QR khớp số tiền và mã đơn, hệ thống tự động xác nhận qua Webhook Napas' : 'Instant dynamic QR code matching exact order total with auto-verification webhook'
+                    desc: lang === 'vi' ? 'Quét mã QR để chuyển khoản với số tiền và nội dung được điền sẵn' : 'Scan the QR code to transfer with the amount and reference filled automatically'
                   },
                   {
                     id: 'COD',
@@ -333,15 +324,15 @@ export const CheckoutPage = ({ onNavigate }) => {
                   },
                   {
                     id: 'VNPAY',
-                    label: lang === 'vi' ? 'Cổng thanh toán VNPay Sandbox (Quét mã QR / Thẻ ATM)' : 'VNPay Payment Gateway (ATM / QR Code)',
+                    label: 'VNPay',
                     icon: <CreditCard size={20} color="#005baa" />,
-                    desc: lang === 'vi' ? 'Thanh toán trực tuyến bảo mật qua cổng VNPay' : 'Secure online gateway payment via domestic ATM card or bank app'
+                    desc: lang === 'vi' ? 'Thanh toán trực tuyến qua cổng VNPay' : 'Online payment through the VNPay gateway'
                   },
                   {
                     id: 'MOMO',
-                    label: lang === 'vi' ? 'Ví Điện Tử MoMo' : 'MoMo E-Wallet',
+                    label: lang === 'vi' ? 'Ví MoMo' : 'MoMo Wallet',
                     icon: <Wallet size={20} color="#a50064" />,
-                    desc: lang === 'vi' ? 'Thanh toán nhanh bằng ứng dụng ví điện tử MoMo' : 'Fast one-touch payment via MoMo app'
+                    desc: lang === 'vi' ? 'Thanh toán nhanh qua ví điện tử MoMo' : 'Fast payment through the MoMo e-wallet'
                   },
                 ].map((pm) => (
                   <label
@@ -378,7 +369,7 @@ export const CheckoutPage = ({ onNavigate }) => {
           </div>
 
           {/* Right Column: Order Summary & Coupon */}
-          <div style={{
+          <div className="checkout-summary" style={{
             position: 'sticky',
             top: '90px',
             backgroundColor: '#fafafa',
@@ -415,7 +406,7 @@ export const CheckoutPage = ({ onNavigate }) => {
               <div style={{ display: 'flex', gap: '6px' }}>
                 <input
                   type="text"
-                  placeholder="e.g. BEO10, LIFEWEAR50K"
+                  placeholder="e.g. BEO10, BEO50K"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   style={{ flex: 1, padding: '8px 10px', border: '1px solid #ccc', outline: 'none', fontSize: '0.85rem' }}
@@ -423,7 +414,7 @@ export const CheckoutPage = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={handleApplyCoupon}
-                  className="btn-uq btn-uq-primary"
+                  className="btn-beo btn-beo-primary"
                   style={{ padding: '8px 14px', fontSize: '0.85rem' }}
                 >
                   {t('apply')}
@@ -437,26 +428,6 @@ export const CheckoutPage = ({ onNavigate }) => {
                 </div>
               )}
 
-              {/* Loyalty Points Redemption */}
-              <div style={{ marginTop: '12px', padding: '10px 12px', backgroundColor: '#ffffff', border: '1px solid #ddd', borderRadius: '2px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '700' }}>
-                  <input
-                    type="checkbox"
-                    checked={useLoyaltyPoints}
-                    onChange={(e) => setUseLoyaltyPoints(e.target.checked)}
-                    style={{ accentColor: '#e60012', width: '16px', height: '16px' }}
-                  />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Award size={16} color="#ffab00" />
-                    <span>{lang === 'vi' ? `Dùng ${availablePoints.toLocaleString()} điểm BEO Club` : `Redeem ${availablePoints.toLocaleString()} BEO Club Points`}</span>
-                  </div>
-                </label>
-                {useLoyaltyPoints && (
-                  <div style={{ fontSize: '0.75rem', color: '#2e7d32', fontWeight: '700', marginTop: '4px', paddingLeft: '24px' }}>
-                    ✓ {lang === 'vi' ? `Giảm trực tiếp ${formatPrice(pointsDiscountValue)} vào đơn hàng` : `Instant ${formatPrice(pointsDiscountValue)} discount applied`}
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Financial breakdown */}
@@ -473,12 +444,6 @@ export const CheckoutPage = ({ onNavigate }) => {
                 </div>
               )}
 
-              {pointsDiscountValue > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2e7d32' }}>
-                  <span>{lang === 'vi' ? 'Giảm điểm thưởng BEO Club:' : 'BEO Club Points Discount:'}</span>
-                  <span style={{ fontWeight: '700' }}>-{formatPrice(pointsDiscountValue)}</span>
-                </div>
-              )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#666' }}>{t('shipping_fee')}:</span>
@@ -504,7 +469,7 @@ export const CheckoutPage = ({ onNavigate }) => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-uq btn-uq-red"
+              className="btn-beo btn-beo-red"
               style={{ width: '100%', padding: '16px', fontSize: '1.05rem', marginTop: '24px' }}
             >
               <Lock size={18} />

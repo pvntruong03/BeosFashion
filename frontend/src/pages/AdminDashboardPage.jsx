@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  LayoutDashboard,
   ShoppingBag,
   Package,
   Users,
@@ -9,9 +8,6 @@ import {
   Plus,
   Trash2,
   Edit2,
-  DollarSign,
-  CheckCircle,
-  Eye,
   X,
   Printer,
   QrCode,
@@ -19,18 +15,22 @@ import {
   Save,
   Search,
   Filter,
-  Download
+  Download,
+  RefreshCw
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { RevenueAnalyticsPanel } from '../components/admin/RevenueAnalyticsPanel';
 import { exportOrdersToExcel, exportProductsToExcel } from '../utils/excelExporter';
+import { buildVariantMatrix } from '../services/productVariants';
 import api from '../services/api';
 
 export const AdminDashboardPage = ({ onNavigate }) => {
   const { formatPrice, lang } = useLanguage();
-  const { showSuccess, showError } = useToast();
+  const { showSuccess, showError, showInfo } = useToast();
+  const [reseedLoading, setReseedLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState(() => {
     try {
@@ -42,7 +42,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         if (tab) return tab;
       }
       return localStorage.getItem('beo_admin_active_tab') || 'overview';
-    } catch (e) {
+    } catch {
       return 'overview';
     }
   });
@@ -61,7 +61,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const [usersList, setUsersList] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // Product Create/Edit Modal
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -72,7 +72,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const [prodFormSalePrice, setProdFormSalePrice] = useState('');
   const [prodFormCategoryId, setProdFormCategoryId] = useState(1);
   const [prodFormGender, setProdFormGender] = useState('MEN');
-  const [prodFormCollection, setProdFormCollection] = useState('AIRism');
+  const [prodFormCollection, setProdFormCollection] = useState('BEO AirFlow');
   const [prodFormMaterial, setProdFormMaterial] = useState('100% Supima Cotton');
   const [prodFormDesc, setProdFormDesc] = useState('');
   const [prodFormImage, setProdFormImage] = useState('');
@@ -109,9 +109,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
   // VietQR Bank Config State
   const [bankConfig, setBankConfig] = useState({
-    bankId: 'vietinbank',
-    bankName: 'VietinBank (ICB)',
-    accountNo: '109876543210',
+    bankId: 'mbbank',
+    bankName: 'MB Bank (Ngân hàng TMCP Quân Đội)',
+    accountNo: '190019199999',
     accountName: 'CONG TY TNHH BEO STORE VIETNAM',
     template: 'compact2'
   });
@@ -167,17 +167,19 @@ export const AdminDashboardPage = ({ onNavigate }) => {
   const handleOpenCreateProduct = () => {
     setEditingProduct(null);
     setProdFormName('');
-    setProdFormCode('UQ-' + Math.floor(100000 + Math.random() * 900000));
+    setProdFormCode('BEO-' + Math.floor(100000 + Math.random() * 900000));
     setProdFormPrice(399000);
     setProdFormSalePrice('');
     setProdFormCategoryId(categories[0]?.id || 1);
     setProdFormGender('MEN');
-    setProdFormCollection('AIRism');
+    setProdFormCollection('BEO AirFlow');
     setProdFormMaterial('100% Supima Cotton');
-    setProdFormDesc('Precision Japanese LifeWear tailoring for everyday comfort and durability.');
+    setProdFormDesc('Precision BEO Essentials tailoring for everyday comfort and durability.');
     setProdFormImage('https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80');
     setProdFormFeatured(true);
     setProdFormNew(true);
+    setSelectedColorsForMatrix(['09 BLACK', '00 WHITE']);
+    setSelectedSizesForMatrix(['S', 'M', 'L', 'XL']);
     setIsProductModalOpen(true);
   };
 
@@ -189,41 +191,28 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     setProdFormSalePrice(prod.salePrice !== null && prod.salePrice !== undefined ? prod.salePrice : '');
     setProdFormCategoryId(prod.categoryId || (categories[0]?.id || 1));
     setProdFormGender(prod.gender || 'MEN');
-    setProdFormCollection(prod.collection || 'AIRism');
+    setProdFormCollection(prod.collection || 'BEO AirFlow');
     setProdFormMaterial(prod.material || '100% Supima Cotton');
     setProdFormDesc(prod.description || '');
     setProdFormImage(prod.primaryImageUrl || '');
     setProdFormFeatured(prod.featured || false);
     setProdFormNew(prod.new || false);
+    const currentVariants = Array.isArray(prod.variants) ? prod.variants : [];
+    setSelectedColorsForMatrix([...new Set(currentVariants.map((variant) => variant.colorName).filter(Boolean))]);
+    setSelectedSizesForMatrix([...new Set(currentVariants.map((variant) => variant.size).filter(Boolean))]);
     setIsProductModalOpen(true);
   };
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
-      const variants = [];
-      const colorHexMap = {
-        '09 BLACK': '#111111',
-        '00 WHITE': '#ffffff',
-        '68 BLUE': '#2980b9',
-        '32 BEIGE': '#d2b48c',
-        '03 GRAY': '#7f8c8d',
-        '12 PINK': '#fadbd8',
-      };
-
-      for (const col of selectedColorsForMatrix) {
-        for (const sz of selectedSizesForMatrix) {
-          variants.push({
-            colorName: col,
-            colorHex: colorHexMap[col] || '#000000',
-            size: sz,
-            sku: `${prodFormCode}-${col.substring(0, 2)}-${sz}`,
-            barcode: '45500' + Math.floor(1000000 + Math.random() * 9000000),
-            totalStock: 50,
-            imageUrl: prodFormImage
-          });
-        }
-      }
+      const variants = buildVariantMatrix({
+        colors: selectedColorsForMatrix,
+        sizes: selectedSizesForMatrix,
+        productCode: prodFormCode,
+        imageUrl: prodFormImage,
+        existingVariants: editingProduct?.variants || [],
+      });
 
       const payload = {
         name: prodFormName,
@@ -374,6 +363,23 @@ export const AdminDashboardPage = ({ onNavigate }) => {
     }
   };
 
+  // Reseed / Refresh Realistic Data Handler
+  const handleReseedData = async () => {
+    if (reseedLoading) return;
+    setReseedLoading(true);
+    showInfo(lang === 'vi' ? 'Đang tạo và làm mới dữ liệu thực tế toàn hệ thống...' : 'Generating and refreshing realistic system data...');
+    try {
+      await api.post('/admin/reseed-data');
+      await fetchAdminData();
+      showSuccess(lang === 'vi' ? 'Đã làm mới dữ liệu thực tế thành công! Doanh thu, biểu đồ và đơn hàng đã được cập nhật.' : 'Realistic system data refreshed successfully! Revenue, trend charts, and orders updated.');
+    } catch (err) {
+      console.error('Failed to reseed data:', err);
+      showError(lang === 'vi' ? 'Lỗi khi làm mới dữ liệu' : 'Failed to refresh system data');
+    } finally {
+      setReseedLoading(false);
+    }
+  };
+
   // Filtered Orders & Pagination
   const filteredOrders = (Array.isArray(orders) ? orders : []).filter((ord) => {
     if (!ord) return false;
@@ -436,11 +442,33 @@ export const AdminDashboardPage = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={() => onNavigate('staff')} className="btn-uq btn-uq-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={handleReseedData}
+              disabled={reseedLoading}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                fontSize: '0.85rem',
+                backgroundColor: '#22c55e',
+                color: '#ffffff',
+                border: 'none',
+                fontWeight: '700',
+                cursor: reseedLoading ? 'not-allowed' : 'pointer',
+                opacity: reseedLoading ? 0.7 : 1,
+                transition: 'all 0.2s ease'
+              }}
+              title={lang === 'vi' ? 'Làm mới dữ liệu doanh thu, đơn hàng và biểu đồ 7 ngày' : 'Refresh revenue, orders, and 7-day chart data'}
+            >
+              <RefreshCw size={15} className={reseedLoading ? 'animate-spin' : ''} />
+              <span>{reseedLoading ? (lang === 'vi' ? 'Đang tạo số liệu...' : 'Generating Data...') : (lang === 'vi' ? 'Làm Mới Số Liệu Thực Tế' : 'Refresh Live Data')}</span>
+            </button>
+            <button onClick={() => onNavigate('staff')} className="btn-beo btn-beo-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
               {lang === 'vi' ? 'Mở Staff POS Portal' : 'Store POS Portal'}
             </button>
-            <button onClick={() => onNavigate('home')} className="btn-uq btn-uq-outline-gray" style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}>
+            <button onClick={() => onNavigate('home')} className="btn-beo portal-storefront-button" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
               {lang === 'vi' ? 'Về Storefront' : 'Storefront'}
             </button>
           </div>
@@ -450,11 +478,12 @@ export const AdminDashboardPage = ({ onNavigate }) => {
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '20px' }}>
           {[
             { id: 'overview', label: lang === 'vi' ? '1. Tổng Quan Doanh Thu & KPI' : '1. Overview & Revenue Analytics', icon: <TrendingUp size={16} /> },
-            { id: 'products', label: lang === 'vi' ? `2. Quản Lý Sản Phẩm (${products.length})` : `2. Products (${products.length})`, icon: <ShoppingBag size={16} /> },
-            { id: 'orders', label: lang === 'vi' ? `3. Toàn Bộ Đơn Hàng (${orders.length})` : `3. Omnichannel Orders (${orders.length})`, icon: <Package size={16} /> },
-            { id: 'users', label: lang === 'vi' ? `4. Phân Quyền Nhân Sự & User (${usersList.length})` : `4. Access & Roles (${usersList.length})`, icon: <Users size={16} /> },
-            { id: 'coupons', label: lang === 'vi' ? `5. Mã Khuyến Mãi (${coupons.length})` : `5. Coupons & Promo (${coupons.length})`, icon: <Tag size={16} /> },
-            { id: 'bank-config', label: lang === 'vi' ? '6. Cấu Hình VietQR Nhận Tiền' : '6. VietQR Gateway Settings', icon: <QrCode size={16} /> },
+            { id: 'reports', label: lang === 'vi' ? '2. Báo Cáo Excel/PDF' : '2. Excel/PDF Reports', icon: <Download size={16} /> },
+            { id: 'products', label: lang === 'vi' ? `3. Quản Lý Sản Phẩm (${products.length})` : `3. Products (${products.length})`, icon: <ShoppingBag size={16} /> },
+            { id: 'orders', label: lang === 'vi' ? `4. Toàn Bộ Đơn Hàng (${orders.length})` : `4. Omnichannel Orders (${orders.length})`, icon: <Package size={16} /> },
+            { id: 'users', label: lang === 'vi' ? `5. Phân Quyền Nhân Sự & User (${usersList.length})` : `5. Access & Roles (${usersList.length})`, icon: <Users size={16} /> },
+            { id: 'coupons', label: lang === 'vi' ? `6. Mã Khuyến Mãi (${coupons.length})` : `6. Coupons & Promo (${coupons.length})`, icon: <Tag size={16} /> },
+            { id: 'bank-config', label: lang === 'vi' ? '7. Cấu Hình VietQR Nhận Tiền' : '7. VietQR Gateway Settings', icon: <QrCode size={16} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -494,32 +523,36 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#e60012', marginTop: '6px' }}>
                   {formatPrice(stats?.totalRevenue || 0)}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#00875a', marginTop: '4px', fontWeight: '700' }}>
-                  ↑ +18.5% {lang === 'vi' ? 'so với cùng kỳ tháng trước' : 'vs last month'}
+                <div style={{ fontSize: '0.75rem', color: (stats?.revenueChangePercent ?? 0) >= 0 ? '#00875a' : '#d32f2f', marginTop: '4px', fontWeight: '700' }}>
+                  {stats?.revenueChangePercent == null
+                    ? (lang === 'vi' ? 'Chưa có kỳ trước để so sánh' : 'No prior period for comparison')
+                    : `${stats.revenueChangePercent >= 0 ? '↑' : '↓'} ${Math.abs(Number(stats.revenueChangePercent)).toFixed(1)}% ${lang === 'vi' ? 'so với 7 ngày trước' : 'vs previous 7 days'}`}
                 </div>
               </div>
 
               <div style={{ backgroundColor: '#ffffff', padding: '20px', border: '1px solid #e0e0e0' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>
-                  {lang === 'vi' ? 'TỔNG SỐ ĐƠN HÀNG' : 'TOTAL ORDERS'}
+                  {lang === 'vi' ? 'ĐƠN HÀNG HỢP LỆ' : 'VALID ORDERS'}
                 </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#111', marginTop: '6px' }}>
                   {stats?.totalOrders || 0}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
-                  {lang === 'vi' ? 'Bao gồm đơn Online & POS tại quầy' : 'Online web & POS in-store orders'}
+                  {lang === 'vi' ? 'Không gồm đơn đã hủy hoặc hoàn trả' : 'Excludes cancelled and returned orders'}
                 </div>
               </div>
 
               <div style={{ backgroundColor: '#ffffff', padding: '20px', border: '1px solid #e0e0e0' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#888', textTransform: 'uppercase' }}>
-                  {lang === 'vi' ? 'TỔNG KHÁCH HÀNG & USER' : 'REGISTERED USERS'}
+                  {lang === 'vi' ? 'TÀI KHOẢN ĐÃ ĐĂNG KÝ' : 'REGISTERED USERS'}
                 </div>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#111', marginTop: '6px' }}>
                   {stats?.totalCustomers || 0}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#00875a', marginTop: '4px', fontWeight: '700' }}>
-                  {lang === 'vi' ? '100% tài khoản đã kích hoạt' : '100% active verified accounts'}
+                  {lang === 'vi'
+                    ? `${stats?.activeCustomers ?? 0}/${stats?.totalCustomers ?? 0} tài khoản đang hoạt động`
+                    : `${stats?.activeCustomers ?? 0}/${stats?.totalCustomers ?? 0} active accounts`}
                 </div>
               </div>
 
@@ -546,7 +579,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                       {lang === 'vi' ? 'Biểu Đồ Doanh Thu 7 Ngày Gần Nhất' : '7-Day Revenue & Sales Trend'}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>
-                      {lang === 'vi' ? 'Thống kê doanh thu bán hàng & số lượng đơn qua từng ngày' : 'Daily gross revenue and order frequency tracking'}
+                      {lang === 'vi' ? 'Doanh thu đã ghi nhận và số đơn đã thanh toán theo ngày' : 'Recognized revenue and paid-order tracking by day'}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -660,11 +693,11 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ padding: '16px', backgroundColor: '#fafafa', border: '1px solid #eee', borderRadius: '4px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <strong style={{ fontSize: '1.05rem', color: '#111' }}>BEO STORE Flagship Showroom</strong>
-                      <span className="badge-uq red">FLAGSHIP SHOWROOM</span>
+                      <strong style={{ fontSize: '1.05rem', color: '#111' }}>{lang === 'vi' ? 'Showroom Trung Tâm BEO STORE' : 'BEO STORE Flagship Showroom'}</strong>
+                      <span className="badge-beo red">{lang === 'vi' ? 'SHOWROOM TRUNG TÂM' : 'FLAGSHIP SHOWROOM'}</span>
                     </div>
                     <div style={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.5, marginBottom: '8px' }}>
-                      📍 209 30th April Street, Xuan Khanh, Can Tho City, Vietnam
+                      📍 {lang === 'vi' ? '209 Đường 30 Tháng 4, Xuân Khánh, Cần Thơ' : '209 30th April Street, Xuan Khanh, Can Tho City, Vietnam'}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#666', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                       <span>📞 Hotline: <strong>1900019199999</strong></span>
@@ -676,7 +709,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div style={{ padding: '14px', backgroundColor: '#fff0f0', border: '1px solid #ffd0d0', borderRadius: '4px' }}>
                       <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#e60012', textTransform: 'uppercase' }}>
-                        {lang === 'vi' ? 'DOANH THU CỬA HÀNG' : 'STORE REVENUE'}
+                        {lang === 'vi' ? 'DOANH THU ĐÃ GHI NHẬN' : 'RECOGNIZED REVENUE'}
                       </div>
                       <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#e60012', marginTop: '4px' }}>
                         {formatPrice(stats?.totalRevenue || 0)}
@@ -684,10 +717,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     </div>
                     <div style={{ padding: '14px', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '4px' }}>
                       <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase' }}>
-                        {lang === 'vi' ? 'ĐƠN HÀNG ĐÃ XỬ LÝ' : 'ORDERS FULFILLED'}
+                        {lang === 'vi' ? 'ĐƠN ĐÃ GHI NHẬN' : 'RECOGNIZED ORDERS'}
                       </div>
                       <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0284c7', marginTop: '4px' }}>
-                        {stats?.totalOrders || 0} {lang === 'vi' ? 'Đơn' : 'Orders'}
+                        {stats?.paidOrdersCount ?? 0} {lang === 'vi' ? 'Đơn' : 'Orders'}
                       </div>
                     </div>
                   </div>
@@ -697,7 +730,12 @@ export const AdminDashboardPage = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* ================= TAB 2: PRODUCTS CRUD ================= */}
+        {/* ================= TAB 2: REVENUE REPORTS ================= */}
+        {activeTab === 'reports' && (
+          <RevenueAnalyticsPanel orders={orders} stats={stats} />
+        )}
+
+        {/* ================= TAB 3: PRODUCTS CRUD ================= */}
         {activeTab === 'products' && (
           <div style={{ backgroundColor: '#ffffff', padding: '24px', border: '1px solid #e0e0e0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
@@ -725,13 +763,13 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 </div>
                 <button
                   onClick={() => exportProductsToExcel(filteredAdminProducts)}
-                  className="btn-uq btn-uq-outline-black"
+                  className="btn-beo btn-beo-outline-black"
                   style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}
                 >
                   <Download size={15} />
                   <span>{lang === 'vi' ? 'Xuất Excel Sản Phẩm' : 'Export Excel'}</span>
                 </button>
-                <button onClick={handleOpenCreateProduct} className="btn-uq btn-uq-red">
+                <button onClick={handleOpenCreateProduct} className="btn-beo btn-beo-red">
                   <Plus size={16} />
                   <span>{lang === 'vi' ? 'Thêm Sản Phẩm Mới' : 'Add New Product'}</span>
                 </button>
@@ -752,7 +790,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                       <th style={{ padding: '10px' }}>{lang === 'vi' ? 'GIỚI TÍNH' : 'GENDER'}</th>
                       <th style={{ padding: '10px' }}>{lang === 'vi' ? 'BST' : 'COLLECTION'}</th>
                       <th style={{ padding: '10px' }}>{lang === 'vi' ? 'GIÁ NIÊM YẾT' : 'RETAIL PRICE'}</th>
-                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'SỐ BIẾN THỂ' : 'VARIANTS'}</th>
+                      <th style={{ padding: '10px' }}>{lang === 'vi' ? 'BIẾN THỂ MÀU / SIZE' : 'COLOR / SIZE VARIANTS'}</th>
                       <th style={{ padding: '10px', textAlign: 'right' }}>{lang === 'vi' ? 'THAO TÁC' : 'ACTIONS'}</th>
                     </tr>
                   </thead>
@@ -767,7 +805,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                         </td>
                         <td style={{ padding: '10px', fontFamily: 'monospace' }}>{prod.code}</td>
                         <td style={{ padding: '10px' }}>{prod.gender}</td>
-                        <td style={{ padding: '10px' }}>{prod.collection || 'LifeWear'}</td>
+                        <td style={{ padding: '10px' }}>{prod.collection || 'BEO Essentials'}</td>
                         <td style={{ padding: '10px', fontWeight: '700' }}>
                           {prod.salePrice ? (
                             <div>
@@ -785,7 +823,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                             <button
                               onClick={() => handleOpenEditProduct(prod)}
-                              className="btn-uq btn-uq-outline-gray"
+                              className="btn-beo btn-beo-outline-gray"
                               style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                               title="Edit"
                             >
@@ -984,7 +1022,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
 
                 <button
                   onClick={() => exportOrdersToExcel(filteredOrders)}
-                  className="btn-uq btn-uq-outline-black"
+                  className="btn-beo btn-beo-outline-black"
                   style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', padding: '9px 14px' }}
                 >
                   <Download size={15} />
@@ -1051,7 +1089,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
               <Search size={16} color="#888" />
               <input
                 type="text"
-                placeholder={lang === 'vi' ? 'Tìm kiếm theo mã đơn (UQ-...), tên khách hàng, số điện thoại, tỉnh thành...' : 'Search by Order ID (UQ-...), customer name, phone, city...'}
+                placeholder={lang === 'vi' ? 'Tìm kiếm theo mã đơn (BEO-...), tên khách hàng, số điện thoại, tỉnh thành...' : 'Search by Order ID (BEO-...), customer name, phone, city...'}
                 value={orderSearchQuery}
                 onChange={(e) => {
                   setOrderSearchQuery(e.target.value);
@@ -1108,7 +1146,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                         </td>
                         <td style={{ padding: '10px' }}>{ord.storeName || 'Online'}</td>
                         <td style={{ padding: '10px' }}>
-                          <span className="badge-uq gray" style={{ fontSize: '0.72rem' }}>{ord.orderType}</span>
+                          <span className="badge-beo gray" style={{ fontSize: '0.72rem' }}>{ord.orderType}</span>
                         </td>
                         <td style={{ padding: '10px', fontWeight: '800', color: '#e60012' }}>{formatPrice(ord.finalAmount)}</td>
                         <td style={{ padding: '10px' }}>
@@ -1161,7 +1199,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                             <button
                               onClick={() => setReceiptOrder(ord)}
-                              className="btn-uq btn-uq-outline-gray"
+                              className="btn-beo btn-beo-outline-gray"
                               style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                             >
                               <Printer size={12} />
@@ -1323,7 +1361,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     <td style={{ padding: '10px' }}>{u.email}</td>
                     <td style={{ padding: '10px' }}>{u.phone || 'N/A'}</td>
                     <td style={{ padding: '10px' }}>
-                      <span className="badge-uq red">{u.role}</span>
+                      <span className="badge-beo red">{u.role}</span>
                     </td>
                     <td style={{ padding: '10px', textAlign: 'right' }}>
                       <select
@@ -1355,7 +1393,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                   {lang === 'vi' ? 'Thiết lập giới hạn số lượng mã, theo dõi tỷ lệ đã sử dụng và số lượng còn lại' : 'Configure code quota limits, redemption counters, and usage velocity'}
                 </div>
               </div>
-              <button onClick={handleOpenCreateCoupon} className="btn-uq btn-uq-red">
+              <button onClick={handleOpenCreateCoupon} className="btn-beo btn-beo-red">
                 <Plus size={16} />
                 <span>{lang === 'vi' ? 'Tạo Mã Mới' : 'Create New Coupon'}</span>
               </button>
@@ -1420,11 +1458,11 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                       {/* Remaining Count */}
                       <td style={{ padding: '10px', textAlign: 'center' }}>
                         {isOutOfStock ? (
-                          <span className="badge-uq red" style={{ fontWeight: '800' }}>{lang === 'vi' ? 'HẾT MÃ (0)' : 'DEPLETED (0)'}</span>
+                          <span className="badge-beo red" style={{ fontWeight: '800' }}>{lang === 'vi' ? 'HẾT MÃ (0)' : 'DEPLETED (0)'}</span>
                         ) : remaining <= 10 ? (
-                          <span className="badge-uq red" style={{ fontWeight: '800' }}>{lang === 'vi' ? `Sắp hết (${remaining})` : `Low (${remaining})`}</span>
+                          <span className="badge-beo red" style={{ fontWeight: '800' }}>{lang === 'vi' ? `Sắp hết (${remaining})` : `Low (${remaining})`}</span>
                         ) : (
-                          <span className="badge-uq gray" style={{ color: '#00875a', fontWeight: '800' }}>
+                          <span className="badge-beo gray" style={{ color: '#00875a', fontWeight: '800' }}>
                             {remaining.toLocaleString()}
                           </span>
                         )}
@@ -1435,9 +1473,9 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                         {isOutOfStock ? (
                           <span style={{ fontSize: '0.75rem', color: '#999', fontWeight: '600' }}>{lang === 'vi' ? 'Hết lượt dùng' : 'Depleted'}</span>
                         ) : c.active ? (
-                          <span className="badge-uq gray" style={{ color: '#00875a' }}>{lang === 'vi' ? 'Đang mở' : 'Active'}</span>
+                          <span className="badge-beo gray" style={{ color: '#00875a' }}>{lang === 'vi' ? 'Đang mở' : 'Active'}</span>
                         ) : (
-                          <span className="badge-uq red">{lang === 'vi' ? 'Đã tắt' : 'Inactive'}</span>
+                          <span className="badge-beo red">{lang === 'vi' ? 'Đã tắt' : 'Inactive'}</span>
                         )}
                       </td>
 
@@ -1446,7 +1484,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                         <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                           <button
                             onClick={() => handleOpenEditCoupon(c)}
-                            className="btn-uq btn-uq-outline-gray"
+                            className="btn-beo btn-beo-outline-gray"
                             style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                             title="Edit"
                           >
@@ -1587,7 +1625,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 <button
                   type="submit"
                   disabled={savingBankConfig}
-                  className="btn-uq btn-uq-red"
+                  className="btn-beo btn-beo-red"
                   style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '10px' }}
                 >
                   <Save size={16} />
@@ -1602,7 +1640,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 </div>
 
                 <img
-                  src={`https://img.vietqr.io/image/${bankConfig.bankId}-${bankConfig.accountNo}-${bankConfig.template || 'compact2'}.png?amount=599000&addInfo=Thanh+toan+don+hang+UQ-TEST&accountName=${encodeURIComponent(bankConfig.accountName)}`}
+                  src={`https://img.vietqr.io/image/${bankConfig.bankId}-${bankConfig.accountNo}-${bankConfig.template || 'compact2'}.png?amount=599000&addInfo=Thanh+toan+don+hang+BEO-TEST&accountName=${encodeURIComponent(bankConfig.accountName)}`}
                   alt="VietQR Preview"
                   style={{
                     width: '260px',
@@ -1776,6 +1814,7 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 </div>
 
                 {/* Variant Matrix Checkboxes */}
+                {!editingProduct && (
                 <div style={{ backgroundColor: '#fafafa', padding: '14px', border: '1px solid #eee' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '8px' }}>
                     {lang === 'vi' ? 'MA TRẬN BIẾN THỂ TỰ ĐỘNG (VARIANT MATRIX GENERATOR):' : 'AUTOMATIC SKU VARIANT MATRIX GENERATOR:'}
@@ -1822,12 +1861,13 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                     ))}
                   </div>
                 </div>
+                )}
 
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '12px' }}>
-                  <button type="button" onClick={() => setIsProductModalOpen(false)} className="btn-uq btn-uq-outline-gray" style={{ padding: '10px 18px' }}>
+                  <button type="button" onClick={() => setIsProductModalOpen(false)} className="btn-beo btn-beo-outline-gray" style={{ padding: '10px 18px' }}>
                     {lang === 'vi' ? 'Hủy' : 'Cancel'}
                   </button>
-                  <button type="submit" className="btn-uq btn-uq-red" style={{ padding: '10px 24px' }}>
+                  <button type="submit" className="btn-beo btn-beo-red" style={{ padding: '10px 24px' }}>
                     {editingProduct ? (lang === 'vi' ? 'Lưu Thay Đổi Sản Phẩm' : 'Save Changes') : (lang === 'vi' ? 'Lưu & Khởi Tạo Biến Thể' : 'Create Product & SKUs')}
                   </button>
                 </div>
@@ -1973,10 +2013,10 @@ export const AdminDashboardPage = ({ onNavigate }) => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '12px', borderTop: '1px solid #eee', paddingTop: '14px' }}>
-                  <button type="button" onClick={() => setIsCouponModalOpen(false)} className="btn-uq btn-uq-outline-gray" style={{ padding: '9px 18px' }}>
+                  <button type="button" onClick={() => setIsCouponModalOpen(false)} className="btn-beo btn-beo-outline-gray" style={{ padding: '9px 18px' }}>
                     {lang === 'vi' ? 'Hủy Bỏ' : 'Cancel'}
                   </button>
-                  <button type="submit" className="btn-uq btn-uq-red" style={{ padding: '9px 24px', fontWeight: '800' }}>
+                  <button type="submit" className="btn-beo btn-beo-red" style={{ padding: '9px 24px', fontWeight: '800' }}>
                     {editingCoupon ? (lang === 'vi' ? 'Cập Nhật Mã Giảm Giá' : 'Save Coupon') : (lang === 'vi' ? 'Tạo Mã Khuyến Mãi' : 'Create Coupon')}
                   </button>
                 </div>

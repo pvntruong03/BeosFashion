@@ -13,8 +13,7 @@ import {
   LogOut,
   LayoutDashboard,
   Store as StoreIcon,
-  ShoppingBasket,
-  Sparkles
+  ShoppingBasket
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -27,7 +26,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
   const { user, logout, isAdmin, isStaff } = useAuth();
   const { totalItems, setIsCartOpen } = useCart();
   const { totalWishlist } = useWishlist();
-  const { lang, toggleLanguage, t } = useLanguage();
+  const { lang, toggleLanguage, t, formatPrice } = useLanguage();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -81,7 +80,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
   const navCategories = [
     { key: 'women', label: t('women'), gender: 'WOMEN' },
     { key: 'men', label: t('men'), gender: 'MEN' },
-    { key: 'lifewear', label: t('lifewear'), collection: 'LifeWear' },
+    { key: 'collections', label: t('collections'), collection: 'BEO Essentials' },
     { key: 'lookbook', label: 'LOOKBOOK', view: 'lookbook' },
     ...(isCustomizerEnabled() ? [{ key: 'custom-studio', label: '🎨 BEO CUSTOM LAB', view: 'custom-studio', highlight: true }] : []),
   ];
@@ -215,7 +214,8 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               <button
                 type="button"
                 onClick={onOpenVisualSearch}
-                title="Tìm kiếm bằng hình ảnh (Visual AI Search)"
+                title={lang === 'vi' ? 'Tìm kiếm bằng hình ảnh' : 'Search by image'}
+                aria-label={lang === 'vi' ? 'Tìm kiếm bằng hình ảnh' : 'Search by image'}
                 style={{
                   color: '#e60012',
                   padding: '6px',
@@ -252,7 +252,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               overflowY: 'auto'
             }}>
               <div style={{ padding: '10px 14px', fontSize: '0.75rem', fontWeight: '700', color: '#888', borderBottom: '1px solid #eee' }}>
-                GỢI Ý TÌM KIẾM ({searchResults.length})
+                {lang === 'vi' ? 'GỢI Ý TÌM KIẾM' : 'SEARCH SUGGESTIONS'} ({searchResults.length})
               </div>
               {searchResults.map((item) => (
                 <div
@@ -277,6 +277,10 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
                   <img
                     src={item.primaryImageUrl}
                     alt={item.name}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80';
+                    }}
                     style={{ width: '40px', height: '48px', objectFit: 'cover', backgroundColor: '#f0f0f0' }}
                   />
                   <div style={{ flex: 1 }}>
@@ -299,8 +303,8 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
             onClick={onOpenVisualSearch}
             className="mobile-only"
             style={{ padding: '6px', color: '#e60012' }}
-            title="Tìm kiếm bằng hình ảnh (AI Visual Search)"
-            aria-label="Visual Search"
+            title={lang === 'vi' ? 'Tìm kiếm bằng hình ảnh' : 'Search by image'}
+            aria-label={lang === 'vi' ? 'Tìm kiếm bằng hình ảnh' : 'Search by image'}
           >
             <Camera size={22} />
           </button>
@@ -402,7 +406,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
                   }}>
                     <div style={{ padding: '8px 16px', borderBottom: '1px solid #f0f0f0', fontSize: '0.8rem', color: '#666' }}>
                       <div>{lang === 'vi' ? 'Vai trò:' : 'Role:'}</div>
-                      <span className="badge-uq red" style={{ marginTop: '4px' }}>{user.role}</span>
+                      <span className="badge-beo red" style={{ marginTop: '4px' }}>{user.role}</span>
                       {user.storeName && (
                         <div style={{ fontSize: '0.75rem', marginTop: '4px', color: '#111', fontWeight: '600' }}>
                           🏪 {user.storeName}
@@ -523,7 +527,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
             ) : (
               <button
                 onClick={() => onNavigate('login')}
-                className="btn-uq btn-uq-primary"
+                className="btn-beo btn-beo-primary"
                 style={{ padding: '8px 16px', fontSize: '0.85rem' }}
               >
                 <UserIcon size={16} />
@@ -569,12 +573,14 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
             }}>
               <div>
                 <div style={{ fontSize: '1.05rem', fontWeight: '900', letterSpacing: '0.5px' }}>BEO MODERN FASHION</div>
-                <div style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '2px' }}>Flagship Showroom Cần Thơ</div>
+                <div style={{ fontSize: '0.72rem', color: '#aaa', marginTop: '2px' }}>
+                  {lang === 'vi' ? 'Showroom trung tâm Cần Thơ' : 'Can Tho Flagship Store'}
+                </div>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 style={{ color: '#ffffff', padding: '6px' }}
-                aria-label="Close Menu"
+                aria-label={lang === 'vi' ? 'Đóng menu' : 'Close menu'}
               >
                 <X size={22} />
               </button>
@@ -592,7 +598,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#555' }}>
                 <MapPin size={14} color="#e60012" />
-                <span>Cần Thơ (08:00 - 22:00)</span>
+                <span>{lang === 'vi' ? 'Cần Thơ' : 'Can Tho'} (08:00 - 22:00)</span>
               </div>
               <button
                 onClick={toggleLanguage}
@@ -622,7 +628,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               {[
                 { label: lang === 'vi' ? 'Thời Trang Nữ (Women)' : 'Women Collection', gender: 'WOMEN' },
                 { label: lang === 'vi' ? 'Thời Trang Nam (Men)' : 'Men Collection', gender: 'MEN' },
-                { label: 'LifeWear Essentials', collection: 'LifeWear' },
+                { label: 'BEO Essentials', collection: 'BEO Essentials' },
                 { label: 'Lookbook SS26 Fashion', view: 'lookbook' },
                 ...(isCustomizerEnabled() ? [{ label: '🎨 BEO Custom Studio', view: 'custom-studio', highlight: true }] : [])
               ].map((cat, idx) => (
@@ -682,7 +688,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <a
                   href="tel:1900019199999"
-                  className="btn-uq btn-uq-primary"
+                  className="btn-beo btn-beo-primary"
                   style={{ flex: 1, padding: '8px 12px', fontSize: '0.78rem', textDecoration: 'none' }}
                 >
                   📞 1900 0191 99
@@ -691,7 +697,7 @@ export const Navbar = ({ onNavigate, currentPage, onOpenVisualSearch }) => {
                   href="https://zalo.me/0567740000"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-uq btn-uq-outline-gray"
+                  className="btn-beo btn-beo-outline-gray"
                   style={{ flex: 1, padding: '8px 12px', fontSize: '0.78rem', textDecoration: 'none' }}
                 >
                   💬 Zalo Chat

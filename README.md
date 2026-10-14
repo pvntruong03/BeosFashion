@@ -1,110 +1,98 @@
-# BEO FASHION E-Commerce Fullstack Platform
-## Xây dựng Website Thương mại điện tử BEO Fashion bằng Java Spring Boot & React
+# BEO Fashion
 
-Dự án website thương mại điện tử thời trang hoàn chỉnh **BEO Fashion**, lấy cảm hứng từ phong cách **BEO LifeWear** với đầy đủ các phân hệ:
-1. **Storefront (Khách hàng)**: Mua sắm, danh mục đa cấp, bộ lọc đa năng, tìm kiếm tức thì, AI Visual Search (tìm kiếm bằng hình ảnh), gợi ý chọn size thông minh, giỏ hàng tự động làm sạch khi mua hàng, mã giảm giá (`BEO10`), checkout đa kênh (COD, VNPay, VietQR động), đánh giá sản phẩm, Lookbook và Store Locator.
-2. **Store Manager Portal (`/staff/dashboard`)**: Quản lý chi nhánh Cần Thơ, CRUD sản phẩm kèm trình tạo ma trận biến thể tự động, hàng đợi xử lý đơn (Order Fulfillment Queue), kiểm kê tồn kho chi nhánh, yêu cầu điều chuyển hàng và báo cáo doanh thu chi nhánh.
-3. **Admin CMS (`/admin/dashboard`)**: Quản trị toàn hệ thống, dashboard KPI doanh thu, CRUD sản phẩm toàn quốc, cấu hình thanh toán VietQR ngân hàng, quản lý đơn hàng toàn quốc, phân quyền người dùng và quản lý mã giảm giá (coupons).
-4. **Cơ chế Single Login duy nhất (`/login`)**: Tự động phân luồng theo vai trò người dùng (Customer → Storefront, Staff/Manager → Store Manager Portal, Admin → Admin CMS).
+BEO Fashion là nền tảng thương mại điện tử thời trang người lớn cho cửa hàng tại Cần Thơ. Hệ thống gồm website khách hàng, trang quản trị, màn hình vận hành cửa hàng và backend Spring Boot dùng chung một cơ sở dữ liệu.
 
----
+## Chức năng chính
 
-## 🚀 Hướng dẫn Chạy Ứng dụng (1-Click)
+- Danh mục thời trang Nam, Nữ và Phụ kiện Unisex; tìm kiếm, lọc, xem chi tiết và biến thể sản phẩm.
+- Giỏ hàng, mã giảm giá, yêu thích, đánh giá, tư vấn kích cỡ và thiết kế sản phẩm cá nhân hóa.
+- Đặt hàng giao tận nơi hoặc nhận tại cửa hàng; hỗ trợ COD, chuyển khoản/VietQR và theo dõi trạng thái đơn.
+- Tài khoản khách hàng, hồ sơ cá nhân, lịch sử đơn hàng và khôi phục mật khẩu.
+- BEO AI Chat hỗ trợ tiếng Việt và tiếng Anh; có thể kết nối Gemini qua biến môi trường `GEMINI_API_KEY`.
+- Tìm kiếm sản phẩm bằng ảnh, lookbook, newsletter và các trang chính sách/chăm sóc khách hàng.
+- Trang nhân viên quản lý đơn, tồn kho, POS và báo cáo ca.
+- Trang quản trị quản lý sản phẩm, đơn hàng, người dùng, mã giảm giá, cấu hình thanh toán và báo cáo doanh thu; hỗ trợ xuất Excel/PDF.
 
-### Cách 1: Khởi động toàn bộ với 1 cú click (Khuyến nghị)
-- **Windows Batch**: Nhấp đúp vào file `start-all.bat`
-- **Hoặc Windows PowerShell**: Chạy `.\start-all.ps1`
+## Công nghệ
 
-### Cách 2: Chạy độc lập từng phần
+- Frontend: React 19, Vite, CSS responsive, Lucide Icons, Recharts.
+- Backend: Java 17, Spring Boot 3, Spring Security, JWT, Spring Data JPA.
+- Dữ liệu: H2 dạng file cho môi trường phát triển; có thể cấu hình MySQL khi triển khai.
+- Kiểm thử: Vitest cho frontend, JUnit/Spring Boot cho backend và bộ E2E trong `scratch/`.
 
-#### 1. Backend (Spring Boot 3 / Port 8080)
-```bash
+## Chạy dự án
+
+Yêu cầu: Node.js, npm và Java 17.
+
+```powershell
+npm install
+npm start
+```
+
+Hoặc trên Windows, chạy `start.bat`. Trình khởi động sẽ mở cả backend và frontend.
+
+### Kết nối BEO AI Chat với Gemini
+
+Chat vẫn trả lời từ dữ liệu sản phẩm khi chưa có khóa AI. Để bật trả lời bằng Gemini, tạo API key trong Google AI Studio rồi đặt khóa vào terminal **trước khi chạy backend**:
+
+```powershell
+$env:GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+npm start
+```
+
+Khi khóa hợp lệ, cửa sổ chat hiển thị trạng thái **AI connected**. Không lưu API key vào mã nguồn hoặc file nộp bài.
+
+- Website: `http://localhost:5173`
+- API: `http://localhost:8080/api`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- H2 Console: `http://localhost:8080/h2-console`
+- JDBC URL: `jdbc:h2:file:./data/beo_fashion_db`
+
+Thông tin đăng nhập quản trị và nhân viên được quản lý trong dữ liệu hệ thống, không hiển thị công khai trên giao diện hoặc tài liệu dự án.
+
+## Chạy riêng từng phần
+
+```powershell
+# Backend
 cd backend
 .\mvnw.cmd spring-boot:run
-```
-- **Backend API**: `http://localhost:8080`
-- **Swagger / OpenAPI 3 UI**: `http://localhost:8080/swagger-ui.html`
-- **H2 Database Console**: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:uniqlo_db`, User: `sa`, Pass: để trống)
 
-#### 2. Frontend (React + Vite / Port 5173)
-```bash
+# Frontend (mở terminal khác)
 cd frontend
+npm install
 npm run dev
 ```
-- **Storefront & App**: `http://localhost:5173`
 
----
+## Kiểm tra chất lượng
 
-## 🔑 Danh sách Tài khoản Mẫu (1-Click Test Login trên trang `/login`)
+```powershell
+# Frontend
+cd frontend
+npm run lint
+npm test
+npm run build
 
-| Vai trò | Email | Mật khẩu | Phân luồng mặc định | Mô tả quyền hạn |
-|---|---|---|---|---|
-| **Admin Master** | `admin@uniqlo.com` | `admin123` | `/admin/dashboard` | Toàn quyền quản trị hệ thống, cấu hình VietQR, CRUD sản phẩm, phân quyền |
-| **Store Manager** | `manager.cantho@uniqlo.com` | `staff123` | `/staff/dashboard` | Quản lý chi nhánh BEO Vincom Xuân Khánh Cần Thơ, CRUD sản phẩm, tồn kho, xử lý đơn |
-| **Customer** | `customer@gmail.com` | `customer123` | `/` (Storefront) | Khách hàng mua sắm, quản lý giỏ hàng, wishlist, đặt hàng và lịch sử đơn |
+# Backend
+cd ..\backend
+.\mvnw.cmd test
 
----
-
-## 🏷️ Mã Khuyến Mãi (Coupons) Tích Hợp Sẵn
-
-- `BEO10`: Giảm 10% tổng đơn hàng (Tối đa 100.000đ, áp dụng cho đơn từ 300.000đ).
-- `LIFEWEAR50K`: Giảm ngay 50.000đ cho đơn hàng từ 400.000đ.
-
----
-
-## 🏗️ Kiến trúc & Công nghệ Sử dụng
-
-### Backend (Java Spring Boot 3.3.x)
-- **Java 17 OpenJDK**
-- **Spring Web MVC & Spring Data JPA (Hibernate)**
-- **Spring Security 6** + **JJWT (`io.jsonwebtoken 0.12.5`)**
-- **H2 Database** (Tự động khởi tạo dữ liệu mẫu thực tế khi khởi động)
-- **SpringDoc OpenAPI 3 / Swagger UI**
-- **BCrypt Password Encoder** & **CORS Filter**
-
-### Frontend (React + Vite + Modern CSS Design Tokens)
-- **Thiết kế phong cách Tối giản Nhật Bản (BEO LifeWear Minimalism)**: Màu đỏ signature `#e60012`, typography sắc nét, dialog modal chuẩn UX, responsive mượt mà.
-- **Contexts**: `AuthContext`, `CartContext`, `WishlistContext`, `LanguageContext` (Đa ngôn ngữ VI / EN), `ToastContext`.
-- **Axios HTTP Client** tự động gắn Bearer Token và quản lý guest session.
-- **Lucide React Icons** & **Canvas Confetti**.
-
----
-
-## 📁 Cấu trúc Thư mục
-
+# Kiểm tra luồng chính khi cả hai dịch vụ đang chạy
+cd ..
+npm test
 ```
-d:/web code/
- ├── backend/
- │    ├── pom.xml
- │    ├── mvnw.cmd, mvnw
- │    └── src/main/
- │         ├── java/com/uniqlo/clone/
- │         │    ├── config/          # SecurityConfig, CorsConfig, SwaggerConfig
- │         │    ├── controller/      # Auth, Product, Category, Cart, Order, Staff, Admin...
- │         │    ├── dataseed/        # DataInitializer (Khởi tạo chi nhánh Cần Thơ, sản phẩm, user, coupon)
- │         │    ├── dto/             # Request & Response DTOs
- │         │    ├── entity/          # JPA Entities (User, Store, Product, Variant, Order...)
- │         │    ├── exception/       # GlobalExceptionHandler
- │         │    ├── repository/      # Spring Data JPA Repositories
- │         │    ├── security/        # JWT Filter, Token Provider, UserDetails
- │         │    └── service/         # Business Logic Services
- │         └── resources/
- │              └── application.yml  # H2 DB, Port 8080, JWT Secret, Swagger config
- ├── frontend/
- │    ├── package.json
- │    ├── vite.config.js             # Vite proxy /api -> :8080
- │    ├── index.html
- │    └── src/
- │         ├── components/           # Navbar, Footer, ProductCard, CartDrawer, SizeAdvisor, Receipt, Modals...
- │         ├── contexts/             # AuthContext, CartContext, WishlistContext, LanguageContext, ToastContext
- │         ├── pages/                # Home, Listing, Detail, Checkout, Success, Orders, Staff, Admin...
- │         ├── services/             # Axios API Client
- │         ├── index.css             # Design Tokens & CSS Utilities
- │         ├── App.jsx               # Main App Router & Role Guard
- │         └── main.jsx
- ├── run-backend.bat
- ├── run-frontend.bat
- ├── start-all.bat
- ├── start-all.ps1
- └── README.md
+
+## Cấu trúc dự án
+
+```text
+web code/
+├── backend/
+│   └── src/main/java/com/beofashion/
+├── frontend/
+│   ├── public/
+│   └── src/
+├── docs/
+├── scratch/
+├── start.js
+├── start.bat
+└── start-public.js
 ```

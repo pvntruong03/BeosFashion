@@ -57,8 +57,8 @@ export const CustomStudioPage = ({ onNavigate }) => {
             margin: '0 auto 24px auto'
           }}>
             {lang === 'vi'
-              ? 'Biến chiếc áo thun, áo polo hay túi canvas thành tác phẩm độc nhất vô nhị mang dấu ấn riêng của bạn. Công nghệ thêu vi tính Nhật Bản độ nét cao, giặt máy bền đẹp không phai màu.'
-              : 'Transform essential tees, polo shirts, or canvas bags into one-of-a-kind statement pieces. High-precision Japanese digital embroidery and screen printing, engineered for everyday durability.'}
+              ? 'Biến chiếc áo thun, áo polo hay túi canvas thành tác phẩm độc nhất vô nhị mang dấu ấn riêng của bạn. Công nghệ thêu vi tính BEO độ nét cao, giặt máy bền đẹp không phai màu.'
+              : 'Transform essential tees, polo shirts, or canvas bags into one-of-a-kind statement pieces. High-precision BEO digital embroidery and screen printing are engineered for everyday durability.'}
           </p>
 
           <div style={{
@@ -111,7 +111,7 @@ export const CustomStudioPage = ({ onNavigate }) => {
             {
               step: '01',
               title: lang === 'vi' ? 'CHỌN PHÔI ÁO & MÀU SẮC' : 'SELECT GARMENT & COLOR',
-              desc: lang === 'vi' ? 'Lựa chọn phôi áo thun Cotton Supima, áo Polo AIRism mát lạnh hoặc áo Hoodie nỉ bông cao cấp.' : 'Choose from Supima Cotton Crew Neck Tees, cooling AIRism Polos, or heavyweight Fleece Hoodies.'
+              desc: lang === 'vi' ? 'Lựa chọn phôi áo thun Cotton Supima, áo Polo BEO AirFlow mát lạnh hoặc áo Hoodie nỉ bông cao cấp.' : 'Choose from Supima Cotton Crew Neck Tees, cooling BEO AirFlow Polos, or heavyweight Fleece Hoodies.'
             },
             {
               step: '02',

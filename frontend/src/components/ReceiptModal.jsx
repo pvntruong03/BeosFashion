@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Printer, CheckCircle, ShieldCheck } from 'lucide-react';
+import { X, Printer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export const ReceiptModal = ({ isOpen, onClose, order }) => {

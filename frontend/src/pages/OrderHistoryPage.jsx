@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Package, Calendar, Clock, Printer, ChevronRight, AlertCircle, XCircle, CheckCircle2 } from 'lucide-react';
+import { Package, Calendar, Printer, ChevronRight, AlertCircle, XCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
@@ -67,7 +67,7 @@ export const OrderHistoryPage = ({ onNavigate }) => {
         <p style={{ color: '#666', marginBottom: '24px' }}>
           {lang === 'vi' ? 'Đăng nhập để theo dõi lịch sử đơn hàng và nhận thông báo vận chuyển.' : 'Sign in to track your order history and receive delivery updates.'}
         </p>
-        <button onClick={() => onNavigate('login')} className="btn-uq btn-uq-primary">
+        <button onClick={() => onNavigate('login')} className="btn-beo btn-beo-primary">
           {lang === 'vi' ? 'Đăng nhập ngay' : 'Sign In Now'}
         </button>
       </div>
@@ -77,20 +77,20 @@ export const OrderHistoryPage = ({ onNavigate }) => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'PENDING':
-        return <span className="badge-uq gray">{lang === 'vi' ? 'Chờ xác nhận' : 'Pending'}</span>;
+        return <span className="badge-beo gray">{lang === 'vi' ? 'Chờ xác nhận' : 'Pending'}</span>;
       case 'CONFIRMED':
-        return <span className="badge-uq black">{lang === 'vi' ? 'Đã xác nhận' : 'Confirmed'}</span>;
+        return <span className="badge-beo black">{lang === 'vi' ? 'Đã xác nhận' : 'Confirmed'}</span>;
       case 'PACKING':
-        return <span className="badge-uq" style={{ backgroundColor: '#ffab00', color: '#000' }}>{lang === 'vi' ? 'Đang đóng gói' : 'Packing'}</span>;
+        return <span className="badge-beo" style={{ backgroundColor: '#ffab00', color: '#000' }}>{lang === 'vi' ? 'Đang đóng gói' : 'Packing'}</span>;
       case 'SHIPPING':
-        return <span className="badge-uq" style={{ backgroundColor: '#0052cc', color: '#fff' }}>{lang === 'vi' ? 'Đang giao hàng' : 'In Transit'}</span>;
+        return <span className="badge-beo" style={{ backgroundColor: '#0052cc', color: '#fff' }}>{lang === 'vi' ? 'Đang giao hàng' : 'In Transit'}</span>;
       case 'DELIVERED':
       case 'COMPLETED':
-        return <span className="badge-uq" style={{ backgroundColor: '#00875a', color: '#fff' }}>{lang === 'vi' ? 'Đã giao thành công' : 'Delivered'}</span>;
+        return <span className="badge-beo" style={{ backgroundColor: '#00875a', color: '#fff' }}>{lang === 'vi' ? 'Đã giao thành công' : 'Delivered'}</span>;
       case 'CANCELLED':
-        return <span className="badge-uq red">{lang === 'vi' ? 'Đã hủy' : 'Cancelled'}</span>;
+        return <span className="badge-beo red">{lang === 'vi' ? 'Đã hủy' : 'Cancelled'}</span>;
       default:
-        return <span className="badge-uq gray">{status}</span>;
+        return <span className="badge-beo gray">{status}</span>;
     }
   };
 
@@ -114,9 +114,9 @@ export const OrderHistoryPage = ({ onNavigate }) => {
             {lang === 'vi' ? 'Bạn chưa có đơn hàng nào' : 'No orders found'}
           </h3>
           <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '20px' }}>
-            {lang === 'vi' ? 'Hãy khám phá các sản phẩm LifeWear mới nhất của BEO!' : 'Explore our latest LifeWear collection!'}
+            {lang === 'vi' ? 'Hãy khám phá các sản phẩm BEO Essentials mới nhất của BEO!' : 'Explore our latest BEO Essentials collection!'}
           </p>
-          <button onClick={() => onNavigate('products')} className="btn-uq btn-uq-primary">
+          <button onClick={() => onNavigate('products')} className="btn-beo btn-beo-primary">
             {lang === 'vi' ? 'Khám phá mua sắm ngay' : 'Start Shopping'}
           </button>
         </div>
@@ -200,7 +200,7 @@ export const OrderHistoryPage = ({ onNavigate }) => {
                   {order.status === 'PENDING' && (
                     <button
                       onClick={() => setCancelModalOrder(order)}
-                      className="btn-uq"
+                      className="btn-beo"
                       style={{
                         padding: '8px 14px',
                         fontSize: '0.8rem',
@@ -260,7 +260,7 @@ export const OrderHistoryPage = ({ onNavigate }) => {
 
                   <button
                     onClick={() => setSelectedOrderForReceipt(order)}
-                    className="btn-uq btn-uq-outline-gray"
+                    className="btn-beo btn-beo-outline-gray"
                     style={{ padding: '8px 14px', fontSize: '0.8rem' }}
                   >
                     <Printer size={14} />
@@ -269,7 +269,7 @@ export const OrderHistoryPage = ({ onNavigate }) => {
 
                   <button
                     onClick={() => onNavigate('order-success', { order })}
-                    className="btn-uq btn-uq-primary"
+                    className="btn-beo btn-beo-primary"
                     style={{ padding: '8px 14px', fontSize: '0.8rem' }}
                   >
                     <span>{lang === 'vi' ? 'Xem hành trình đơn' : 'Track Order'}</span>

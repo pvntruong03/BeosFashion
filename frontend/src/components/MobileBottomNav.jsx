@@ -5,9 +5,9 @@ import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export const MobileBottomNav = ({ onNavigate, currentPage, onOpenVisualSearch, onOpenMobileMenu }) => {
-  const { user, isAuthenticated, isAdmin, isStaff } = useAuth();
+  const { isAuthenticated, isAdmin, isStaff } = useAuth();
   const { totalItems, setIsCartOpen } = useCart();
-  const { lang, t } = useLanguage();
+  const { lang } = useLanguage();
 
   return (
     <nav className="mobile-bottom-nav mobile-only" aria-label="Mobile Navigation">

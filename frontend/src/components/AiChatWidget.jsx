@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  MessageSquare,
   X,
   Send,
   Sparkles,
   Bot,
-  User,
   Phone,
   ExternalLink,
-  ChevronRight,
-  RefreshCw,
-  ShoppingBag,
-  Clock
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import api from '../services/api';
 
 const QUICK_PROMPTS_EN = [
   '👕 Suggest t-shirt size for 175cm',
@@ -31,14 +26,27 @@ const QUICK_PROMPTS_VI = [
   '📦 Cách theo dõi đơn hàng',
 ];
 
+const INTERNAL_CONTEXT_MARKERS = [
+  'active product catalog',
+  'store policies',
+  'active coupons',
+  'recent conversation',
+  'current customer question',
+];
+
+const isInternalContextReply = (text) => {
+  const normalized = (text || '').trim().toLowerCase();
+  return INTERNAL_CONTEXT_MARKERS.some((marker) => normalized.startsWith(marker));
+};
+
 const KNOWLEDGE_BASE_EN = [
   {
     keywords: ['t-shirt', 'tee', 'size', '175cm', 'men', 'fit', 'sizing'],
-    reply: 'For a height of 175cm (~65-72kg), BEO recommends **Size L** for the **AIRism Cotton Oversized T-Shirt** for a comfortable relaxed silhouette, or **Size M** if you prefer a tailored regular fit. Explore our catalog under the Tops & T-Shirts collection!'
+    reply: 'For a height of 175cm (~65-72kg), BEO recommends **Size L** for the **BEO AirFlow Cotton Oversized T-Shirt** for a comfortable relaxed silhouette, or **Size M** if you prefer a tailored regular fit. Explore our catalog under the Tops & T-Shirts collection!'
   },
   {
     keywords: ['coupon', 'code', 'discount', 'voucher', 'promo', 'beo10', 'sale'],
-    reply: '🎉 Exclusive active promotions available at BEO STORE:\n• **BEO10**: 10% OFF orders from 300,000 VND (max 100,000 VND discount).\n• **LIFEWEAR50K**: 50,000 VND direct discount on orders from 400,000 VND.\n• **Free Standard Shipping** automatically applied on all orders over 500,000 VND!'
+    reply: '🎉 Exclusive active promotions available at BEO STORE:\n• **BEO10**: 10% OFF orders from 300,000 VND (max 100,000 VND discount).\n• **BEO50K**: 50,000 VND direct discount on orders from 400,000 VND.\n• **Free Standard Shipping** automatically applied on all orders over 500,000 VND!'
   },
   {
     keywords: ['can tho', 'showroom', 'address', 'store', 'location', 'hours'],
@@ -50,33 +58,79 @@ const KNOWLEDGE_BASE_EN = [
   },
   {
     keywords: ['track', 'order', 'tracking', 'status', 'check'],
-    reply: '📦 To track your order, visit **"My Orders"** in your account menu, or enter your Order ID (e.g. `UQ-260814-...`) on our Order Tracking page for live real-time fulfillment updates!'
+    reply: '📦 To track your order, visit **"My Orders"** in your account menu, or enter your Order ID (e.g. `BEO-260814-...`) on our Order Tracking page for live real-time fulfillment updates!'
   },
   {
-    keywords: ['material', 'fabric', 'airism', 'cotton', 'lifewear', 'quality'],
-    reply: '✨ **Proprietary LifeWear Fabric Technologies**:\n• **AIRism**: Ultra-fine breathable microfibers with instant dry cooling touch.\n• **100% Long-Staple Supima Cotton**: Lustrous hand-feel and durable shape retention wash after wash.'
+    keywords: ['material', 'fabric', 'beo-airflow', 'cotton', 'essentials', 'quality'],
+    reply: '✨ **Proprietary BEO Essentials Fabric Technologies**:\n• **BEO AirFlow**: Ultra-fine breathable microfibers with instant dry cooling touch.\n• **100% Long-Staple Supima Cotton**: Lustrous hand-feel and durable shape retention wash after wash.'
   }
 ];
 
-export const AiChatWidget = ({ onNavigate }) => {
+const KNOWLEDGE_BASE_VI = [
+  {
+    keywords: ['size', 'kích cỡ', 'tu van', 'tư vấn', 'chiều cao', 'chieu cao', 'cân nặng', 'can nang'],
+    reply: 'Bạn cho BEO biết chiều cao theo cm, cân nặng theo kg, giới tính và kiểu mặc mong muốn để được gợi ý size phù hợp nhé.'
+  },
+  {
+    keywords: ['mã giảm', 'ma giam', 'khuyến mãi', 'khuyen mai', 'voucher', 'beo10'],
+    reply: 'Bạn có thể thử mã **BEO10** cho đơn đủ điều kiện. Giỏ hàng sẽ kiểm tra điều kiện và số tiền giảm chính xác.'
+  },
+  {
+    keywords: ['địa chỉ', 'dia chi', 'showroom', 'cửa hàng', 'cua hang', 'cần thơ', 'can tho'],
+    reply: 'Showroom BEO Cần Thơ ở **209 Đường 30 Tháng 4, Xuân Khánh, Cần Thơ**, mở cửa hằng ngày từ 08:00 đến 22:00.'
+  },
+  {
+    keywords: ['giao hàng', 'giao hang', 'đổi trả', 'doi tra', 'đổi size', 'doi size'],
+    reply: 'BEO miễn phí giao hàng tiêu chuẩn cho đơn từ 500.000 VND và hỗ trợ đổi trả hoặc đổi size/màu trong 30 ngày khi sản phẩm đáp ứng điều kiện.'
+  }
+];
+
+const detectChatLanguage = (text, interfaceLanguage) => {
+  const lower = text.toLowerCase();
+  const plain = lower.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replaceAll('đ', 'd');
+  const vietnameseSignals = [
+    'toi ', 'minh ', 'ban ', 'cao ', 'nang ', 'tu van', 'san pham', 'cua hang',
+    'ma giam', 'khuyen mai', 'doi tra', 'giao hang', 'con hang'
+  ];
+  const englishSignals = [
+    'what ', 'where ', 'how ', 'please ', 'can you', 'suggest ', 'recommend ', 'is there', 'are there', 'do you', 'i am ', "i'm ",
+    'shipping', 'return', 'store', 'product', 'weight', 'height', 'discount',
+    'order', 'track', 'available', 'hello', 'i need', 'i want'
+  ];
+
+  if (lower.includes('đ') || /[\u0300-\u036f]/.test(lower.normalize('NFD')) || vietnameseSignals.some((signal) => plain.includes(signal))) {
+    return 'vi';
+  }
+  if (englishSignals.some((signal) => lower.includes(signal))) return 'en';
+  return interfaceLanguage === 'vi' ? 'vi' : 'en';
+};
+
+const createWelcomeMessage = (lang) => ({
+  id: 'welcome',
+  sender: 'bot',
+  text: lang === 'vi'
+    ? 'Xin chào! Tôi là Trợ lý BEO. Tôi có thể hỗ trợ bạn chọn size, gợi ý phối đồ, tra cứu mã giảm giá hoặc thông tin showroom Cần Thơ. Bạn cần giúp gì hôm nay ạ?'
+    : 'Hello! I am the BEO Assistant. I can help with size recommendations, outfit styling, voucher codes, or Can Tho showroom details. How may I help you today?',
+  time: new Date().toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+});
+
+export const AiChatWidget = () => {
   const { lang } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'bot',
-      text: lang === 'vi'
-        ? 'Xin chào! Tôi là **Trợ lý Ảo BEO AI**. Tôi có thể hỗ trợ bạn chọn size, gợi ý phối đồ LifeWear, tra cứu mã giảm giá hoặc thông tin showroom Cần Thơ. Bạn cần giúp gì hôm nay ạ?'
-        : 'Hello! I am the **BEO AI Assistant**. I can assist you with size recommendations, LifeWear outfit styling, voucher codes, or showroom details. How may I help you today?',
-      time: new Date().toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
+  const [messages, setMessages] = useState(() => [createWelcomeMessage(lang)]);
+  const [aiStatus, setAiStatus] = useState({ loaded: false, configured: false, provider: 'BEO Knowledge Base' });
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
 
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    setMessages((current) => current.filter((message) => (
+      message.sender !== 'bot' || !isInternalContextReply(message.text)
+    )));
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,9 +143,39 @@ export const AiChatWidget = ({ onNavigate }) => {
     }
   }, [isOpen, messages]);
 
-  const handleSendMessage = (textToSend) => {
+  useEffect(() => {
+    let mounted = true;
+    api.get('/ai/status')
+      .then((status) => mounted && setAiStatus({ loaded: true, ...status }))
+      .catch(() => mounted && setAiStatus((current) => ({ ...current, loaded: true })));
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    setMessages((current) => current.length === 1 && current[0].id === 'welcome'
+      ? [createWelcomeMessage(lang)]
+      : current);
+  }, [lang]);
+
+  const getLocalFallback = (text) => {
+    const lower = text.toLowerCase();
+    const responseLanguage = detectChatLanguage(text, lang);
+    const knowledgeBase = responseLanguage === 'vi' ? KNOWLEDGE_BASE_VI : KNOWLEDGE_BASE_EN;
+    const matched = knowledgeBase.find((item) =>
+      item.keywords.some((keyword) => lower.includes(keyword))
+    );
+
+    if (matched) return matched.reply;
+
+    return responseLanguage === 'vi'
+      ? 'Kết nối AI đang tạm gián đoạn. Bạn vẫn có thể hỏi về size, mã giảm giá, showroom hoặc chính sách giao hàng; BEO sẽ trả lời bằng dữ liệu dự phòng.'
+      : 'The AI connection is temporarily unavailable. You can still ask about sizing, promotions, stores, or shipping policies using BEO fallback data.';
+  };
+
+  const handleSendMessage = async (textToSend) => {
     const text = textToSend || inputVal;
-    if (!text.trim()) return;
+    if (!text.trim() || isTyping) return;
+    const responseLanguage = detectChatLanguage(text, lang);
 
     const userMsg = {
       id: Date.now(),
@@ -104,36 +188,42 @@ export const AiChatWidget = ({ onNavigate }) => {
     if (!textToSend) setInputVal('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const lower = text.toLowerCase();
-      let matchedReply = null;
-
-      for (const item of KNOWLEDGE_BASE_EN) {
-        if (item.keywords.some((kw) => lower.includes(kw))) {
-          matchedReply = item.reply;
-          break;
-        }
-      }
-
-      if (!matchedReply) {
-        matchedReply = lang === 'vi'
-          ? `Cảm ơn bạn đã nhắn tin! Tôi đã ghi nhận yêu cầu "${text}". Bạn có thể xem nhanh danh mục sản phẩm, hoặc liên hệ trực tiếp đội ngũ CSKH BEO qua **Zalo / Messenger / Hotline** ở tab "Kênh Hỗ Trợ" bên trên nhé!`
-          : `Thank you for your message! I've noted your inquiry for "${text}". You can explore our catalog or contact our concierge directly via **Zalo / Facebook / Hotline** on the Support tab above!`;
-      }
-
+    try {
+      const response = await api.post('/ai/chat', {
+        message: text.trim(),
+        language: lang,
+        history: messages.slice(-6).map((message) => ({
+          role: message.sender === 'bot' ? 'model' : 'user',
+          content: message.text,
+        })),
+      });
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: matchedReply,
+        text: response.reply,
+        provider: response.aiEnabled
+          ? response.model
+          : (responseLanguage === 'vi' ? 'BEO dự phòng' : 'BEO fallback'),
         time: new Date().toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
       };
-
       setMessages((prev) => [...prev, botMsg]);
+    } catch {
+      setMessages((prev) => [...prev, {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: getLocalFallback(text.trim()),
+        provider: responseLanguage === 'vi' ? 'BEO ngoại tuyến' : 'BEO offline',
+        time: new Date().toLocaleTimeString(lang === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+      }]);
+    } finally {
       setIsTyping(false);
-    }, 600);
+    }
   };
 
   const quickPrompts = lang === 'vi' ? QUICK_PROMPTS_VI : QUICK_PROMPTS_EN;
+  const assistantStatus = aiStatus.configured
+    ? (lang === 'vi' ? 'AI đã kết nối' : 'AI connected')
+    : (lang === 'vi' ? 'Hỗ trợ BEO' : 'BEO support');
 
   return (
     <aside aria-label="BEO Customer Support Widget">
@@ -142,9 +232,10 @@ export const AiChatWidget = ({ onNavigate }) => {
         <button
           onClick={() => setIsOpen(true)}
           className="ai-chat-fab"
+          aria-label={lang === 'vi' ? `Mở Trợ lý BEO, ${assistantStatus.toLowerCase()}` : `Open BEO Assistant, ${assistantStatus.toLowerCase()}`}
           title={lang === 'vi' ? 'Mở Trợ lý Ảo BEO & Hỗ trợ đa kênh' : 'Open BEO AI Assistant & Support'}
         >
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="ai-chat-fab-icon" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Bot size={22} color="#e60012" />
             {hasUnread && (
               <span
@@ -162,11 +253,14 @@ export const AiChatWidget = ({ onNavigate }) => {
             )}
           </div>
           <div className="ai-chat-text" style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: '0.82rem', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <div className="ai-chat-title">
               BEO AI Chat
             </div>
-            <div style={{ fontSize: '0.7rem', color: '#aaa' }}>
-              {lang === 'vi' ? 'Hỗ trợ 24/7 & MXH' : '24/7 AI & Live Support'}
+            <div className="ai-chat-status-line">
+              <span className="ai-chat-status-dot" aria-hidden="true" style={{ backgroundColor: aiStatus.configured ? '#00875a' : '#b7791f' }} />
+              {aiStatus.configured
+                ? (lang === 'vi' ? 'AI trực tuyến • Hỗ trợ 24/7' : 'AI online • 24/7 support')
+                : (lang === 'vi' ? 'Hỗ trợ BEO • Phản hồi tức thì' : 'BEO support • Instant replies')}
             </div>
           </div>
         </button>
@@ -203,13 +297,15 @@ export const AiChatWidget = ({ onNavigate }) => {
               </div>
               <div>
                 <div style={{ fontWeight: '800', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>BEO AI Stylist</span>
-                  <span style={{ fontSize: '0.65rem', backgroundColor: '#00875a', color: '#fff', padding: '1px 5px', borderRadius: '2px' }}>
-                    ONLINE
+                  <span>{aiStatus.configured ? 'BEO AI Stylist' : 'BEO Shopping Support'}</span>
+                  <span style={{ fontSize: '0.65rem', backgroundColor: aiStatus.configured ? '#00875a' : '#9a6700', color: '#fff', padding: '1px 5px', borderRadius: '2px' }}>
+                    {aiStatus.configured ? 'AI READY' : 'BEO SUPPORT'}
                   </span>
                 </div>
                 <div style={{ fontSize: '0.72rem', color: '#aaa' }}>
-                  {lang === 'vi' ? 'Trợ lý thời trang & Hỗ trợ mua sắm' : 'Fashion Concierge & Shopping Assistant'}
+                  {aiStatus.configured
+                    ? (lang === 'vi' ? `Được hỗ trợ bởi ${aiStatus.provider}` : `Powered by ${aiStatus.provider}`)
+                    : (lang === 'vi' ? 'Tư vấn thời trang và mua sắm theo dữ liệu BEO' : 'Fashion and shopping guidance from BEO data')}
                 </div>
               </div>
             </div>
@@ -300,7 +396,7 @@ export const AiChatWidget = ({ onNavigate }) => {
                       {m.text}
                     </div>
                     <span style={{ fontSize: '0.68rem', color: '#999', marginTop: '3px' }}>
-                      {m.time}
+                      {m.provider ? `${m.provider} • ` : ''}{m.time}
                     </span>
                   </div>
                 ))}
@@ -320,13 +416,14 @@ export const AiChatWidget = ({ onNavigate }) => {
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(p)}
+                    disabled={isTyping}
                     style={{
                       padding: '4px 10px',
                       backgroundColor: '#ffffff',
                       border: '1px solid #ddd',
                       fontSize: '0.72rem',
                       color: '#333',
-                      cursor: 'pointer',
+                      cursor: isTyping ? 'wait' : 'pointer',
                       borderRadius: '12px',
                       flexShrink: 0
                     }}
@@ -358,6 +455,8 @@ export const AiChatWidget = ({ onNavigate }) => {
                   placeholder={lang === 'vi' ? 'Nhập câu hỏi cho trợ lý BEO...' : 'Ask BEO Stylist anything...'}
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
+                  maxLength={1000}
+                  disabled={isTyping}
                   style={{
                     flex: 1,
                     padding: '9px 12px',
@@ -368,13 +467,13 @@ export const AiChatWidget = ({ onNavigate }) => {
                 />
                 <button
                   type="submit"
-                  disabled={!inputVal.trim()}
+                  disabled={!inputVal.trim() || isTyping}
                   style={{
-                    backgroundColor: inputVal.trim() ? '#e60012' : '#ccc',
+                    backgroundColor: inputVal.trim() && !isTyping ? '#e60012' : '#ccc',
                     color: '#fff',
                     border: 'none',
                     padding: '9px 14px',
-                    cursor: inputVal.trim() ? 'pointer' : 'not-allowed',
+                    cursor: inputVal.trim() && !isTyping ? 'pointer' : 'not-allowed',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'

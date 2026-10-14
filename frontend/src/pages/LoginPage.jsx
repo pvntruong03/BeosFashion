@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Lock, Mail, User, Phone, MapPin, ArrowRight, ShieldCheck, Sparkles, KeyRound } from 'lucide-react';
+import { Lock, Mail, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
 
 export const LoginPage = ({ onNavigate }) => {
-  const { login, register, loginAsDemo } = useAuth();
-  const { t, lang } = useLanguage();
+  const { login, register } = useAuth();
+  const { lang } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('login');
 
@@ -13,6 +14,7 @@ export const LoginPage = ({ onNavigate }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   // Register form
   const [regFullName, setRegFullName] = useState('');
@@ -20,7 +22,7 @@ export const LoginPage = ({ onNavigate }) => {
   const [regPassword, setRegPassword] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regAddress, setRegAddress] = useState('');
-  const [regCity, setRegCity] = useState('Can Tho');
+  const [regCity] = useState('Can Tho');
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -28,12 +30,13 @@ export const LoginPage = ({ onNavigate }) => {
     const res = await login(email, password);
     setLoading(false);
     if (res.success) {
+      const navigationContext = { authenticatedRole: res.user?.role };
       if (res.redirectPath === '/admin/dashboard') {
-        onNavigate('admin');
+        onNavigate('admin', {}, navigationContext);
       } else if (res.redirectPath === '/staff/dashboard') {
-        onNavigate('staff');
+        onNavigate('staff', {}, navigationContext);
       } else {
-        onNavigate('home');
+        onNavigate('home', {}, navigationContext);
       }
     }
   };
@@ -55,23 +58,8 @@ export const LoginPage = ({ onNavigate }) => {
     }
   };
 
-  const handleDemoLoginClick = async (demoType) => {
-    setLoading(true);
-    const res = await loginAsDemo(demoType);
-    setLoading(false);
-    if (res.success) {
-      if (res.redirectPath === '/admin/dashboard') {
-        onNavigate('admin');
-      } else if (res.redirectPath === '/staff/dashboard') {
-        onNavigate('staff');
-      } else {
-        onNavigate('home');
-      }
-    }
-  };
-
   return (
-    <div className="container" style={{ padding: '48px 24px', maxWidth: '960px' }}>
+    <div className="container" style={{ padding: '48px 24px', maxWidth: '560px' }}>
       {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '36px' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
@@ -91,10 +79,7 @@ export const LoginPage = ({ onNavigate }) => {
       </div>
 
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-        gap: '40px',
-        alignItems: 'start'
+        display: 'block'
       }}>
         {/* Left Column: Login / Register Box */}
         <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e5e5', padding: '32px', boxShadow: 'var(--shadow-sm)' }}>
@@ -159,7 +144,7 @@ export const LoginPage = ({ onNavigate }) => {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <label style={{ fontSize: '0.8rem', fontWeight: '700' }}>{lang === 'vi' ? 'MẬT KHẨU *' : 'PASSWORD *'}</label>
-                  <a href="#" style={{ fontSize: '0.75rem', color: '#e60012' }}>{lang === 'vi' ? 'Quên mật khẩu?' : 'Forgot password?'}</a>
+                  <button type="button" onClick={() => setForgotPasswordOpen(true)} style={{ fontSize: '0.75rem', color: '#e60012' }}>{lang === 'vi' ? 'Quên mật khẩu?' : 'Forgot password?'}</button>
                 </div>
                 <div style={{ position: 'relative' }}>
                   <input
@@ -177,7 +162,7 @@ export const LoginPage = ({ onNavigate }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-uq btn-uq-primary"
+                className="btn-beo btn-beo-primary"
                 style={{ width: '100%', padding: '14px', fontSize: '1rem', marginTop: '8px' }}
               >
                 <span>{loading ? (lang === 'vi' ? 'Đang xác thực...' : 'Authenticating...') : (lang === 'vi' ? 'Đăng Nhập' : 'Sign In')}</span>
@@ -258,7 +243,7 @@ export const LoginPage = ({ onNavigate }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-uq btn-uq-red"
+                className="btn-beo btn-beo-red"
                 style={{ width: '100%', padding: '14px', fontSize: '1rem', marginTop: '8px' }}
               >
                 <span>{loading ? (lang === 'vi' ? 'Đang tạo tài khoản...' : 'Creating Account...') : (lang === 'vi' ? 'Đăng Ký Thành Viên' : 'Register Account')}</span>
@@ -267,107 +252,8 @@ export const LoginPage = ({ onNavigate }) => {
           )}
         </div>
 
-        {/* Right Column: 1-Click Quick Demo Login Accounts */}
-        <div style={{ backgroundColor: '#fafafa', border: '1px solid #e5e5e5', padding: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <KeyRound size={20} color="#e60012" />
-            <span style={{ fontWeight: '800', fontSize: '1.05rem', textTransform: 'uppercase' }}>
-              {lang === 'vi' ? 'Tài Khoản Thử Nghiệm 1-Click' : '1-Click Quick Demo Switcher'}
-            </span>
-          </div>
-          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '20px', lineHeight: 1.5 }}>
-            {lang === 'vi'
-              ? 'Bấm trực tiếp vào các nút bên dưới để đăng nhập ngay và trải nghiệm cơ chế tự động điều hướng theo quyền hạn (Single Login Routing):'
-              : 'Click any role below to instantly log in and experience seamless role-based routing (Single Login Gateway):'}
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Admin */}
-            <div
-              onClick={() => handleDemoLoginClick('admin')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #111',
-                cursor: 'pointer',
-                transition: 'background 0.15s'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>👑 {lang === 'vi' ? 'Admin Quản Trị Hệ Thống' : 'System Administrator'}</span>
-                  <span className="badge-uq red">ADMIN</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  admin@uniqlo.com • {lang === 'vi' ? 'Điều hướng:' : 'Redirect:'} <code>/admin/dashboard</code>
-                </div>
-              </div>
-              <ArrowRight size={16} color="#e60012" />
-            </div>
-
-            {/* Staff Manager */}
-            <div
-              onClick={() => handleDemoLoginClick('staff_manager')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e0e0e0',
-                cursor: 'pointer',
-                transition: 'background 0.15s'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>🏬 {lang === 'vi' ? 'Quản Lý Cửa Hàng (Store Manager)' : 'Store Manager (POS & Inventory)'}</span>
-                  <span className="badge-uq black">MANAGER</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  manager.cantho@uniqlo.com • {lang === 'vi' ? 'Chi nhánh Cần Thơ (Vincom Xuân Khánh)' : 'Can Tho Flagship Store'}
-                </div>
-              </div>
-              <ArrowRight size={16} />
-            </div>
-
-            {/* Customer */}
-            <div
-              onClick={() => handleDemoLoginClick('customer')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e0e0e0',
-                cursor: 'pointer',
-                transition: 'background 0.15s'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontWeight: '800', fontSize: '0.9rem' }}>👤 {lang === 'vi' ? 'Khách Hàng (Customer)' : 'Customer (Shopper)'}</span>
-                  <span className="badge-uq gray">CUSTOMER</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '2px' }}>
-                  customer@gmail.com • {lang === 'vi' ? 'Mua sắm & Giỏ hàng' : 'Shopping Bag & Orders'}
-                </div>
-              </div>
-              <ArrowRight size={16} />
-            </div>
-          </div>
-        </div>
       </div>
+      <ForgotPasswordModal isOpen={forgotPasswordOpen} onClose={() => setForgotPasswordOpen(false)} />
     </div>
   );
 };

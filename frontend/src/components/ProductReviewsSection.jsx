@@ -1,69 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Star, CheckCircle, ThumbsUp, Camera, MessageSquare, Plus, Filter, Image as ImageIcon } from 'lucide-react';
+import { Star, CheckCircle, ThumbsUp, Camera, Plus, Filter } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 
-const SAMPLE_FALLBACK_REVIEWS = [
-  {
-    id: 1,
-    userName: 'Alex Johnson',
-    userAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
-    rating: 5,
-    title: 'Extremely cooling AIRism fabric with great sweat absorption',
-    comment: 'I am 173cm, 67kg and chose Size L—fits perfectly like bespoke tailoring. Clean seams, no shrinkage or pilling after multiple machine washes. Definitely ordering again!',
-    fitRating: 'TRUE_TO_SIZE',
-    purchasedColor: '09 BLACK',
-    purchasedSize: 'L',
-    verifiedPurchase: true,
-    createdAt: '2026-08-10T14:30:00',
-    helpfulCount: 24,
-    images: [
-      'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=500&auto=format&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 2,
-    userName: 'Sophia Miller',
-    userAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
-    rating: 5,
-    title: 'Elegant color and luxury soft feel!',
-    comment: 'Super fast delivery in Can Tho—arrived in just over an hour. Premium box packaging with a thank you card. Perfect for both office work and casual weekend outings.',
-    fitRating: 'TRUE_TO_SIZE',
-    purchasedColor: '00 WHITE',
-    purchasedSize: 'M',
-    verifiedPurchase: true,
-    createdAt: '2026-08-12T09:15:00',
-    helpfulCount: 18,
-    images: [
-      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500&auto=format&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    userName: 'David Lee',
-    userAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80',
-    rating: 5,
-    title: 'Worth every penny, silhouette is sharp',
-    comment: 'Gentle elasticity that maintains shape without wrinkling. Shoulder fit flatters posture nicely. Bought 2 more in different colors.',
-    fitRating: 'TRUE_TO_SIZE',
-    purchasedColor: '69 NAVY',
-    purchasedSize: 'XL',
-    verifiedPurchase: true,
-    createdAt: '2026-08-13T18:45:00',
-    helpfulCount: 12,
-    images: []
-  }
-];
-
-export const ProductReviewsSection = ({ productId, productName }) => {
+export const ProductReviewsSection = ({ productId, productName, onReviewsChange }) => {
   const { user } = useAuth();
   const { showSuccess, showError, showInfo } = useToast();
   const { lang } = useLanguage();
 
-  const [reviews, setReviews] = useState(SAMPLE_FALLBACK_REVIEWS);
+  const [reviews, setReviews] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState('ALL');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
@@ -79,19 +26,22 @@ export const ProductReviewsSection = ({ productId, productName }) => {
   const [imageUrl, setImageUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => { onReviewsChange?.(reviews); }, [reviews, onReviewsChange]);
+
   useEffect(() => {
+    let active = true;
+    setReviews([]);
     if (!productId) return;
     const fetchReviews = async () => {
       try {
         const res = await api.get(`/reviews/product/${productId}`);
-        if (res.data && res.data.length > 0) {
-          setReviews(res.data);
-        }
+        if (active) setReviews(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error('Error loading product reviews:', err);
       }
     };
     fetchReviews();
+    return () => { active = false; };
   }, [productId]);
 
   const handleSubmitReview = async (e) => {
@@ -129,7 +79,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
         fitRating,
         purchasedColor,
         purchasedSize,
-        verifiedPurchase: true,
+        verifiedPurchase: false,
         createdAt: new Date().toISOString(),
         helpfulCount: 0,
         images: payload.images
@@ -166,11 +116,11 @@ export const ProductReviewsSection = ({ productId, productName }) => {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h2 style={{ fontSize: '1.3rem', fontWeight: '900', textTransform: 'uppercase', margin: 0 }}>
-              {lang === 'vi' ? `Đánh Giá & Nhận Xét Thực Tế (${reviews.length})` : `Verified Customer Reviews (${reviews.length})`}
+              {lang === 'vi' ? `Đánh Giá & Nhận Xét Thực Tế (${reviews.length})` : `Customer Reviews (${reviews.length})`}
             </h2>
           </div>
           <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
-            {lang === 'vi' ? 'Trải nghiệm chân thực từ khách hàng đã mua sản phẩm tại BEO STORE' : 'Authentic feedback from verified customers who purchased at BEO STORE'}
+            {lang === 'vi' ? 'Đánh giá từ khách hàng mua sắm tại BEO STORE' : 'Reviews from customers shopping at BEO STORE'}
           </p>
         </div>
 
@@ -323,7 +273,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
               <button
                 type="button"
                 onClick={() => setImageUrl('https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=80')}
-                className="btn-uq btn-uq-outline-gray"
+                className="btn-beo btn-beo-outline-gray"
                 style={{ padding: '8px 12px', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
               >
                 <Camera size={14} /> {lang === 'vi' ? 'Dùng ảnh mẫu' : 'Sample Photo'}
@@ -363,11 +313,11 @@ export const ProductReviewsSection = ({ productId, productName }) => {
         {/* Left: Overall Score */}
         <div style={{ textAlign: 'center', borderRight: '1px solid #eee', paddingRight: '16px' }}>
           <div style={{ fontSize: '3.2rem', fontWeight: '900', color: '#111', lineHeight: 1 }}>
-            {averageRating}
+            {reviews.length ? averageRating : '—'}
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', margin: '8px 0' }}>
             {[1, 2, 3, 4, 5].map((s) => (
-              <Star key={s} size={18} color="#e60012" fill="#e60012" />
+              <Star key={s} size={18} color="#e60012" fill={s <= Math.round(Number(averageRating)) ? "#e60012" : "none"} />
             ))}
           </div>
           <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: '700' }}>
@@ -377,13 +327,10 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
         {/* Middle: Rating Bars */}
         <div>
-          {[
-            { star: 5, pct: 88, count: Math.round(reviews.length * 0.88) },
-            { star: 4, pct: 10, count: Math.round(reviews.length * 0.1) },
-            { star: 3, pct: 2, count: Math.round(reviews.length * 0.02) },
-            { star: 2, pct: 0, count: 0 },
-            { star: 1, pct: 0, count: 0 }
-          ].map((bar) => (
+          {[5, 4, 3, 2, 1].map((star) => {
+            const count = reviews.filter((review) => Number(review.rating) === star).length;
+            return { star, count, pct: reviews.length ? count * 100 / reviews.length : 0 };
+          }).map((bar) => (
             <div key={bar.star} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', marginBottom: '4px' }}>
               <span style={{ width: '40px', fontWeight: '700' }}>{bar.star} ★</span>
               <div style={{ flex: 1, height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
@@ -400,7 +347,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
             {lang === 'vi' ? 'Độ Vừa Vặn Thực Tế:' : 'Fit Feedback:'}
           </div>
           <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#2e7d32' }}>
-            {lang === 'vi' ? '96% Vừa Vặn Chuẩn Size' : '96% True to Size'}
+            {reviews.length ? Math.round(reviews.filter((r) => r.fitRating === 'TRUE_TO_SIZE').length * 100 / reviews.length) + (lang === 'vi' ? '% vừa đúng size' : '% true to size') : (lang === 'vi' ? 'Chưa có phản hồi' : 'No feedback yet')}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
             {lang === 'vi'
@@ -440,6 +387,7 @@ export const ProductReviewsSection = ({ productId, productName }) => {
 
       {/* Reviews List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {filteredReviews.length === 0 && <p style={{ padding: '24px', color: '#666' }}>{lang === 'vi' ? 'Chưa có đánh giá phù hợp. Hãy chia sẻ trải nghiệm của bạn.' : 'No matching reviews yet. Share your experience.'}</p>}
         {filteredReviews.map((rev) => (
           <div
             key={rev.id}

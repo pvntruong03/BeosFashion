@@ -1,26 +1,28 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 import { useToast } from './ToastContext';
+import { useLanguage } from './LanguageContext';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
-      const storedUser = localStorage.getItem('uq_user');
+      const storedUser = localStorage.getItem('beo_user');
       return storedUser ? JSON.parse(storedUser) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('uq_token') || null);
+  const [token, setToken] = useState(() => localStorage.getItem('beo_token') || null);
   const [loading, setLoading] = useState(false);
+  const { lang } = useLanguage();
   const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem('uq_token');
-      const storedUser = localStorage.getItem('uq_user');
+      const storedToken = localStorage.getItem('beo_token');
+      const storedUser = localStorage.getItem('beo_user');
 
       if (storedToken && storedUser) {
         try {
@@ -30,7 +32,7 @@ export const AuthProvider = ({ children }) => {
           const res = await api.get('/auth/me');
           if (res.data) {
             setUser(res.data);
-            localStorage.setItem('uq_user', JSON.stringify(res.data));
+            localStorage.setItem('beo_user', JSON.stringify(res.data));
           }
         } catch (err) {
           console.error('Session expired or error fetching profile', err);
@@ -41,6 +43,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     initAuth();
+  // Authentication bootstrap runs once; logout only clears the same local state.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getRedirectPathForRole = (role) => {
@@ -59,17 +63,21 @@ export const AuthProvider = ({ children }) => {
         throw new Error(res?.message || 'Failed to retrieve authentication data from server.');
       }
 
-      localStorage.setItem('uq_token', authData.token);
-      localStorage.setItem('uq_user', JSON.stringify(authData.user));
+      localStorage.setItem('beo_token', authData.token);
+      localStorage.setItem('beo_user', JSON.stringify(authData.user));
 
       setToken(authData.token);
       setUser(authData.user);
 
-      showSuccess(`Login successful! Welcome back, ${authData.user?.fullName || ''}`);
+      showSuccess(lang === 'vi'
+        ? `Đăng nhập thành công! Chào mừng ${authData.user?.fullName || 'bạn'} quay lại.`
+        : `Login successful! Welcome back, ${authData.user?.fullName || 'customer'}.`);
       const redirectPath = getRedirectPathForRole(authData.user?.role);
       return { success: true, redirectPath, user: authData.user };
     } catch (err) {
-      showError(err.message || 'Login failed. Please check your credentials and try again.');
+      showError(err.message || (lang === 'vi'
+        ? 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'
+        : 'Login failed. Please check your credentials and try again.'));
       return { success: false, error: err.message };
     }
   };
@@ -83,46 +91,35 @@ export const AuthProvider = ({ children }) => {
         throw new Error(res?.message || 'Failed to retrieve authentication data from server.');
       }
 
-      localStorage.setItem('uq_token', authData.token);
-      localStorage.setItem('uq_user', JSON.stringify(authData.user));
+      localStorage.setItem('beo_token', authData.token);
+      localStorage.setItem('beo_user', JSON.stringify(authData.user));
 
       setToken(authData.token);
       setUser(authData.user);
 
-      showSuccess('Account created successfully!');
+      showSuccess(lang === 'vi' ? 'Tạo tài khoản thành công!' : 'Account created successfully!');
       return { success: true, redirectPath: '/', user: authData.user };
     } catch (err) {
-      showError(err.message || 'Registration failed. Please try again.');
+      showError(err.message || (lang === 'vi'
+        ? 'Đăng ký thất bại. Vui lòng thử lại.'
+        : 'Registration failed. Please try again.'));
       return { success: false, error: err.message };
     }
   };
 
-  const loginAsDemo = async (type) => {
-    const credentials = {
-      admin: { email: 'admin@uniqlo.com', pass: 'admin123' },
-      staff_manager: { email: 'manager.cantho@uniqlo.com', pass: 'staff123' },
-      customer: { email: 'customer@gmail.com', pass: 'customer123' },
-    };
-
-    const cred = credentials[type];
-    if (cred) {
-      return await login(cred.email, cred.pass);
-    }
-  };
-
   const logout = (notify = true) => {
-    localStorage.removeItem('uq_token');
-    localStorage.removeItem('uq_user');
+    localStorage.removeItem('beo_token');
+    localStorage.removeItem('beo_user');
     setUser(null);
     setToken(null);
     if (notify) {
-      showSuccess('Logged out successfully.');
+      showSuccess(lang === 'vi' ? 'Đăng xuất thành công.' : 'Logged out successfully.');
     }
   };
 
   const updateUserData = (updatedUser) => {
     setUser(updatedUser);
-    localStorage.setItem('uq_user', JSON.stringify(updatedUser));
+    localStorage.setItem('beo_user', JSON.stringify(updatedUser));
   };
 
   const isAdmin = user?.role === 'ROLE_ADMIN';
@@ -137,7 +134,6 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
-        loginAsDemo,
         logout,
         updateUserData,
         isAdmin,

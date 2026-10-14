@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Star, CheckCircle2 } from 'lucide-react';
+import { X, Star } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
@@ -182,7 +182,7 @@ export const ReviewModal = ({ isOpen, onClose, product, onReviewSubmitted }) => 
           <button
             type="submit"
             disabled={loading}
-            className="btn-uq btn-uq-primary"
+            className="btn-beo btn-beo-primary"
             style={{ width: '100%', padding: '14px' }}
           >
             {loading ? (lang === 'vi' ? 'Đang gửi...' : 'Submitting...') : (lang === 'vi' ? 'Gửi Đánh Giá Ngay' : 'Submit Review')}

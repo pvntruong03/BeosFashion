@@ -5,16 +5,12 @@ import {
   Phone,
   MapPin,
   Lock,
-  Camera,
   Save,
   ShieldCheck,
   Award,
   Sparkles,
   ShoppingBag,
   Heart,
-  ArrowRight,
-  CheckCircle2,
-  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -70,7 +66,7 @@ export const ProfilePage = ({ onNavigate }) => {
         <p style={{ color: '#666', marginBottom: '24px' }}>
           {lang === 'vi' ? 'Bạn cần đăng nhập để quản lý thông tin tài khoản và xem quyền lợi hội viên.' : 'Please sign in to manage account profile and membership privileges.'}
         </p>
-        <button onClick={() => onNavigate('login')} className="btn-uq btn-uq-primary">
+        <button onClick={() => onNavigate('login')} className="btn-beo btn-beo-primary">
           {lang === 'vi' ? 'Đăng nhập ngay' : 'Sign In Now'}
         </button>
       </div>
@@ -192,10 +188,10 @@ export const ProfilePage = ({ onNavigate }) => {
               <h1 style={{ fontSize: '1.4rem', fontWeight: '800', margin: 0 }}>
                 {user.fullName || user.email}
               </h1>
-              <span className="badge-uq red">{user.role}</span>
+              <span className="badge-beo red">{user.role}</span>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#aaa', margin: '4px 0 0 0' }}>
-              {lang === 'vi' ? 'Thành viên BEO LifeWear • Email:' : 'BEO LifeWear Member • Email:'} <strong>{user.email}</strong>
+              {lang === 'vi' ? 'Thành viên BEO Essentials • Email:' : 'BEO Essentials Member • Email:'} <strong>{user.email}</strong>
             </p>
           </div>
         </div>
@@ -203,16 +199,16 @@ export const ProfilePage = ({ onNavigate }) => {
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={() => onNavigate('orders')}
-            className="btn-uq btn-uq-outline-gray"
-            style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
+            className="btn-beo portal-storefront-button"
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
           >
             <ShoppingBag size={16} />
             <span>{t('orders')}</span>
           </button>
           <button
             onClick={() => onNavigate('wishlist')}
-            className="btn-uq btn-uq-outline-gray"
-            style={{ padding: '8px 16px', fontSize: '0.85rem', color: '#fff', borderColor: '#444' }}
+            className="btn-beo portal-storefront-button"
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
           >
             <Heart size={16} />
             <span>{t('wishlist')}</span>
@@ -428,7 +424,7 @@ export const ProfilePage = ({ onNavigate }) => {
                   <button
                     type="submit"
                     disabled={isSavingProfile}
-                    className="btn-uq btn-uq-red"
+                    className="btn-beo btn-beo-red"
                     style={{ padding: '12px 28px', fontSize: '0.9rem', fontWeight: '700' }}
                   >
                     <Save size={16} />
@@ -499,7 +495,7 @@ export const ProfilePage = ({ onNavigate }) => {
                 <button
                   type="submit"
                   disabled={isSavingPassword}
-                  className="btn-uq btn-uq-red"
+                  className="btn-beo btn-beo-red"
                   style={{ padding: '12px 28px', fontSize: '0.9rem', fontWeight: '700' }}
                 >
                   <Lock size={16} />
@@ -517,7 +513,7 @@ export const ProfilePage = ({ onNavigate }) => {
                   {lang === 'vi' ? 'Hội Viên BEO Club & Đặc Quyền' : 'BEO Club Membership & Rewards'}
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>
-                  {lang === 'vi' ? 'Thẻ thành viên điện tử BEO LifeWear tích điểm cho mọi đơn hàng trực tuyến và tại cửa hàng.' : 'Digital loyalty membership card earning reward points for every purchase.'}
+                  {lang === 'vi' ? 'Thẻ thành viên điện tử BEO Essentials tích điểm cho mọi đơn hàng trực tuyến và tại cửa hàng.' : 'Digital loyalty membership card earning reward points for every purchase.'}
                 </p>
               </div>
 
@@ -535,13 +531,13 @@ export const ProfilePage = ({ onNavigate }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
                   <div>
                     <span style={{ fontSize: '0.75rem', letterSpacing: '2px', color: '#aaa', textTransform: 'uppercase' }}>
-                      BEO LIFEWEAR MEMBER
+                      BEO ESSENTIALS MEMBER
                     </span>
                     <div style={{ fontSize: '1.3rem', fontWeight: '900', marginTop: '4px', letterSpacing: '1px' }}>
                       {user.fullName || 'ESTEEMED CLIENT'}
                     </div>
                   </div>
-                  <span className="badge-uq red" style={{ fontSize: '0.8rem', padding: '4px 10px' }}>
+                  <span className="badge-beo red" style={{ fontSize: '0.8rem', padding: '4px 10px' }}>
                     BEO VIP SILVER
                   </span>
                 </div>
@@ -573,7 +569,7 @@ export const ProfilePage = ({ onNavigate }) => {
                     🎁 {lang === 'vi' ? 'Voucher Sinh Nhật 15%' : '15% Birthday Gift Voucher'}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                    {lang === 'vi' ? 'Nhận mã giảm giá 15% vào tháng sinh nhật của bạn cho mọi sản phẩm LifeWear.' : 'Receive a special 15% birthday discount voucher during your birthday month.'}
+                    {lang === 'vi' ? 'Nhận mã giảm giá 15% vào tháng sinh nhật của bạn cho mọi sản phẩm BEO Essentials.' : 'Receive a special 15% birthday discount voucher during your birthday month.'}
                   </div>
                 </div>
 

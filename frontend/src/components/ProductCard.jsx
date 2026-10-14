@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Star, Plus, Check } from 'lucide-react';
+import { Heart, Star, Plus } from 'lucide-react';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -30,6 +30,41 @@ export const ProductCard = ({ product, onNavigate }) => {
   }
   const uniqueColors = Array.from(colorMap.values());
 
+  // Group unique sizes in standard fashion order without duplicates
+  const standardSizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'FREE'];
+
+  // Variants for currently selected color (or all variants if none specifically selected)
+  const variantsForCurrentColor = product.variants?.filter(
+    (v) => !selectedVariant || v.colorName === selectedVariant.colorName
+  ) || [];
+
+  // Deduplicate sizes strictly so no duplicate size buttons ever appear
+  const sizeMap = new Map();
+  variantsForCurrentColor.forEach((v) => {
+    if (v.size && !sizeMap.has(v.size)) {
+      sizeMap.set(v.size, v);
+    }
+  });
+
+  // If the active color has limited sizes, supplement from other variants
+  if (product.variants) {
+    product.variants.forEach((v) => {
+      if (v.size && !sizeMap.has(v.size)) {
+        sizeMap.set(v.size, v);
+      }
+    });
+  }
+
+  // Sort unique sizes logically (XS -> S -> M -> L -> XL -> XXL -> FREE)
+  const uniqueSizes = Array.from(sizeMap.values()).sort((a, b) => {
+    const idxA = standardSizeOrder.indexOf(a.size);
+    const idxB = standardSizeOrder.indexOf(b.size);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.size.localeCompare(b.size);
+  });
+
   const handleColorChange = (variant) => {
     setSelectedVariant(variant);
     if (variant.imageUrl) {
@@ -37,8 +72,17 @@ export const ProductCard = ({ product, onNavigate }) => {
     }
   };
 
-  const handleQuickAddSize = async (variant) => {
-    await addToCart(variant.id, 1, true);
+  const handleQuickAddSize = async (sizeVariant) => {
+    // Find exact variant matching currently active color and selected size
+    let target = product.variants?.find(
+      (v) => (selectedVariant ? v.colorName === selectedVariant.colorName : true) && v.size === sizeVariant.size
+    );
+    if (!target) {
+      target = product.variants?.find((v) => v.size === sizeVariant.size) || sizeVariant;
+    }
+    if (target?.id) {
+      await addToCart(target.id, 1, true);
+    }
     setShowQuickAdd(false);
   };
 
@@ -70,6 +114,10 @@ export const ProductCard = ({ product, onNavigate }) => {
         <img
           src={activeImage}
           alt={product.name}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80';
+          }}
           style={{
             position: 'absolute',
             top: 0,
@@ -85,9 +133,9 @@ export const ProductCard = ({ product, onNavigate }) => {
 
         {/* Badges */}
         <div style={{ position: 'absolute', top: '8px', left: '8px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 2 }}>
-          {product.limitedOffer && <span className="badge-uq red" style={{ fontSize: '0.65rem', padding: '2px 6px', letterSpacing: '0.5px' }}>{lang === 'vi' ? 'Khuyến Mãi' : 'Limited Offer'}</span>}
-          {product.isNew && <span className="badge-uq black" style={{ fontSize: '0.65rem', padding: '2px 6px', letterSpacing: '0.5px' }}>{lang === 'vi' ? 'Mới' : 'New'}</span>}
-          {product.bestSeller && !product.limitedOffer && <span className="badge-uq gray" style={{ fontSize: '0.65rem', padding: '2px 6px', letterSpacing: '0.5px' }}>{lang === 'vi' ? 'Bán Chạy' : 'Best Seller'}</span>}
+          {product.limitedOffer && <span className="badge-beo red" style={{ fontSize: '0.65rem', padding: '2px 6px', letterSpacing: '0.5px' }}>{lang === 'vi' ? 'Khuyến Mãi' : 'Limited Offer'}</span>}
+          {product.isNew && <span className="badge-beo black" style={{ fontSize: '0.65rem', padding: '2px 6px', letterSpacing: '0.5px' }}>{lang === 'vi' ? 'Mới' : 'New'}</span>}
+          {product.bestSeller && !product.limitedOffer && <span className="badge-beo gray" style={{ fontSize: '0.65rem', padding: '2px 6px', letterSpacing: '0.5px' }}>{lang === 'vi' ? 'Bán Chạy' : 'Best Seller'}</span>}
         </div>
 
         {/* Wishlist Button */}
@@ -139,29 +187,29 @@ export const ProductCard = ({ product, onNavigate }) => {
               {lang === 'vi' ? 'CHỌN SIZE NHANH:' : 'QUICK SELECT SIZE:'}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', justifyContent: 'center' }}>
-              {product.variants
-                ?.filter((v) => !selectedVariant || v.colorName === selectedVariant.colorName)
-                .map((v) => (
-                  <button
-                    key={v.id}
-                    onClick={() => handleQuickAddSize(v)}
-                    disabled={v.totalStock <= 0}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '0.75rem',
-                      fontWeight: '700',
-                      border: '1px solid #111',
-                      backgroundColor: v.totalStock > 0 ? '#111' : '#f0f0f0',
-                      color: v.totalStock > 0 ? '#fff' : '#aaa',
-                      cursor: v.totalStock > 0 ? 'pointer' : 'not-allowed',
-                      textDecoration: v.totalStock <= 0 ? 'line-through' : 'none',
-                      borderRadius: '2px',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {v.size}
-                  </button>
-                ))}
+              {uniqueSizes.map((v) => (
+                <button
+                  key={v.size}
+                  onClick={() => handleQuickAddSize(v)}
+                  disabled={v.totalStock <= 0}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    border: '1px solid #111',
+                    backgroundColor: v.totalStock > 0 ? '#111' : '#f0f0f0',
+                    color: v.totalStock > 0 ? '#fff' : '#aaa',
+                    cursor: v.totalStock > 0 ? 'pointer' : 'not-allowed',
+                    textDecoration: v.totalStock <= 0 ? 'line-through' : 'none',
+                    borderRadius: '2px',
+                    minWidth: '28px',
+                    textAlign: 'center',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {v.size}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -200,7 +248,7 @@ export const ProductCard = ({ product, onNavigate }) => {
 
         {/* Gender / Collection Tag */}
         <div style={{ fontSize: '0.68rem', color: '#8c887b', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.8px', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>
-          {product.gender} • {product.collection || 'LifeWear'}
+          {product.gender} • {product.collection || 'BEO Essentials'}
         </div>
 
         {/* Product Title */}

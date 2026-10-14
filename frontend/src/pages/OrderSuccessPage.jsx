@@ -1,14 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, ShoppingBag, Truck, MapPin, Printer, ArrowRight, QrCode } from 'lucide-react';
+import { CheckCircle2, Printer, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { VietQrPaymentCard } from '../components/VietQrPaymentCard';
 
-export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
+const readSavedOrder = (orderNumber) => {
+  if (!orderNumber) return null;
+  try {
+    const saved = sessionStorage.getItem(`beo_order_${orderNumber}`);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const OrderSuccessPage = ({ order: initialOrder, orderNumber, onNavigate }) => {
   const { formatPrice, lang } = useLanguage();
-  const [order, setOrder] = useState(initialOrder);
+  const [order, setOrder] = useState(() => (
+    readSavedOrder(initialOrder?.orderNumber || orderNumber) || initialOrder
+  ));
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+
+  useEffect(() => {
+    const currentOrder = order || initialOrder;
+    if (!currentOrder?.orderNumber) return;
+
+    sessionStorage.setItem(`beo_order_${currentOrder.orderNumber}`, JSON.stringify(currentOrder));
+
+    if (!orderNumber) {
+      const nextHash = `#/order-success?orderNumber=${encodeURIComponent(currentOrder.orderNumber)}`;
+      window.history.replaceState(null, '', nextHash);
+    }
+  }, [initialOrder, order, orderNumber]);
 
   useEffect(() => {
     try {
@@ -17,7 +41,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
         spread: 70,
         origin: { y: 0.6 }
       });
-    } catch (e) {
+    } catch {
       console.log('Confetti effect');
     }
   }, []);
@@ -26,7 +50,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
     return (
       <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
         <h2>{lang === 'vi' ? 'Không tìm thấy thông tin đơn hàng' : 'Order Information Not Found'}</h2>
-        <button onClick={() => onNavigate('home')} className="btn-uq btn-uq-primary" style={{ marginTop: '16px' }}>
+        <button onClick={() => onNavigate('home')} className="btn-beo btn-beo-primary" style={{ marginTop: '16px' }}>
           {lang === 'vi' ? 'Về trang chủ' : 'Return to Home'}
         </button>
       </div>
@@ -36,15 +60,20 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
   const handlePaymentConfirmed = (updatedOrder) => {
     if (updatedOrder) {
       setOrder(updatedOrder);
+      sessionStorage.setItem(`beo_order_${updatedOrder.orderNumber}`, JSON.stringify(updatedOrder));
     } else {
-      setOrder((prev) => ({
-        ...prev,
-        status: 'CONFIRMED',
-        payment: {
-          ...prev.payment,
-          paymentStatus: 'SUCCESS'
-        }
-      }));
+      setOrder((prev) => {
+        const nextOrder = {
+          ...prev,
+          status: 'CONFIRMED',
+          payment: {
+            ...prev.payment,
+            paymentStatus: 'SUCCESS'
+          }
+        };
+        sessionStorage.setItem(`beo_order_${nextOrder.orderNumber}`, JSON.stringify(nextOrder));
+        return nextOrder;
+      });
     }
   };
 
@@ -96,7 +125,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
           <CheckCircle2 size={42} />
         </div>
 
-        <span className="badge-uq red" style={{ marginBottom: '8px' }}>
+        <span className="badge-beo red" style={{ marginBottom: '8px' }}>
           {lang === 'vi' ? 'ĐẶT HÀNG THÀNH CÔNG' : 'ORDER PLACED SUCCESSFULLY'}
         </span>
         <h1 className="heading-display" style={{ fontSize: '2rem', marginTop: '6px', marginBottom: '8px' }}>
@@ -108,7 +137,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
       </div>
 
       {/* VietQR Payment Card (For Bank Transfer / Online QR payments) */}
-      {(order.payment?.paymentMethod === 'BANK_TRANSFER' || order.payment?.paymentMethod === 'VNPAY' || order.payment?.paymentStatus === 'PENDING') && (
+      {(['BANK_TRANSFER', 'VIETQR'].includes(order.payment?.paymentMethod)) && (
         <VietQrPaymentCard order={order} onPaymentConfirmed={handlePaymentConfirmed} />
       )}
 
@@ -206,7 +235,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
       <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
         <button
           onClick={() => setIsReceiptOpen(true)}
-          className="btn-uq btn-uq-primary"
+          className="btn-beo btn-beo-primary"
           style={{ padding: '12px 24px' }}
         >
           <Printer size={16} />
@@ -215,7 +244,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
 
         <button
           onClick={() => onNavigate('orders')}
-          className="btn-uq btn-uq-secondary"
+          className="btn-beo btn-beo-secondary"
           style={{ padding: '12px 24px' }}
         >
           <span>{lang === 'vi' ? 'Xem Lịch Sử Đơn Hàng' : 'View Order History'}</span>
@@ -223,7 +252,7 @@ export const OrderSuccessPage = ({ order: initialOrder, onNavigate }) => {
 
         <button
           onClick={() => onNavigate('home')}
-          className="btn-uq btn-uq-red"
+          className="btn-beo btn-beo-red"
           style={{ padding: '12px 24px' }}
         >
           <span>{lang === 'vi' ? 'Tiếp tục Mua sắm' : 'Continue Shopping'}</span>

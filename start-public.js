@@ -60,7 +60,7 @@ async function startPublic() {
     if (match) {
       const publicUrl = match[0];
       console.log('\x1b[32m%s\x1b[0m', '=============================================================');
-      console.log('\x1b[32m%s\x1b[0m', ' 🎉 YOUR PUBLIC INTERNET DEMO LINK IS READY:');
+      console.log('\x1b[32m%s\x1b[0m', ' 🎉 YOUR BEO FASHION PUBLIC LINK IS READY:');
       console.log('\x1b[33m%s\x1b[0m', ` 👉 ${publicUrl}`);
       console.log('\x1b[32m%s\x1b[0m', '=============================================================');
       console.log(' 📱 Share the link above or open on mobile to explore.');

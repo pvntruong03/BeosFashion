@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const translations = {
   vi: {
@@ -6,7 +6,7 @@ const translations = {
     women: 'NỮ',
     men: 'NAM',
     accessories: 'PHỤ KIỆN',
-    lifewear: 'BỘ SƯU TẬP',
+    collections: 'BỘ SƯU TẬP',
     search_placeholder: 'Tìm kiếm sản phẩm, mã hàng, chất liệu...',
     store_locator: 'Showroom BEO',
     wishlist: 'Yêu thích',
@@ -20,7 +20,7 @@ const translations = {
     staff_panel: 'Quản Lý Cửa Hàng (Store Manager)',
 
     // Home
-    hero_title: 'AIRism & LifeWear SS26',
+    hero_title: 'BEO AirFlow & BEO Essentials SS26',
     hero_subtitle: 'Cảm giác thoáng mát tức thì. Thiết kế tinh tế cho phong cách hàng ngày.',
     shop_men: 'Khám phá đồ Nam',
     shop_women: 'Khám phá đồ Nữ',
@@ -28,8 +28,8 @@ const translations = {
     best_sellers: 'Sản Phẩm Bán Chạy',
     limited_offers: 'Khuyến Mãi Có Hạn',
     featured_categories: 'Danh Mục Nổi Bật',
-    lifewear_story_title: 'Triết lý LifeWear',
-    lifewear_story_desc: 'Trang phục đơn giản, chất lượng cao, mang vẻ đẹp phổ quát và không ngừng được hoàn thiện để mang lại cuộc sống tốt đẹp hơn cho tất cả mọi người.',
+    beo_story_title: 'Triết lý BEO Essentials',
+    beo_story_desc: 'Trang phục đơn giản, chất lượng cao, mang vẻ đẹp phổ quát và không ngừng được hoàn thiện để mang lại cuộc sống tốt đẹp hơn cho tất cả mọi người.',
 
     // Product Listing
     filters: 'Bộ lọc',
@@ -88,7 +88,7 @@ const translations = {
     women: 'WOMEN',
     men: 'MEN',
     accessories: 'ACCESSORIES',
-    lifewear: 'COLLECTIONS',
+    collections: 'COLLECTIONS',
     search_placeholder: 'Search items, product code, material...',
     store_locator: 'Store Locator',
     wishlist: 'Wishlist',
@@ -102,7 +102,7 @@ const translations = {
     staff_panel: 'Staff Portal',
 
     // Home
-    hero_title: 'AIRism & LifeWear SS26',
+    hero_title: 'BEO AirFlow & BEO Essentials SS26',
     hero_subtitle: 'Instant cool touch. Minimalist silhouettes tailored for everyday comfort.',
     shop_men: 'Shop Men',
     shop_women: 'Shop Women',
@@ -110,8 +110,8 @@ const translations = {
     best_sellers: 'Best Sellers',
     limited_offers: 'Limited Offers',
     featured_categories: 'Featured Categories',
-    lifewear_story_title: 'The LifeWear Philosophy',
-    lifewear_story_desc: 'Simple, high-quality everyday clothing with a practical sense of beauty—ingenious in detail, thought through with life’s needs in mind.',
+    beo_story_title: 'The BEO Essentials Philosophy',
+    beo_story_desc: 'Simple, high-quality everyday clothing with a practical sense of beauty—ingenious in detail, thought through with life’s needs in mind.',
 
     // Product Listing
     filters: 'Filters',
@@ -171,13 +171,17 @@ const LanguageContext = createContext(null);
 
 export const LanguageProvider = ({ children }) => {
   const [lang, setLang] = useState(() => {
-    return localStorage.getItem('beo_lang') || 'en';
+    return localStorage.getItem('beo_lang') === 'vi' ? 'vi' : 'en';
   });
+
+  useEffect(() => {
+    localStorage.setItem('beo_lang', lang);
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const toggleLanguage = () => {
     setLang((prev) => {
       const next = prev === 'vi' ? 'en' : 'vi';
-      localStorage.setItem('beo_lang', next);
       return next;
     });
   };

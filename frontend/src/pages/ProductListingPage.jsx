@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Filter, ChevronDown, X, SlidersHorizontal, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Filter, X, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
@@ -11,7 +11,7 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage] = useState(0);
+  const [pagination, setPagination] = useState({ key: '', page: 0 });
   const [sizePerPage, setSizePerPage] = useState(12);
 
   // Filter state
@@ -21,13 +21,18 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
   const [selectedSize, setSelectedSize] = useState(initialFilters.size || '');
   const [maxPrice, setMaxPrice] = useState(2000000);
   const [search, setSearch] = useState(initialFilters.search || '');
-  const [isNew, setIsNew] = useState(initialFilters.isNew || false);
-  const [bestSeller, setBestSeller] = useState(initialFilters.bestSeller || false);
+  const [isNew, setIsNew] = useState(initialFilters.isNew === true || initialFilters.isNew === 'true');
+  const [bestSeller, setBestSeller] = useState(initialFilters.bestSeller === true || initialFilters.bestSeller === 'true');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortDirection, setSortDirection] = useState('DESC');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  const fetchProducts = useCallback(async () => {
+  // A page number belongs to one filter/sort combination only.
+  const filterKey = JSON.stringify([gender, collection, selectedColor, selectedSize, maxPrice, search, isNew, bestSeller, sortBy, sortDirection, sizePerPage]);
+  const page = pagination.key === filterKey ? pagination.page : 0;
+  const setPage = (nextPage) => setPagination({ key: filterKey, page: nextPage });
+
+  const fetchProducts = useCallback(async (signal) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -44,21 +49,26 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
       params.append('page', page.toString());
       params.append('sizePerPage', sizePerPage.toString());
 
-      const res = await api.get(`/products?${params.toString()}`);
+      const res = await api.get(`/products?${params.toString()}`, { signal });
+      if (signal.aborted) return;
       if (res.data) {
+        const pageInfo = res.data.page || res.data;
         setProducts(res.data.content || []);
-        setTotalElements(res.data.totalElements || 0);
-        setTotalPages(res.data.totalPages || 1);
+        setTotalElements(pageInfo.totalElements ?? 0);
+        setTotalPages(Math.max(1, pageInfo.totalPages ?? 1));
       }
     } catch (err) {
+      if (signal.aborted) return;
       console.error('Error fetching catalog:', err);
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
   }, [gender, collection, selectedColor, selectedSize, maxPrice, search, isNew, bestSeller, sortBy, sortDirection, page, sizePerPage]);
 
   useEffect(() => {
-    fetchProducts();
+    const controller = new AbortController();
+    fetchProducts(controller.signal);
+    return () => controller.abort();
   }, [fetchProducts]);
 
   // Color options
@@ -121,7 +131,7 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-            className="btn-uq btn-uq-outline-gray"
+            className="btn-beo btn-beo-outline-gray"
             style={{ padding: '8px 14px', fontSize: '0.85rem' }}
           >
             <SlidersHorizontal size={16} />
@@ -129,28 +139,28 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
           </button>
 
           {gender && (
-            <span className="badge-uq gray" style={{ padding: '6px 10px', gap: '6px' }}>
+            <span className="badge-beo gray" style={{ padding: '6px 10px', gap: '6px' }}>
               {lang === 'vi' ? 'Giới tính:' : 'Gender:'} {gender}
               <button onClick={() => setGender('')}><X size={12} /></button>
             </span>
           )}
 
           {collection && (
-            <span className="badge-uq gray" style={{ padding: '6px 10px', gap: '6px' }}>
+            <span className="badge-beo gray" style={{ padding: '6px 10px', gap: '6px' }}>
               {lang === 'vi' ? 'BST:' : 'Collection:'} {collection}
               <button onClick={() => setCollection('')}><X size={12} /></button>
             </span>
           )}
 
           {selectedColor && (
-            <span className="badge-uq gray" style={{ padding: '6px 10px', gap: '6px' }}>
+            <span className="badge-beo gray" style={{ padding: '6px 10px', gap: '6px' }}>
               {lang === 'vi' ? 'Màu:' : 'Color:'} {selectedColor}
               <button onClick={() => setSelectedColor('')}><X size={12} /></button>
             </span>
           )}
 
           {selectedSize && (
-            <span className="badge-uq gray" style={{ padding: '6px 10px', gap: '6px' }}>
+            <span className="badge-beo gray" style={{ padding: '6px 10px', gap: '6px' }}>
               Size: {selectedSize}
               <button onClick={() => setSelectedSize('')}><X size={12} /></button>
             </span>
@@ -208,9 +218,9 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
           { label: lang === 'vi' ? 'Tất cả' : 'All', active: !gender && !collection, action: () => { setGender(''); setCollection(''); } },
           { label: lang === 'vi' ? 'Nam' : 'Men', active: gender === 'MEN', action: () => setGender(gender === 'MEN' ? '' : 'MEN') },
           { label: lang === 'vi' ? 'Nữ' : 'Women', active: gender === 'WOMEN', action: () => setGender(gender === 'WOMEN' ? '' : 'WOMEN') },
-          { label: 'AIRism', active: collection === 'AIRism', action: () => setCollection(collection === 'AIRism' ? '' : 'AIRism') },
-          { label: 'LifeWear', active: collection === 'LifeWear Essentials', action: () => setCollection(collection === 'LifeWear Essentials' ? '' : 'LifeWear Essentials') },
-          { label: 'UT Graphic', active: collection === 'UT Graphic', action: () => setCollection(collection === 'UT Graphic' ? '' : 'UT Graphic') },
+          { label: 'BEO AirFlow', active: collection === 'BEO AirFlow', action: () => setCollection(collection === 'BEO AirFlow' ? '' : 'BEO AirFlow') },
+          { label: 'BEO Essentials', active: collection === 'BEO Essentials', action: () => setCollection(collection === 'BEO Essentials' ? '' : 'BEO Essentials') },
+          { label: 'BEO Graphic', active: collection === 'BEO Graphic', action: () => setCollection(collection === 'BEO Graphic' ? '' : 'BEO Graphic') },
         ].map((chip, idx) => (
           <button
             key={idx}
@@ -275,7 +285,7 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
                 {lang === 'vi' ? 'Bộ Sưu Tập (Collection)' : 'Collections'}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
-                {['', 'AIRism', 'HEATTECH', 'UT Graphic', 'Ultra Light Down', 'LifeWear Essentials'].map((c) => (
+                {['', 'BEO AirFlow', 'BEO HeatCore', 'BEO Graphic', 'Ultra Light Down', 'BEO Essentials'].map((c) => (
                   <label key={c} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                     <input
                       type="radio"
@@ -390,7 +400,7 @@ export const ProductListingPage = ({ initialFilters = {}, onNavigate }) => {
                   ? 'Vui lòng thử bỏ bớt bộ lọc hoặc tìm kiếm với từ khóa khác.'
                   : 'Try clearing some filters or searching with different keywords.'}
               </p>
-              <button onClick={clearAllFilters} className="btn-uq btn-uq-primary">
+              <button onClick={clearAllFilters} className="btn-beo btn-beo-primary">
                 {t('clear_filters')}
               </button>
             </div>

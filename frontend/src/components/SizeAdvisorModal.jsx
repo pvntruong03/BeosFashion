@@ -13,7 +13,6 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
 
   // Calculate recommended size
   const calculateSize = () => {
-    let bmi = weight / Math.pow(height / 100, 2);
     let base = 'M';
 
     if (height < 162 || weight < 52) base = 'XS';
@@ -212,7 +211,7 @@ export const SizeAdvisorModal = ({ isOpen, onClose, onSelectSize }) => {
                 if (onSelectSize) onSelectSize(recommendedSize);
                 onClose();
               }}
-              className="btn-uq btn-uq-red"
+              className="btn-beo btn-beo-red"
               style={{ width: '100%', padding: '14px', fontSize: '1rem' }}
             >
               <CheckCircle2 size={18} />

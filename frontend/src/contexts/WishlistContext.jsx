@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import api from '../services/api';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import { useLanguage } from './LanguageContext';
 
 const WishlistContext = createContext(null);
 
@@ -9,6 +10,7 @@ export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistIds, setWishlistIds] = useState(new Set());
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const { showSuccess, showInfo, showError } = useToast();
 
   const fetchWishlist = useCallback(async () => {
@@ -34,7 +36,7 @@ export const WishlistProvider = ({ children }) => {
 
   const toggleWishlist = async (product) => {
     if (!user) {
-      showInfo('Vui lòng đăng nhập để lưu sản phẩm yêu thích');
+      showInfo(lang === 'vi' ? 'Vui lòng đăng nhập để lưu sản phẩm yêu thích.' : 'Please sign in to save items to your wishlist.');
       return false;
     }
 
@@ -45,7 +47,7 @@ export const WishlistProvider = ({ children }) => {
       if (inWishlist) {
         setWishlistItems((prev) => [product, ...prev]);
         setWishlistIds((prev) => new Set(prev).add(product.id));
-        showSuccess(`Đã thêm "${product.name}" vào danh sách yêu thích`);
+        showSuccess(lang === 'vi' ? `Đã thêm "${product.name}" vào danh sách yêu thích.` : `Added "${product.name}" to your wishlist.`);
       } else {
         setWishlistItems((prev) => prev.filter((p) => p.id !== product.id));
         setWishlistIds((prev) => {
@@ -53,11 +55,11 @@ export const WishlistProvider = ({ children }) => {
           next.delete(product.id);
           return next;
         });
-        showInfo(`Đã xóa khỏi danh sách yêu thích`);
+        showInfo(lang === 'vi' ? 'Đã xóa khỏi danh sách yêu thích.' : 'Removed from your wishlist.');
       }
       return inWishlist;
     } catch (err) {
-      showError(err.message || 'Lỗi khi cập nhật danh sách yêu thích');
+      showError(err.message || (lang === 'vi' ? 'Không thể cập nhật danh sách yêu thích.' : 'Unable to update your wishlist.'));
       return false;
     }
   };

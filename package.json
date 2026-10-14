@@ -4,6 +4,7 @@
   "description": "BEO Modern Fashion - Omnichannel E-Commerce Platform",
   "main": "start.js",
   "scripts": {
+    "prestart": "npm install --prefix frontend",
     "start": "node start.js",
     "dev": "node start.js",
     "public": "node start-public.js",

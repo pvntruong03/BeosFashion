@@ -1,13 +1,12 @@
 import React from 'react';
-import { Heart, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { useWishlist } from '../contexts/WishlistContext';
-import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProductCard } from '../components/ProductCard';
 
 export const WishlistPage = ({ onNavigate }) => {
   const { wishlistItems, totalWishlist } = useWishlist();
-  const { formatPrice, t, lang } = useLanguage();
+  const { lang } = useLanguage();
 
   return (
     <div className="container" style={{ padding: '36px 24px' }}>
@@ -29,9 +28,9 @@ export const WishlistPage = ({ onNavigate }) => {
           <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '24px' }}>
             {lang === 'vi'
               ? 'Bấm vào biểu tượng trái tim trên các sản phẩm bạn yêu thích để lưu vào đây!'
-              : 'Click the heart icon on any LifeWear item to save your favorite styles here!'}
+              : 'Click the heart icon on any BEO Essentials item to save your favorite styles here!'}
           </p>
-          <button onClick={() => onNavigate('products')} className="btn-uq btn-uq-primary">
+          <button onClick={() => onNavigate('products')} className="btn-beo btn-beo-primary">
             {lang === 'vi' ? 'Khám phá sản phẩm ngay' : 'Explore Collections'}
           </button>
         </div>

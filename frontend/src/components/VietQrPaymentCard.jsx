@@ -57,7 +57,9 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
     const interval = setInterval(async () => {
       try {
         const res = await api.get(`/payments/vietqr/${order.orderNumber}/status`);
-        if (res.data && res.data.isPaid) {
+        // api.js unwraps Axios responses, so the payment status is returned
+        // directly as res rather than under res.data.
+        if (res?.isPaid) {
           setIsPaid(true);
           setIsPolling(false);
           clearInterval(interval);

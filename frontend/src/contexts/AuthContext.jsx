@@ -30,13 +30,22 @@ export const AuthProvider = ({ children }) => {
           setToken(storedToken);
           // Refresh profile in background
           const res = await api.get('/auth/me');
-          if (res.data) {
+          if (res?.data) {
             setUser(res.data);
             localStorage.setItem('beo_user', JSON.stringify(res.data));
+          } else if (res && !res.data && res.id) {
+            setUser(res);
+            localStorage.setItem('beo_user', JSON.stringify(res));
           }
         } catch (err) {
-          console.error('Session expired or error fetching profile', err);
-          logout(false);
+          // Only log out if server explicitly returned 401 Unauthorized (invalid/expired token)
+          // Do NOT log out on network hiccup, timeout, or server spin-up delay
+          if (err?.response?.status === 401 || err?.message?.includes('401')) {
+            console.warn('Session expired or unauthorized, logging out', err);
+            logout(false);
+          } else {
+            console.warn('Could not refresh profile from server, keeping local session active', err);
+          }
         }
       }
       setLoading(false);

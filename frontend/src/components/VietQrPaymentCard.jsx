@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Copy, Check, RefreshCw, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Copy, Check, RefreshCw, CheckCircle2, RotateCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../contexts/ToastContext';
@@ -15,14 +15,15 @@ const DEFAULT_BANK_CONFIG = {
 
 export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
   const { formatPrice, lang } = useLanguage();
-  const { showSuccess } = useToast();
+  const { showSuccess, showInfo } = useToast();
 
   const [copiedField, setCopiedField] = useState(null);
-  const [, setIsPolling] = useState(true);
-  const [isPaid, setIsPaid] = useState(order?.payment?.paymentStatus === 'SUCCESS');
+  const [isManualChecking, setIsManualChecking] = useState(false);
+  const [isPaid, setIsPaid] = useState(order?.payment?.paymentStatus === 'SUCCESS' || order?.status === 'CONFIRMED');
   const [bankConfig, setBankConfig] = useState(DEFAULT_BANK_CONFIG);
 
-  const transferContent = `Thanh toan don hang ${order?.orderNumber}`;
+  const cleanOrderNumber = (order?.orderNumber || '').trim().replace(/\s+/g, '-').toUpperCase();
+  const transferContent = `Thanh toan don hang ${cleanOrderNumber}`;
   const qrData = {
     ...order?.vietQr,
     ...bankConfig,
@@ -50,32 +51,55 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
     }
   };
 
-  // Real-time Polling for payment status
-  useEffect(() => {
-    if (isPaid || !order?.orderNumber) return;
+  const checkPaymentStatus = useCallback(async (isManual = false) => {
+    if (!cleanOrderNumber) return false;
+    if (isManual) setIsManualChecking(true);
 
-    const interval = setInterval(async () => {
-      try {
-        const res = await api.get(`/payments/vietqr/${order.orderNumber}/status`);
-        // api.js unwraps Axios responses, so the payment status is returned
-        // directly as res rather than under res.data.
-        if (res?.isPaid) {
-          setIsPaid(true);
-          setIsPolling(false);
-          clearInterval(interval);
-          try {
-            confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-          } catch {}
-          showSuccess(lang === 'vi' ? 'Trạng thái thanh toán đã được xác nhận.' : 'Payment status confirmed.');
-          if (onPaymentConfirmed) onPaymentConfirmed();
-        }
-      } catch {
-        // Silent error during polling
+    try {
+      const res = await api.get(`/payments/vietqr/${encodeURIComponent(cleanOrderNumber)}/status`);
+      const isConfirmed = Boolean(
+        res?.isPaid === true ||
+        res?.paid === true ||
+        res?.paymentStatus === 'SUCCESS' ||
+        res?.orderStatus === 'CONFIRMED' ||
+        res?.data?.isPaid === true ||
+        res?.data?.paid === true ||
+        res?.data?.paymentStatus === 'SUCCESS' ||
+        res?.data?.orderStatus === 'CONFIRMED'
+      );
+
+      if (isConfirmed) {
+        setIsPaid(true);
+        try {
+          confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+        } catch {}
+        showSuccess(lang === 'vi' ? 'Thanh toán thành công! Đơn hàng đã được xác nhận.' : 'Payment confirmed! Your order is placed.');
+        if (onPaymentConfirmed) onPaymentConfirmed();
+        return true;
+      } else if (isManual) {
+        showInfo(lang === 'vi' ? 'Hệ thống đang chờ giao dịch từ ngân hàng, vui lòng đợi thêm giây lát...' : 'Awaiting bank confirmation, please check again in a few moments...');
       }
+    } catch (e) {
+      console.debug('Polling payment status error:', e.message);
+    } finally {
+      if (isManual) setIsManualChecking(false);
+    }
+    return false;
+  }, [cleanOrderNumber, onPaymentConfirmed, showSuccess, showInfo, lang]);
+
+  // Real-time Polling for payment status: check immediately on mount, then every 2.5s
+  useEffect(() => {
+    if (isPaid || !cleanOrderNumber) return;
+
+    // Check immediately once on mount
+    checkPaymentStatus(false);
+
+    const interval = setInterval(() => {
+      checkPaymentStatus(false);
     }, 2500);
 
     return () => clearInterval(interval);
-  }, [isPaid, order?.orderNumber, onPaymentConfirmed, showSuccess, lang]);
+  }, [isPaid, cleanOrderNumber, checkPaymentStatus]);
 
   return (
     <div style={{
@@ -122,9 +146,21 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
             <CheckCircle2 size={14} /> {lang === 'vi' ? 'ĐÃ THANH TOÁN' : 'PAID'}
           </span>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#e60012', fontWeight: '700' }}>
-            <RefreshCw size={14} className="spin" style={{ animation: 'spin 2s linear infinite' }} />
-            <span>{lang === 'vi' ? 'Đang chờ xác nhận...' : 'Awaiting confirmation...'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#e60012', fontWeight: '700' }}>
+              <RefreshCw size={14} className="spin" style={{ animation: 'spin 2s linear infinite' }} />
+              <span>{lang === 'vi' ? 'Đang chờ xác nhận...' : 'Awaiting confirmation...'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => checkPaymentStatus(true)}
+              disabled={isManualChecking}
+              className="btn-beo btn-beo-outline-gray"
+              style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              <RotateCw size={12} className={isManualChecking ? 'spin' : ''} style={isManualChecking ? { animation: 'spin 1s linear infinite' } : {}} />
+              <span>{isManualChecking ? (lang === 'vi' ? 'Đang kiểm tra...' : 'Checking...') : (lang === 'vi' ? 'Kiểm tra ngay' : 'Check Now')}</span>
+            </button>
           </div>
         )}
       </div>
@@ -150,8 +186,8 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
           </h4>
           <p style={{ fontSize: '0.85rem', color: '#555' }}>
             {lang === 'vi'
-              ? `Đơn hàng ${order.orderNumber} đã ghi nhận thanh toán ${formatPrice(order.finalAmount)} và chuyển sang bước xử lý tiếp theo.`
-              : `Order ${order.orderNumber} recorded a payment of ${formatPrice(order.finalAmount)} and moved to the next processing step.`}
+              ? `Đơn hàng ${cleanOrderNumber} đã ghi nhận thanh toán ${formatPrice(order.finalAmount)} và chuyển sang bước xử lý tiếp theo.`
+              : `Order ${cleanOrderNumber} recorded a payment of ${formatPrice(order.finalAmount)} and moved to the next processing step.`}
           </p>
         </div>
       ) : (
@@ -286,11 +322,21 @@ export const VietQrPaymentCard = ({ order, onPaymentConfirmed }) => {
               </button>
             </div>
 
-            <div style={{ marginTop: '8px' }}>
-              <div style={{ fontSize: '0.73rem', color: '#666', textAlign: 'center', marginTop: '6px', lineHeight: 1.4 }}>
+            <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => checkPaymentStatus(true)}
+                disabled={isManualChecking}
+                className="btn-beo btn-beo-red"
+                style={{ width: '100%', padding: '10px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                <RotateCw size={14} className={isManualChecking ? 'spin' : ''} style={isManualChecking ? { animation: 'spin 1s linear infinite' } : {}} />
+                <span>{isManualChecking ? (lang === 'vi' ? 'Đang kiểm tra với ngân hàng...' : 'Checking with bank...') : (lang === 'vi' ? 'Tôi đã chuyển khoản — Kiểm tra ngay' : "I've Transferred — Check Now")}</span>
+              </button>
+              <div style={{ fontSize: '0.73rem', color: '#666', textAlign: 'center', lineHeight: 1.4 }}>
                 {lang === 'vi'
-                  ? 'Sau khi ngân hàng ghi nhận giao dịch, trạng thái thanh toán sẽ tự động cập nhật.'
-                  : 'Payment status updates automatically after the bank records your transfer.'}
+                  ? 'Sau khi bạn chuyển khoản thành công, trang sẽ tự động nhận diện trong 2-3 giây hoặc bấm nút trên để kiểm tra ngay.'
+                  : 'After a successful transfer, status updates automatically within 2-3 seconds or click the button above.'}
               </div>
             </div>
           </div>

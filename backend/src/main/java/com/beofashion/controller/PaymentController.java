@@ -11,6 +11,7 @@ import com.beofashion.repository.OrderRepository;
 import com.beofashion.repository.PaymentRepository;
 import com.beofashion.service.OrderPaymentEmailService;
 import com.beofashion.service.VietQrService;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -37,7 +38,7 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping({"/api/payments", "/api/payment"})
 @RequiredArgsConstructor
 @Tag(name = "Payments & VietQR", description = "Endpoints for VietQR payment generation, status polling, transfer confirmation, and bank configuration")
 public class PaymentController {
@@ -50,13 +51,11 @@ public class PaymentController {
     @Value("${app.payment.sepay.webhook-api-key:}")
     private String sePayWebhookApiKey;
 
-    // Flexible regex: matches BEO-261018-28097, BEO 261018 28097, BEO_261018_28097, BEO26101828097
+    // Matches any BEO order reference format:
+    // BEO-261018-6111B, BEO 261018 6111B, BEO2610186111B, BEO_261018_6111B
+    // Note: Suffix is exactly 5 alphanumeric characters (UUID substring)
     private static final Pattern ORDER_NUMBER_PATTERN = Pattern.compile(
-            "BEO[-_\\s]?(\\d{6})[-_\\s]?(\\d{4,5}|[A-Z0-9]{5})", Pattern.CASE_INSENSITIVE);
-
-    // Fallback for fully compact format: BEO261014EE67F
-    private static final Pattern COMPACT_ORDER_NUMBER_PATTERN = Pattern.compile(
-            "BEO(\\d{6})([A-Z0-9]{5})", Pattern.CASE_INSENSITIVE);
+            "BEO[-_\\s]?(\\d{6})[-_\\s]?([A-Z0-9]{5})\\b", Pattern.CASE_INSENSITIVE);
 
     // Maximum allowed difference between transfer amount and order total (VND)
     // Banks may add small fees or round amounts
@@ -65,31 +64,35 @@ public class PaymentController {
     @GetMapping("/vietqr/{orderNumber}/status")
     @Operation(summary = "Check payment status for an order (used by frontend polling)")
     public ResponseEntity<PaymentStatusResponse> checkPaymentStatus(@PathVariable String orderNumber) {
-        Order order = orderRepository.findByOrderNumber(orderNumber)
+        String normalizedNumber = normalizeOrderNumber(orderNumber);
+        log.debug("[Payment Status Polling] Checking status for orderNumber='{}' (normalized='{}')", orderNumber, normalizedNumber);
+
+        Order order = findOrderFlexible(normalizedNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderNumber));
 
         Payment payment = order.getPayment();
         PaymentStatus status = payment != null ? payment.getPaymentStatus() : PaymentStatus.PENDING;
+        boolean paid = (status == PaymentStatus.SUCCESS || order.getStatus() == OrderStatus.CONFIRMED);
 
         return ResponseEntity.ok(PaymentStatusResponse.builder()
                 .orderNumber(order.getOrderNumber())
                 .orderStatus(order.getStatus())
                 .paymentStatus(status)
-                .isPaid(status == PaymentStatus.SUCCESS)
+                .isPaid(paid)
                 .amount(order.getFinalAmount())
                 .transactionId(payment != null ? payment.getTransactionId() : null)
                 .paymentTime(payment != null ? payment.getPaymentTime() : null)
                 .build());
     }
 
-    @PostMapping("/sepay/webhook")
+    @PostMapping({"/sepay/webhook", "/sepay/webhook/", "/sepay-webhook", "/webhook"})
     @Transactional
     @Operation(summary = "Receive a verified SePay incoming-transfer webhook")
     public ResponseEntity<Map<String, Boolean>> handleSePayWebhook(
             @RequestHeader(value = "Authorization", required = false) String authorization,
             @RequestBody SePayWebhookRequest request) {
 
-        log.info("[SePay Webhook] Received: id={}, amount={}, type={}, code={}, content={}",
+        log.info("[SePay Webhook] Incoming: id={}, amount={}, type={}, code={}, content={}",
                 request.getId(), request.getTransferAmount(), request.getTransferType(),
                 request.getCode(), request.getContent());
 
@@ -97,11 +100,11 @@ public class PaymentController {
 
         if (request.getId() == null || request.getTransferAmount() == null || request.getTransferAmount().signum() <= 0) {
             log.warn("[SePay Webhook] REJECTED: Missing transaction id or invalid amount");
-            throw new IllegalArgumentException("SePay webhook is missing a valid transaction id or amount");
+            return ResponseEntity.ok(Map.of("success", true));
         }
         if (!"in".equalsIgnoreCase(request.getTransferType())) {
             log.warn("[SePay Webhook] REJECTED: Not an incoming transfer (type={})", request.getTransferType());
-            throw new IllegalArgumentException("Only incoming SePay transfers can settle an order");
+            return ResponseEntity.ok(Map.of("success", true));
         }
 
         String transactionId = "SEPAY-" + request.getId();
@@ -111,19 +114,18 @@ public class PaymentController {
             return ResponseEntity.ok(Map.of("success", true));
         }
 
-        String orderNumber = extractOrderNumber(request.getCode(), request.getContent());
-        if (orderNumber == null) {
+        String extractedOrderNumber = extractOrderNumber(request.getCode(), request.getContent());
+        if (extractedOrderNumber == null) {
             log.error("[SePay Webhook] FAILED: Cannot extract BEO order number from code='{}' content='{}'",
                     request.getCode(), request.getContent());
-            // Return success to prevent SePay from retrying — the transfer doesn't match any order
             return ResponseEntity.ok(Map.of("success", true));
         }
 
-        log.info("[SePay Webhook] Extracted order number: {}", orderNumber);
+        log.info("[SePay Webhook] Extracted order number: {}", extractedOrderNumber);
 
-        Optional<Order> orderOpt = orderRepository.findByOrderNumber(orderNumber);
+        Optional<Order> orderOpt = findOrderFlexible(extractedOrderNumber);
         if (orderOpt.isEmpty()) {
-            log.error("[SePay Webhook] FAILED: Order '{}' not found in database", orderNumber);
+            log.error("[SePay Webhook] FAILED: Order '{}' not found in database", extractedOrderNumber);
             return ResponseEntity.ok(Map.of("success", true));
         }
 
@@ -132,16 +134,21 @@ public class PaymentController {
         if (payment == null || (payment.getPaymentMethod() != PaymentMethod.BANK_TRANSFER
                 && payment.getPaymentMethod() != PaymentMethod.VIETQR)) {
             log.warn("[SePay Webhook] SKIPPED: Order {} payment method is {} — not a bank transfer",
-                    orderNumber, payment != null ? payment.getPaymentMethod() : "null");
+                    extractedOrderNumber, payment != null ? payment.getPaymentMethod() : "null");
             return ResponseEntity.ok(Map.of("success", true));
         }
 
-        // Allow a small tolerance for bank fees / rounding differences
+        // Check if already paid
+        if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            log.info("[SePay Webhook] Order {} is already marked SUCCESS", order.getOrderNumber());
+            return ResponseEntity.ok(Map.of("success", true));
+        }
+
+        // Allow a small tolerance for bank fees / rounding differences (±1000 VND)
         BigDecimal difference = request.getTransferAmount().subtract(order.getFinalAmount()).abs();
         if (difference.compareTo(AMOUNT_TOLERANCE) > 0) {
             log.warn("[SePay Webhook] AMOUNT MISMATCH: Order {} expects {} but received {} (diff={})",
-                    orderNumber, order.getFinalAmount(), request.getTransferAmount(), difference);
-            // Still return success to avoid SePay retry loops — log the mismatch for manual review
+                    order.getOrderNumber(), order.getFinalAmount(), request.getTransferAmount(), difference);
             return ResponseEntity.ok(Map.of("success", true));
         }
 
@@ -157,20 +164,20 @@ public class PaymentController {
         }
         order = orderRepository.save(order);
 
-        log.info("[SePay Webhook] SUCCESS: Order {} marked PAID (transaction={}, amount={})",
-                orderNumber, transactionId, request.getTransferAmount());
+        log.info("[SePay Webhook] SUCCESS: Order {} marked PAID & CONFIRMED (transaction={}, amount={})",
+                order.getOrderNumber(), transactionId, request.getTransferAmount());
 
         try {
             orderPaymentEmailService.sendPaidOrderEmail(order);
         } catch (Exception e) {
-            log.warn("[SePay Webhook] Email notification failed for order {}: {}", orderNumber, e.getMessage());
+            log.warn("[SePay Webhook] Email notification failed for order {}: {}", order.getOrderNumber(), e.getMessage());
         }
         return ResponseEntity.ok(Map.of("success", true));
     }
 
     private void verifySePayAuthorization(String authorization) {
         if (sePayWebhookApiKey == null || sePayWebhookApiKey.isBlank()) {
-            log.warn("[SePay Webhook] API key not configured — skipping authorization check");
+            log.debug("[SePay Webhook] API key not configured — skipping authorization check");
             return;
         }
         String expected = "Apikey " + sePayWebhookApiKey;
@@ -181,25 +188,45 @@ public class PaymentController {
         }
     }
 
+    private String normalizeOrderNumber(String raw) {
+        if (raw == null) return "";
+        return raw.trim().replace(" ", "-").replace("_", "-").toUpperCase();
+    }
+
+    private Optional<Order> findOrderFlexible(String targetNumber) {
+        if (targetNumber == null || targetNumber.isBlank()) return Optional.empty();
+
+        // 1. Direct lookup
+        Optional<Order> direct = orderRepository.findByOrderNumber(targetNumber);
+        if (direct.isPresent()) return direct;
+
+        // 2. Lookup with standard dashes BEO-yyMMdd-XXXXX
+        String clean = targetNumber.replaceAll("[^A-Z0-9]", "");
+        if (clean.startsWith("BEO") && clean.length() == 14) {
+            String formatted = "BEO-" + clean.substring(3, 9) + "-" + clean.substring(9);
+            Optional<Order> byFormatted = orderRepository.findByOrderNumber(formatted);
+            if (byFormatted.isPresent()) return byFormatted;
+        }
+
+        // 3. Fallback scan ignoring non-alphanumeric chars
+        return orderRepository.findAll().stream()
+                .filter(o -> o.getOrderNumber() != null &&
+                        o.getOrderNumber().replaceAll("[^A-Z0-9]", "").equalsIgnoreCase(clean))
+                .findFirst();
+    }
+
     private String extractOrderNumber(String code, String content) {
         String source = String.join(" ", code == null ? "" : code, content == null ? "" : content).toUpperCase();
-        log.debug("[SePay Webhook] Extracting order number from: '{}'", source);
+        log.info("[SePay Webhook] Extracting order number from source text: '{}'", source);
 
         Matcher matcher = ORDER_NUMBER_PATTERN.matcher(source);
         if (matcher.find()) {
             String extracted = "BEO-" + matcher.group(1) + "-" + matcher.group(2).toUpperCase();
-            log.debug("[SePay Webhook] Matched primary pattern: {}", extracted);
+            log.info("[SePay Webhook] Matched order pattern: {}", extracted);
             return extracted;
         }
 
-        Matcher compactMatcher = COMPACT_ORDER_NUMBER_PATTERN.matcher(source);
-        if (compactMatcher.find()) {
-            String extracted = "BEO-" + compactMatcher.group(1) + "-" + compactMatcher.group(2).toUpperCase();
-            log.debug("[SePay Webhook] Matched compact pattern: {}", extracted);
-            return extracted;
-        }
-
-        log.debug("[SePay Webhook] No order number pattern found in: '{}'", source);
+        log.warn("[SePay Webhook] No order number pattern found in: '{}'", source);
         return null;
     }
 
@@ -229,7 +256,15 @@ public class PaymentController {
         private String orderNumber;
         private OrderStatus orderStatus;
         private PaymentStatus paymentStatus;
+
+        @JsonProperty("isPaid")
         private boolean isPaid;
+
+        @JsonProperty("paid")
+        public boolean getPaid() {
+            return isPaid;
+        }
+
         private BigDecimal amount;
         private String transactionId;
         private LocalDateTime paymentTime;

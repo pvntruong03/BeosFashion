@@ -1,38 +1,87 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Printer, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Printer, ArrowRight, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { VietQrPaymentCard } from '../components/VietQrPaymentCard';
+import api from '../services/api';
+
+const getParamFromHashOrSearch = (key) => {
+  try {
+    const hash = window.location.hash || '';
+    const queryIdx = hash.indexOf('?');
+    if (queryIdx !== -1) {
+      const params = new URLSearchParams(hash.substring(queryIdx));
+      if (params.get(key)) return params.get(key);
+    }
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get(key);
+  } catch {
+    return null;
+  }
+};
 
 const readSavedOrder = (orderNumber) => {
   if (!orderNumber) return null;
+  const cleanNumber = orderNumber.trim().replace(/\s+/g, '-').toUpperCase();
   try {
-    const saved = sessionStorage.getItem(`beo_order_${orderNumber}`);
+    const saved = sessionStorage.getItem(`beo_order_${cleanNumber}`) || sessionStorage.getItem(`beo_order_${orderNumber}`);
     return saved ? JSON.parse(saved) : null;
   } catch {
     return null;
   }
 };
 
-export const OrderSuccessPage = ({ order: initialOrder, orderNumber, onNavigate }) => {
+export const OrderSuccessPage = ({ order: initialOrder, orderNumber: propOrderNumber, onNavigate }) => {
   const { formatPrice, lang } = useLanguage();
+  
+  const resolvedOrderNumber = (
+    propOrderNumber ||
+    getParamFromHashOrSearch('orderNumber') ||
+    initialOrder?.orderNumber ||
+    ''
+  ).trim().replace(/\s+/g, '-').toUpperCase();
+
   const [order, setOrder] = useState(() => (
-    readSavedOrder(initialOrder?.orderNumber || orderNumber) || initialOrder
+    readSavedOrder(resolvedOrderNumber) || initialOrder || null
   ));
+  const [isLoadingOrder, setIsLoadingOrder] = useState(!order && Boolean(resolvedOrderNumber));
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+
+  // If order was not in session storage (e.g. direct URL visit or refreshed), fetch from public tracking API
+  useEffect(() => {
+    if (!order && resolvedOrderNumber) {
+      setIsLoadingOrder(true);
+      api.get(`/orders/track/${encodeURIComponent(resolvedOrderNumber)}`)
+        .then((res) => {
+          const orderData = res?.data || res;
+          if (orderData && orderData.orderNumber) {
+            setOrder(orderData);
+            sessionStorage.setItem(`beo_order_${orderData.orderNumber}`, JSON.stringify(orderData));
+          }
+        })
+        .catch((err) => {
+          console.debug('Failed to fetch order details from tracking API:', err.message);
+        })
+        .finally(() => {
+          setIsLoadingOrder(false);
+        });
+    }
+  }, [order, resolvedOrderNumber]);
 
   useEffect(() => {
     const currentOrder = order || initialOrder;
     if (!currentOrder?.orderNumber) return;
 
-    sessionStorage.setItem(`beo_order_${currentOrder.orderNumber}`, JSON.stringify(currentOrder));
+    const cleanNum = currentOrder.orderNumber.trim().replace(/\s+/g, '-').toUpperCase();
+    sessionStorage.setItem(`beo_order_${cleanNum}`, JSON.stringify(currentOrder));
 
-    if (!orderNumber) {
-      const nextHash = `#/order-success?orderNumber=${encodeURIComponent(currentOrder.orderNumber)}`;
+    const currentHashParam = getParamFromHashOrSearch('orderNumber');
+    if (!currentHashParam || currentHashParam !== cleanNum) {
+      const nextHash = `#/order-success?orderNumber=${encodeURIComponent(cleanNum)}`;
       window.history.replaceState(null, '', nextHash);
     }
-  }, [initialOrder, order, orderNumber]);
+  }, [initialOrder, order]);
 
   useEffect(() => {
     try {
@@ -45,6 +94,15 @@ export const OrderSuccessPage = ({ order: initialOrder, orderNumber, onNavigate 
       console.log('Confetti effect');
     }
   }, []);
+
+  if (isLoadingOrder) {
+    return (
+      <div className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
+        <Loader2 size={40} className="spin" style={{ margin: '0 auto 16px auto', animation: 'spin 1.5s linear infinite', color: '#e60012' }} />
+        <h3>{lang === 'vi' ? 'Đang tải thông tin đơn hàng...' : 'Loading order details...'}</h3>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -67,7 +125,7 @@ export const OrderSuccessPage = ({ order: initialOrder, orderNumber, onNavigate 
           ...prev,
           status: 'CONFIRMED',
           payment: {
-            ...prev.payment,
+            ...prev?.payment,
             paymentStatus: 'SUCCESS'
           }
         };
@@ -77,33 +135,35 @@ export const OrderSuccessPage = ({ order: initialOrder, orderNumber, onNavigate 
     }
   };
 
+  const isConfirmedOrPaid = order.status === 'CONFIRMED' || order.payment?.paymentStatus === 'SUCCESS';
+
   const steps = [
     { title: lang === 'vi' ? 'Đặt hàng' : 'Placed', desc: lang === 'vi' ? 'Đã nhận đơn' : 'Received', active: true, done: true },
     {
       title: lang === 'vi' ? 'Xác nhận' : 'Confirmed',
-      desc: order.status === 'CONFIRMED' || order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED'
+      desc: isConfirmedOrPaid || ['PACKING', 'SHIPPING', 'DELIVERED'].includes(order.status)
         ? (lang === 'vi' ? 'Đã thanh toán' : 'Paid')
         : (lang === 'vi' ? 'Chờ thanh toán' : 'Pending'),
       active: true,
-      done: order.status === 'CONFIRMED' || order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED'
+      done: isConfirmedOrPaid || ['PACKING', 'SHIPPING', 'DELIVERED'].includes(order.status)
     },
     {
       title: lang === 'vi' ? 'Đóng gói' : 'Packing',
       desc: lang === 'vi' ? 'Đang chuẩn bị hàng' : 'Processing',
-      active: order.status === 'PACKING' || order.status === 'SHIPPING' || order.status === 'DELIVERED',
-      done: order.status === 'SHIPPING' || order.status === 'DELIVERED'
+      active: ['PACKING', 'SHIPPING', 'DELIVERED'].includes(order.status),
+      done: ['SHIPPING', 'DELIVERED'].includes(order.status)
     },
     {
       title: lang === 'vi' ? 'Vận chuyển' : 'Shipping',
       desc: lang === 'vi' ? 'Bàn giao shipper' : 'In Transit',
-      active: order.status === 'SHIPPING' || order.status === 'DELIVERED',
+      active: ['SHIPPING', 'DELIVERED'].includes(order.status),
       done: order.status === 'DELIVERED'
     },
     {
       title: lang === 'vi' ? 'Hoàn tất' : 'Delivered',
       desc: lang === 'vi' ? 'Đã nhận hàng' : 'Completed',
-      active: order.status === 'DELIVERED' || order.status === 'COMPLETED',
-      done: order.status === 'DELIVERED' || order.status === 'COMPLETED'
+      active: ['DELIVERED', 'COMPLETED'].includes(order.status),
+      done: ['DELIVERED', 'COMPLETED'].includes(order.status)
     },
   ];
 

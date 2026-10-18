@@ -1,0 +1,82 @@
+COMP1682.1 Project Proposal
+Development of a Fashion Store E-Commerce System Using Java and Spring Boot
+[Pham Vo Nhut Truong]
+BSc (Hons) Computing
+[001584160]
+
+Overview
+In the modern digital transformation era, the online fashion industry is experiencing rapid expansion. Modern consumers increasingly demand seamless digital channels to explore trends, filter clothing items, manage shopping carts, and purchase apparel securely online.
+However, conventional e-commerce platforms often struggle to deliver an optimal shopping experience tailored to fashion retail. Standard websites frequently lack intuitive interfaces and flexible product architectures to gracefully display multi attribute garments including diverse sizes and colourways, often leading to confusing user navigation, inaccurate stock displays at checkout, and degraded customer satisfaction.
+To address these challenges, this project focuses on designing and developing a feature rich Fashion Store E-Commerce System using the Java programming language and the Spring Boot framework. The platform provides a complete end-to-end online shopping ecosystem, featuring interactive product catalogues, product search by keyword and filtering by gender, size, colour, price range, and collection, seamless cart management, secure user accounts, and integrated checkout workflows alongside backend store administration.
+This solution delivers significant operational and commercial benefits. For consumers, it provides a highly responsive, visually appealing, and secure web platform that simplifies clothing discovery and online purchasing. For fashion retailers, it delivers a scalable digital storefront that streamlines product variant displays and maintains accurate online stock availability. Ultimately, the project enhances digital brand presence while elevating overall customer engagement in the competitive online fashion market.
+Keywords: Fashion E-Commerce Website, Java, Spring Boot, Online Shopping Platform, Web Development, Product.
+Aim
+The aim of this project is to develop a fashion store e-commerce system that allows apparel retailers to manage their online storefront and business operations in a centralised and efficient way. The system will integrate multiple functions into a single platform to support both online shoppers and store administrators. In terms of functionality, the system will include product management, allowing administrators to display and update complex clothing items with multi-attribute variants such as sizes and colours. It will also provide an interactive catalogue and shopping cart system, where customers can filter products, check real-time item availability in the warehouse, and manage their purchases online. In addition, the system will support warehouse stock management, enabling administrators to maintain accurate stock information. Another important feature is user authentication, which allows users to register, log in, and securely access their personal profiles and order history. The system will also include a secure checkout function, where customers can finalise orders, choose shipping options, and make payments online. To support business operations, the system will provide order management features, helping administrators track order fulfilment status. By integrating these core functions, the system helps reduce manual administration, minimise warehouse management errors, and improve overall operational efficiency. At the same time, it enhances the customer experience by making clothing discovery intuitive and convenient, while also supporting fashion brands in expanding their digital market presence and increasing sales revenue.
+Related Works / Literature Review
+3.1 Related Works
+3.1.1 MySQL
+Relational database systems are suitable for e-commerce applications because they organise structured data and maintain relationships between customers, products, product variants, shopping carts, orders, and inventory records. Research comparing Oracle and MySQL shows that relational database management systems differ in their syntax, data handling, and performance characteristics (Kvet, Fidesova and Matiasko, 2016). For the Fashion Store E-Commerce System, a relational database will support consistent storage of transactional data and help maintain the links between product variants, stock quantities, and customer orders.
+3.1.2 Front-end Development Technologies
+The front end affects how customers browse products and make purchasing decisions. An attribute-based interface can increase customers’ perceived control, enjoyment, and satisfaction in business-to-consumer e-commerce (Kamis, Stern and Ladik, 2010). This supports the use of a clear product catalogue, keyword search, and filters by gender, size, colour, price range, and collection. React will be used to provide responsive pages for product browsing, product details, shopping cart management, and checkout.
+3.1.3 Development Environment
+A structured development environment supports testing and integration before software is released. A systematic review of continuous integration research found that it can improve software-development activities and quality assurance, although technical challenges must also be managed (Soares et al., 2022). The system will be developed and tested in a separate environment before deployment so that problems in authentication, product management, shopping carts, orders, and inventory can be identified without affecting the deployed system.
+3.1.4 Version Control Tools
+Version control supports reliable software development by recording code changes and allowing earlier versions to be restored when necessary. Research on GitHub projects found that continuous integration can improve productivity without an observable reduction in code quality (Vasilescu et al., 2015). Git will be used to maintain the source-code history and support testing, maintenance, and error recovery throughout the development of the Fashion Store E-Commerce System.
+3.1.5 Back-end Development Technologies
+The backend manages business logic, data processing, authentication, and communication between the frontend and database. Research comparing RESTful web services with more complex web-service approaches identifies REST as a suitable architectural approach for many web applications (Pautasso, Zimmermann and Leymann, 2008). Java and Spring Boot will be used to develop REST-based backend services for customer accounts, products, product variants, shopping carts, orders, payments, and inventory management.
+3.2 Literature Review
+Existing fashion e-commerce systems provide useful examples for the proposed system. Zalando is a large multi-brand fashion platform that offers a wide product catalogue, personalised services, and support for retail partners (Zalando, 2026). In comparison, the Fashion Store E-Commerce System will have a smaller and more focused scope. It will manage the BEO Fashion catalogue and store operations rather than operate as a marketplace for multiple independent brands and sellers.
+The proposed system will include product search and filtering, product variants, shopping cart management, online payment options, order history, and inventory management. It will also support staff functions such as stock adjustment, stock transfer between stores, and order management. Research by Abouelrous, Gabor and Zhang (2022) highlights the importance of coordinating inventory and order fulfilment when retailers serve both online and physical store demand. The Fashion Store E-Commerce System will apply this idea at a suitable scale by linking online orders with store inventory management.
+Objectives
+System Requirements and Design
+ Outcome describing this objective in more detail
+A complete requirements specification and system design for the Fashion Store E-Commerce System that defines the functional requirements, non-functional requirements, system architecture, database structure, user interfaces, and system models before the implementation phase.
+ Analyse the functional and non-functional requirements of the Fashion Store E-Commerce System. [0.5 month]
+ Design the system architecture, database structure, user interfaces, and system diagrams based on the identified requirements. [0.5 month]
+Customer Shopping System
+ Outcome describing this objective in more detail
+A functional and user-friendly online shopping system that enables customers to create accounts, explore fashion products, select appropriate product variants, manage shopping carts, and complete online purchases.
+Develop customer registration, login, and profile management functions. Enable customers to browse products, view product details, search by keyword, and filter products by gender, size, colour, price range, and collection. [1.0 month]
+ Implement product variant selection, shopping cart, checkout, payment, order placement, and order history functions. [1.0 month]
+Product and Store Management System
+ Outcome describing this objective in more detail
+A centralised administration system that enables administrators to effectively manage fashion products, product variants, inventory, customers, and orders while maintaining accurate product and stock information.
+ Develop product, category, size, colour, product variant, image, and inventory management functions. [1.0 month]
+ Implement administrative management, order management, and role-based access control using Spring Security. [0.5 month]
+System Quality and Deployment 
+ Outcome describing this objective in more detail
+A tested, secure, stable, and deployable Fashion Store E-Commerce System that satisfies the specified requirements and provides reliable functionality for both customers and administrators.
+ Test the completed system through unit testing, integration testing, functional testing, and system testing, and correct identified defects. [1.0 month]
+ Deploy the completed Fashion Store E-Commerce System to the target environment and verify its main functions. [0.5 month]
+Project Framework or Methodology Used
+Waterfall and Scrum are two possible approaches to developing the Fashion Store E-Commerce System. Waterfall follows a sequential process, where requirements and system design are completed before implementation begins (Ruparelia, 2010). In contrast, Scrum develops the system through short Sprints. At the end of each Sprint, the work is reviewed and the next priorities can be adjusted. Scrum is useful when requirements are unclear or likely to change during development. It also normally involves a Scrum Team, including a Product Owner, Scrum Master, and Developers (Schwaber and Sutherland, 2020).
+The Waterfall Model will be used for the Fashion Store E-Commerce System. The main functions can be identified before development, including customer registration and login, product browsing and filtering, size and colour selection, shopping cart management, online payment options, order management, and inventory management. Since these requirements are already defined, Waterfall will provide a clear structure for organising the work and completing the project within the planned six-month period. Scrum would allow frequent changes and feedback, but Waterfall is more suitable because the proposed scope is expected to remain stable. Waterfall will also support the preparation of documents such as the requirements specification, database design, system diagrams, and test results for the academic report.
+The project will be completed within six months. The work will follow six phases: Requirements Analysis, System Design, Implementation, Testing, Deployment, and Maintenance. The requirements, system architecture, database, and user interfaces will first be defined and designed. The system will then be developed using Java and Spring Boot for the backend and React for the frontend. Testing will include unit, integration, functional, and system testing to check that the system meets the requirements and identify errors. Finally, the website will be deployed, its main functions will be verified, and initial maintenance will be carried out to fix any remaining issues.
+Legal, Social, Ethical and Professional
+Introduction:
+The project aim of this project is to design and implement a modern, high performance Fashion Store E-Commerce System using Java. By providing dynamic catalogue management, real time multi variant inventory tracking, and intuitive online checkout, the system delivers operational efficiency to fashion retailers and a seamless shopping experience to consumers.
+In the digital commerce landscape, technical functionality alone is insufficient to guarantee project success. Adhering to legal, social, ethical, and professional (LSEP) standards is paramount to ensure regulatory compliance, protect user data, prevent platform abuse, and build trust among stakeholders. In the context of the United Kingdom, e-commerce applications must strictly align with statutory frameworks and professional codes of conduct to mitigate operational and liability risks.
+Legal
+Legal issues in an e-commerce system involve complying with laws that protect consumers, personal data, and online transactions. Businesses must process customer information lawfully, provide clear and accurate product information, use fair terms and conditions, and respect consumer rights throughout the purchasing process. They are also responsible for ensuring secure payment methods and protecting intellectual property. Compliance with UK legislation helps organisations avoid legal disputes, maintain customer trust, and operate responsibly in the digital marketplace. (Conway, 2025; GOV.UK, 2026).
+Social
+Social issues in e-commerce focus on the impact of online business activities on customers and society. Businesses should promote fairness, transparency, and inclusivity by providing honest product information, accessible websites, and responsive customer service. They should also prevent misleading advertising, fake reviews, and unfair commercial practices that may influence consumer decisions. Demonstrating social responsibility strengthens public confidence, improves customer satisfaction, and encourages long-term relationships between businesses and consumers. (Competition and Markets Authority, 2025).
+Ethical
+Ethical issues in e-commerce concern the responsible and honest use of technology, customer data, and business practices. Organisations should respect customer privacy, collect only the information that is necessary, and be transparent about how data is used. They should avoid deceptive marketing, hidden charges, and manipulative website designs that pressure customers into making unwanted purchases. Following ethical principles helps businesses build trust, enhance their reputation, and create a positive online shopping experience. (Government Digital Service, 2025).
+Professional
+Professional issues in e-commerce relate to the responsibilities of businesses and IT professionals when developing and maintaining online systems. Professionals are expected to demonstrate integrity, accountability, competence, and respect for confidentiality while delivering secure and reliable services. They should follow recognised standards, manage risks effectively, and ensure that systems protect customer information from unauthorised access. Maintaining professional conduct improves service quality, supports legal compliance, and reinforces customer confidence in digital businesses. (Solicitors Regulation Authority, 2026).
+Planning (See Appendix A)
+The Fashion Store E-Commerce System project is planned to be completed within six months using the Waterfall Model. The schedule is divided into sequential phases, and each phase must be completed before the next phase begins.
+Table 1: Project Development Schedule
+
+Use Case Diagram
+
+
+
+Declaration of AI Use 
+Please append this page to the end of your assignment when you have used AI during the process of undertaking the assignment to acknowledge the ways in which you have used it. 
+I have used AI while undertaking my assignment in the following ways:  
+To develop research questions on the topic – NO  
+To create an outline of the topic – NO  
+To explain concepts – YES
+To support my use of language – YES
+To summarise the following articles/resources:  NO

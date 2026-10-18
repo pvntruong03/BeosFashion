@@ -1,0 +1,131 @@
+1: COMP1682.1 Project Proposal
+2: Development of a Fashion Store E-Commerce System Using Java and Spring Boot
+3: [Pham Vo Nhut Truong]
+4: BSc (Hons) Computing 
+5: [001584160]
+6: Overview
+7: In the modern digital transformation era, the online fashion industry is experiencing rapid expansion. Modern consumers increasingly demand seamless digital channels to explore trends, filter clothing items, manage shopping carts, and purchase apparel securely online.
+8: However, conventional e-commerce platforms often struggle to deliver an optimal shopping experience tailored to fashion retail. Standard websites frequently lack intuitive interfaces and flexible product architectures to gracefully display multi attribute garments including diverse sizes, colorways, and material options, often leading to confusing user navigation, inaccurate stock displays at checkout, and degraded customer satisfaction.
+9: To address these challenges, this project focuses on designing and developing a feature rich Fashion Store E-Commerce Website using the Java programming language and the Spring Boot framework. The platform provides a complete end-to-end online shopping ecosystem, featuring interactive product catalogs, multi dimensional search filters, seamless cart management, secure user accounts, and integrated checkout workflows alongside backend store administration.
+10: This solution delivers significant operational and commercial benefits. For consumers, it provides a highly responsive, visually appealing, and secure web platform that simplifies clothing discovery and online purchasing. For fashion retailers, it delivers a scalable digital storefront that streamlines product variant displays and maintains accurate online stock availability. Ultimately, the project enhances digital brand presence while elevating overall customer engagement in the competitive online fashion market.
+11: Keywords: Fashion E-Commerce Website, Java, Spring Boot, Online Shopping Platform, Web Development, Product.
+12: Aim
+13: The aim of this project is to design and develop a web-based Fashion Store E-Commerce System using Java and Spring Boot. The system will allow customers to create accounts, browse and filter fashion products, select product variants such as size and color, manage shopping carts, and place online orders using simulated payment options for demonstration purposes. Administrators will be able to manage products, product variants, inventory, customers, and orders through a centralized administration system. The project aims to provide a simple, secure, and user-friendly shopping experience while helping fashion retailers manage their online store and inventory more efficiently.
+14: Related works / Literature review
+15: 3.1. Related works
+16: 3.1.1. MySQL
+17: MySQL is an open-source Relational Database Management System developed and supported by Oracle Corporation, widely recognized for its high performance, security, and scalability. It employs Structured Query Language to manage, query, and manipulate data organized into structured relational tables. In this Fashion Store E-Commerce System, MySQL serves as the centralized storage engine responsible for maintaining important operational data, including user accounts, products, categories, product variants, inventory, shopping carts, orders, and payment information. By leveraging indexing, relational integrity constraints, and ACID-compliant transaction processing, MySQL helps reduce data redundancy, accelerates query retrieval, and supports secure and consistent multi-user access for system operations.
+18: 3.1.2. Front-end Development Technologies
+19: Front-end Development is the development or creation of a user interface using some markup languages and other tools. It is the development of the user side where only user interaction will be counted. It consists of the interface where buttons, texts, alignments, etc are involved and used by the user. Built with HTML, CSS, and JavaScript, this project integrates dynamic browser interactions, modern UI design, and robust page structuring. (geeksforgeeks, 2025)
+20: 3.1.3. Development Environment
+21: A development environment in software and web development is a workspace for developers to make changes without breaking anything in a live environment. 
+22: The development environment is often seen as a developer's “everything-goes” workspace. When working with a development environment it is part of a tiered structure of environments, where changes are deployed through different environments before reaching a live website. A typical environment structure includes a local, a development, a staging, and a live environment, but it can include more or fewer environments depending on the needs and processes of those developing the website. (umbraco, 2025)
+23: 3.1.4. Version Control Tools
+24: Version control, also known as source control, is the practice of tracking and managing changes to software code. Version control systems are software tools that help software teams manage changes to source code over time. As development environments have accelerated, version control systems help software teams work faster and smarter. They are especially useful for DevOps teams since they help them to reduce development time and increase successful deployments. (atlassian, 2025)
+25: 3.1.5. Back-end Development Technologies
+26: The backend (or server side) manages a web application's overall functionality by receiving HTTP requests from the frontend, processing them, and returning appropriate responses. During this process, it actively interacts with database servers, microservices, and third-party APIs to retrieve data and execute specific tasks. To efficiently handle thousands of simultaneous requests, the backend leverages various communication protocols alongside concurrency and parallelism techniques, such as distributing traffic across multiple servers, caching, and data duplication. (aws.amazon, 2026)
+27: 3.2 Literature review
+28: E-commerce has become an important part of modern retail because it allows customers to search, compare, and purchase products through online platforms. In the fashion industry, an e-commerce website needs to provide more than basic product information because fashion products often have different sizes, colors, materials, and stock quantities. Therefore, a fashion e-commerce system should support product searching, filtering, product variants, shopping carts, checkout, order management, and inventory control. These functions help customers find suitable products more easily and help retailers manage their products and stock more accurately.
+29: Web-based systems are suitable for e-commerce because users can access the system directly through a web browser. For this project, Java is selected as the main programming language because it supports object-oriented programming and is widely used for web and enterprise applications (Oracle, 2025). Spring Boot is used as the main development framework because it simplifies Java web development and supports database access, security, and application structure (Spring, 2026). A relational database such as MySQL can also be used to store information about users, products, categories, product variants, shopping carts, orders, and inventory (Oracle, 2026). These technologies provide a suitable technical foundation for developing a structured online fashion store.
+30: The project will use the Waterfall Model as the software development methodology. Waterfall follows a sequential process that normally includes requirements analysis, system design, implementation, testing, deployment, and maintenance (Ruparelia, 2010). This model is suitable for the project because the main requirements are identified before development begins. Major changes after the requirements phase should be limited because changes can affect system design, development time, testing, and project cost. The project is planned to be completed within six months following these phases.
+31: A similar system that can be used as a reference is Zalando, a large online fashion retail platform. Zalando allows customers to browse and filter products by attributes such as size, color, brand, price, and material (Zalando, 2026). These features show that filtering and product variant management are important for fashion e-commerce. However, this project will focus on a simpler system suitable for an academic project. Based on the reviewed technologies and existing fashion platforms, the proposed Fashion Store E-Commerce Website will combine product browsing, filtering, product variants, shopping cart, checkout, order management, inventory management, user accounts, and administration. The system will be developed using Java and Spring Boot and managed using the Waterfall Model.
+32: Objectives
+33: System Requirements and Design
+34:  Outcome describing this objective in more detail
+35: A complete requirements specification and system design for the Fashion Store E-Commerce Website that defines the functional requirements, non-functional requirements, system architecture, database structure, user interfaces, and system models before the implementation phase.
+36:  Analyze the functional and non-functional requirements of the Fashion Store E-Commerce Website. [0.5 month]
+37:  Design the system architecture, database structure, user interfaces, and system diagrams based on the identified requirements. [0.5 month]
+38: Customer Shopping System
+39:  Outcome describing this objective in more detail
+40: A functional and user-friendly online shopping system that enables customers to create accounts, explore fashion products, select appropriate product variants, manage shopping carts, and complete online purchases.
+41:  Develop customer registration, authentication, profile management, product browsing, searching, and filtering functions. [1.0 month]
+42:  Implement product variant selection, shopping cart, checkout, payment, order placement, and order history functions. [1.0 month]
+43: Product and Store Management System
+44:  Outcome describing this objective in more detail
+45: A centralized administration system that enables administrators to effectively manage fashion products, product variants, inventory, customers, and orders while maintaining accurate product and stock information.
+46:  Develop product, category, brand, size, color, material, product variant, image, and inventory management functions. [1.0 month]
+47:  Implement administrative management, order management, and role-based access control using Spring Security. [0.5 month]
+48: System Quality and Deployment 
+49:  Outcome describing this objective in more detail
+50: A tested, secure, stable, and deployable Fashion Store E-Commerce Website that satisfies the specified requirements and provides reliable functionality for both customers and administrators.
+51:  Test the completed system through unit testing, integration testing, functional testing, and system testing, and correct identified defects. [1.0 month]
+52:  Deploy the completed Fashion Store E-Commerce Website to the target environment and verify its main functions. [0.5 month]
+53: Project Framework or Any Methodology used
+54: The Waterfall Model is used as the main software development methodology for the Fashion Store E-Commerce Website. This methodology follows a structured and sequential process, where each development phase is completed before proceeding to the next phase. The project consists of six main phases: Requirements Analysis, System Design, Implementation, Testing, Deployment, and Maintenance.
+55: During the project, requirements are first identified and analyzed before the system architecture, database, and user interfaces are designed. The system is then implemented using Java and Spring Boot, followed by testing to ensure that all functions meet the defined requirements. Finally, the completed system is deployed and maintained. This approach provides a clear development process and supports the successful completion of the project within six months.
+56: Legal, Social, Ethical and Professional
+57: Introduction:
+58: This project aims to design and implement a modern, high-performance Fashion Store E-Commerce System using Java. By providing dynamic catalog management, real-time multi-variant inventory tracking, and intuitive online checkout, the system delivers operational efficiency to fashion retailers and a seamless shopping experience to consumers.
+59: In the digital commerce landscape, technical functionality alone is insufficient to guarantee project success. Adhering to legal, social, ethical, and professional (LSEP) standards is paramount to ensure regulatory compliance, protect user data, prevent platform abuse, and build trust among stakeholders. In the context of the United Kingdom, e-commerce applications must strictly align with statutory frameworks and professional codes of conduct to mitigate operational and liability risks.
+60: Legal
+61: Legal issues in an e-commerce system involve complying with laws that protect consumers, personal data, and online transactions. Businesses must process customer information lawfully, provide clear and accurate product information, use fair terms and conditions, and respect consumer rights throughout the purchasing process. They are also responsible for ensuring secure payment methods and protecting intellectual property. Compliance with UK legislation helps organisations avoid legal disputes, maintain customer trust, and operate responsibly in the digital marketplace. (Conway, 2025) (gov.uk, 2026)
+62: Social
+63: Social issues in e-commerce focus on the impact of online business activities on customers and society. Businesses should promote fairness, transparency, and inclusivity by providing honest product information, accessible websites, and responsive customer service. They should also prevent misleading advertising, fake reviews, and unfair commercial practices that may influence consumer decisions. Demonstrating social responsibility strengthens public confidence, improves customer satisfaction, and encourages long-term relationships between businesses and consumers. (Authority C. a., Consumer protection guidance for businesses, 2025)
+64: Ethical
+65: Ethical issues in e-commerce concern the responsible and honest use of technology, customer data, and business practices. Organisations should respect customer privacy, collect only the information that is necessary, and be transparent about how data is used. They should avoid deceptive marketing, hidden charges, and manipulative website designs that pressure customers into making unwanted purchases. Following ethical principles helps businesses build trust, enhance their reputation, and create a positive online shopping experience. (Service, 2025)
+66: Professional
+67: Professional issues in e-commerce relate to the responsibilities of businesses and IT professionals when developing and maintaining online systems. Professionals are expected to demonstrate integrity, accountability, competence, and respect for confidentiality while delivering secure and reliable services. They should follow recognised standards, manage risks effectively, and ensure that systems protect customer information from unauthorised access. Maintaining professional conduct improves service quality, supports legal compliance, and reinforces customer confidence in digital businesses. (Authority S. R., 2026)
+68: Planning (see appendix A)
+69: The Fashion Store E-Commerce Website project is planned to be completed within six months using the Waterfall Model. The schedule is divided into sequential phases, and each phase must be completed before the next phase begins.
+70: Phase
+71: Activities
+72: Start Week
+73: End Week
+74: Duration
+75: Requirements Analysis
+76: Collect and analyze the functional and non-functional requirements of the Fashion Store E-Commerce Website, including user registration, authentication, product browsing, product search and filtering, shopping cart, checkout, order management, inventory management, administration, and security requirements.
+77: Week 1
+78: Week 2
+79: Week 2
+80: System Design
+81: Design the system architecture, database structure, user interfaces, and system diagrams based on the finalized requirements. The design also defines product variants such as size, color, material, price, and stock quantity.
+82: Week 3
+83: Week 4
+84: Week 2
+85: Implementation
+86: Develop the system using Java and Spring Boot, including customer accounts, product catalogs, product variants, search and filtering, shopping cart, checkout, simulated payment, order management, inventory management, administrator functions, and role-based security.
+87: Week 5
+88: Week 18
+89: Week 14
+90: Testing
+91: Conduct unit testing, integration testing, functional testing, and system testing. Identify and fix defects to ensure that all implemented functions meet the approved requirements.
+92: Week 19
+93: Week 22
+94: Week 4
+95: Deployment
+96: Deploy the completed Fashion Store E-Commerce Website to the target environment and verify the main system functions under actual operating conditions.
+97: Week 23
+98: Week 23
+99: Week 1
+100: Maintenance
+101: Perform initial maintenance after deployment, fix minor issues, monitor system stability, and improve reliability where necessary.
+102: Week 24
+103: Week 24
+104: Week 1
+106: Initial References
+107: References
+108: Atlassian. (2025). Retrieved from https://www.atlassian.com/git/tutorials/what-is-version-control
+109: Authority, C. a. (2025, 12 18). Consumer protection guidance for businesses. Retrieved from GOV UK: https://www.gov.uk/government/collections/cma-consumer-enforcement-guidance#full-publication-update-history
+110: Authority, C. a. (2025, 12 3). What businesses need to know about unfair commercial practices. Retrieved from GOV UK: https://www.gov.uk/government/publications/what-businesses-need-to-know-about-unfair-commercial-practices/what-businesses-need-to-know-about-unfair-commercial-practices
+111: Authority, S. R. (2026, 4 22). Upholding Professional Ethics. Retrieved from Solicitors Regulation Authority: https://guidance.sra.org.uk/home/hot-topics/upholding-professional-ethics/
+112: Amazon Web Services. (2026). Retrieved from https://aws.amazon.com/compare/the-difference-between-frontend-and-backend/
+113: Conway, L. (2025, 07 09). Consumer Rights Act 2015. Retrieved from Uk Parliament: https://commonslibrary.parliament.uk/research-briefings/sn06588/
+114: GeeksforGeeks. (2025). Retrieved from https://www.geeksforgeeks.org/blogs/front-end-development/
+115: GOV.UK. (2026, August 3). The UK's data protection legislation. Retrieved from GOV UK: https://www.gov.uk/data-protection/the-data-protection-act
+116: Manual, O. M. (2024). Retrieved from https://dev.mysql.com/doc/refman/8.0/en/what-is-mysql.html
+117: Oracle. (2025). Retrieved from https://docs.oracle.com/en/java/index.html
+118: Oracle. (2026). Retrieved from https://dev.mysql.com/doc/
+119: Overview, O. M. (2024). Retrieved from https://www.oracle.com/mysql/what-is-mysql/
+120: Service, G. D. (2025). Find data ethics guidance, standards and frameworks. Retrieved from GOV UK: https://www.gov.uk/data-ethics-guidance
+121: Umbraco. (2025). Retrieved from https://umbraco.com/knowledge-base/development-environment/
+122: Zalando. (2026). Retrieved from https://corporate.zalando.com/en/about-us/holistic-strategy-connected-fashion-world
+124: Ruparelia, N. B. (2010). Software development lifecycle models. ACM SIGSOFT Software Engineering Notes, 35(3), 8–13. https://doi.org/10.1145/1764810.1764814
+125: Spring. (2026). Spring Boot reference documentation. https://docs.spring.io/spring-boot/reference/index.html
+127: Declaration of AI Use 
+128: Please append this page to the end of your assignment when you have used AI during the process of undertaking the assignment to acknowledge the ways in which you have used it. 
+130: I have used AI while undertaking my assignment in the following ways:  
+131: To develop research questions on the topic – NO  
+132: To create an outline of the topic – NO  
+133: To explain concepts – YES
+134: To support my use of language – YES
+135: To summarise the following articles/resources:  NO
